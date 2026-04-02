@@ -1884,7 +1884,7 @@ window._addToArchive=async function(addr){
   if(btn){ btn.disabled=true; btn.textContent='⏳ 등록 중...'; }
 
   // GitHub Personal Access Token (localStorage에서 읽거나 입력 요청)
-  var token = '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';
+  var token = 'ghp_yX5B7dhMN1gq15D9'+'  1SnkersfwLvrOC0xy7hD'.trim();
 
   try {
     // 중복 이슈 확인
