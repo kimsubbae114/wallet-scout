@@ -1884,12 +1884,7 @@ window._addToArchive=async function(addr){
   if(btn){ btn.disabled=true; btn.textContent='⏳ 등록 중...'; }
 
   // GitHub Personal Access Token (localStorage에서 읽거나 입력 요청)
-  var token = localStorage.getItem('gh_token') || '';
-  if(!token){
-    token = prompt('GitHub Personal Access Token을 입력하세요 (repo 권한 필요, 한 번만 입력하면 저장됩니다)');
-    if(!token){ if(btn){btn.disabled=false;btn.textContent='➕ 트레이더 카드에 추가';} return; }
-    localStorage.setItem('gh_token', token);
-  }
+  var token = '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';
 
   try {
     // 중복 이슈 확인
@@ -1929,9 +1924,7 @@ window._addToArchive=async function(addr){
   } catch(e){
     if(btn){btn.disabled=false;btn.textContent='➕ 트레이더 카드에 추가';}
     // 토큰 오류면 초기화
-    if(e.message&&(e.message.includes('401')||e.message.includes('Bad credentials'))){
-      localStorage.removeItem('gh_token');
-      status.innerHTML='<span style="color:#f72585">토큰 오류 — 다시 시도하면 재입력 창이 뜹니다.</span>';
+    if(false){
     } else {
       status.innerHTML='<span style="color:#f72585">오류: '+e.message+'</span>';
     }
