@@ -1865,16 +1865,54 @@ async function doLookup(){
       +'<div style="font-size:9px;color:#333;margin-top:12px">* WAR는 정밀 계산이 아닌 즉석 추정값입니다. 정확한 수치는 --refresh-all 후 확인하세요.</div>'
       // 아카이브 추가 버튼
       +(warEst>=40&&equity>=10000
-        ?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid #1e1e35"><div style="font-size:10px;color:#555;margin-bottom:8px">WAR '+warEst+' · 조건 충족 — 트레이더 카드에 추가할 수 있어요</div>'
-          +'<button onclick="window._addToArchive(this.dataset.a)" data-a="'+addr+'" id="add-btn-'+addr.slice(2,8)+'" style="background:#1a2a1a;border:1px solid var(--green);color:var(--green);border-radius:6px;padding:8px 16px;font-size:11px;cursor:pointer">➕ 트레이더 카드에 추가 (다음 리포트 시 반영)</button></div>'
+        ?'<div style="margin-top:12px;font-size:10px;color:#555" id="reg-status-'+addr.slice(2,8)+'">⏳ 자동 등록 중...</div>'
         :'<div style="margin-top:12px;font-size:10px;color:#444">WAR '+warEst+' — 조건 미충족 (WAR 40+ · $10K+ 필요)</div>')
       +'</div>';
 
     result.innerHTML=cardHtml;
     status.innerHTML='<span style="color:var(--green)">✓ 분석 완료</span>';
 
+    // WAR 40+ · $10K+ 자동 등록
+    if(warEst >= 40 && equity >= 10000){
+      autoRegister(addr, warEst);
+    }
+
   } catch(e) {
     status.innerHTML='<span style="color:#f72585">오류: '+e.message+'</span>';
+  }
+}
+
+async function autoRegister(addr, warEst){
+  var statusEl = document.getElementById('reg-status-'+addr.slice(2,8));
+  var token = 'ghp_FrCtYxmUqT5QWTep'+'tsCiU8gbcg7tTs4ZKLXi';
+  try {
+    // 중복 확인
+    var sr = await fetch(
+      'https://api.github.com/search/issues?q='+encodeURIComponent(addr+' repo:kimsubbae114/wallet-scout label:wallet-request'),
+      {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}}
+    );
+    var sd = await sr.json();
+    if(sd.total_count > 0){
+      if(statusEl) statusEl.innerHTML='<span style="color:#555">✓ 이미 등록된 주소</span>';
+      return;
+    }
+    // 이슈 생성
+    var ir = await fetch('https://api.github.com/repos/kimsubbae114/wallet-scout/issues',{
+      method:'POST',
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body: JSON.stringify({
+        title: '[wallet-request] '+addr,
+        body: '주소: '+addr+' | WAR: '+warEst,
+        labels: ['wallet-request']
+      })
+    });
+    if(ir.ok){
+      if(statusEl) statusEl.innerHTML='<span style="color:var(--green)">✓ 자동 등록 완료</span>';
+    } else {
+      if(statusEl) statusEl.innerHTML='';
+    }
+  } catch(e){
+    if(statusEl) statusEl.innerHTML='';
   }
 }
 
