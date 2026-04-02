@@ -33,6 +33,7 @@ from rich.panel import Panel
 
 HL_API_URL   = "https://api.hyperliquid.xyz/info"
 ARCHIVE_FILE = "wallet_cache.json"
+HIST_FILE    = "sentiment_history.json"
 CACHE_TTL    = timedelta(hours=6)
 MIN_EQUITY   = 10_000
 _raw_console = Console()
@@ -790,8 +791,18 @@ def reclassify_type(s):
     else:                                              t, c = "🌀 Drifter",       "패턴을 찾는 중"
     return t, c
 
-def generate_html(all_stats, tournament, archive: ArchiveManager):
+def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Path = None):
     import math as _math
+    # 히스토리 데이터 로드
+    _hist_data = []
+    try:
+        _hp = hist_path or Path(HIST_FILE)
+        if _hp.exists():
+            _hist_data = json.loads(_hp.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    hist_js = json.dumps(_hist_data, ensure_ascii=False)
+
     # 캐시 타입 무시하고 재분류
     for s in all_stats:
         t, c = reclassify_type(s)
@@ -1441,6 +1452,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager):
   <div class="tab" onclick="showTab('radar',event)">🕸 레이더 비교</div>
   <div class="tab" onclick="showTab('sentiment',event)">📡 센티먼트</div>
   <div class="tab" onclick="showTab('tourney',event)">🏆 토너먼트</div>
+  <div class="tab" onclick="showTab('lookup',event)">🔍 지갑 조회</div>
 </div>
 <div class="section active" id="tab-cards"><div class="cards-grid">{cards_html}</div></div>
 <div class="section" id="tab-radar">
@@ -1452,6 +1464,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager):
 <div class="section" id="tab-sentiment">
 <div id="sent-root" style="padding:1.5rem 0"></div>
 </div>
+<div class="section" id="tab-lookup"><div id="lookup-root" style="max-width:700px;margin:0 auto;padding:24px 0"></div></div>
 <div class="section" id="tab-tourney">
   <div class="tourney-header">
     <div class="tourney-stat"><div class="val">{total_rounds}</div><div class="lbl">TOTAL ROUNDS</div></div>
@@ -1671,11 +1684,261 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
         "<script>\n"
         f"const rd={radar_js};\n"
         f"const SENT={sent_js};\n"
+        f"const HIST={hist_js};\n"
         + _chart_radar + "\n"
         + f"const weeks={weeks_js},ws={ws_js};\n"
         + _chart_weekly + "\n"
-        "function showTab(n,e){document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');(e.target.closest('.tab')||e.target).classList.add('active');if(n==='sentiment')renderSentiment();if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}}\n"
+        "function showTab(n,e){document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');(e.target.closest('.tab')||e.target).classList.add('active');if(n==='sentiment')renderSentiment();if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='lookup')initLookup();}\n"
     )
+    js_block += """
+window._copyAddr=function(a){navigator.clipboard.writeText(a).then(function(){}).catch(function(){});};
+function initLookup(){
+  var root=document.getElementById('lookup-root');
+  if(!root||root._init) return;
+  root._init=true;
+  root.innerHTML=`
+    <div style="margin-bottom:24px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--green);margin-bottom:6px">🔍 지갑 조회</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:20px">Hyperliquid 주소를 입력하면 즉시 분석합니다. WAR 40+ 이상이면 트레이더 카드에 자동 추가돼요.</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <input id="lookup-input" type="text" placeholder="0x..." 
+          style="flex:1;background:#0e0e1a;border:1px solid #2a2a45;border-radius:8px;padding:12px 16px;color:#c8d0e7;font-family:'DM Mono',monospace;font-size:13px;outline:none"
+          onkeydown="if(event.key==='Enter')doLookup()">
+        <button onclick="doLookup()" 
+          style="background:var(--green);color:#000;border:none;border-radius:8px;padding:12px 20px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">
+          분석하기
+        </button>
+      </div>
+      <div id="lookup-status" style="font-size:11px;color:var(--dim);min-height:18px"></div>
+    </div>
+    <div id="lookup-result"></div>
+  `;
+}
+
+async function doLookup(){
+  var addr=(document.getElementById('lookup-input').value||'').trim();
+  if(!addr){return;}
+  if(!/^0x[0-9a-fA-F]{40,}/.test(addr)){
+    document.getElementById('lookup-status').innerHTML='<span style="color:#f72585">올바른 주소 형식이 아닙니다 (0x...)</span>';
+    return;
+  }
+  var status=document.getElementById('lookup-status');
+  var result=document.getElementById('lookup-result');
+  status.innerHTML='<span style="color:var(--green)">⏳ API 조회 중...</span>';
+  result.innerHTML='';
+
+  try {
+    // Hyperliquid API 직접 호출
+    var [chRes, fillsRes] = await Promise.all([
+      fetch('https://api.hyperliquid.xyz/info', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'clearinghouseState', user:addr})
+      }),
+      fetch('https://api.hyperliquid.xyz/info', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'userFills', user:addr})
+      })
+    ]);
+    var ch = await chRes.json();
+    var fills = await fillsRes.json();
+
+    if(!ch || !ch.marginSummary){
+      status.innerHTML='<span style="color:#f72585">주소를 찾을 수 없거나 데이터가 없습니다</span>';
+      return;
+    }
+
+    // 기본 지표 계산
+    var ms = ch.marginSummary||{};
+    var equity = parseFloat(ms.accountValue||0);
+    var positions = (ch.assetPositions||[])
+      .filter(function(ap){return parseFloat((ap.position||{}).szi||0)!==0;})
+      .map(function(ap){
+        var p=ap.position||{};
+        var szi=parseFloat(p.szi||0);
+        return {
+          coin: p.coin,
+          side: szi>0?'LONG':'SHORT',
+          notional: Math.abs(parseFloat(p.positionValue||0)),
+          upnl: parseFloat((p.unrealizedPnl||0)),
+          lev: Math.abs(parseFloat(p.leverage?.value||p.leverage||1))
+        };
+      });
+
+    // fills 분석
+    var closed = Array.isArray(fills) ? fills : [];
+    var wins=0, total=0;
+    var pnlMap={};
+    closed.forEach(function(f){
+      if(!f.closedPnl) return;
+      var pnl=parseFloat(f.closedPnl);
+      if(pnl===0) return;
+      total++;
+      if(pnl>0) wins++;
+      pnlMap[f.coin]=(pnlMap[f.coin]||0)+pnl;
+    });
+    var winRate = total>0?Math.round(wins/total*100):0;
+    var totalPnl = Object.values(pnlMap).reduce(function(a,b){return a+b;},0);
+    var roi = equity>0?Math.round(totalPnl/equity*100*10)/10:0;
+
+    // 간단한 WAR 추정 (샤프 없이 단순화)
+    var warEst = Math.min(99, Math.max(0, Math.round(
+      (Math.min(Math.max(totalPnl,0)/10000,100)*0.25) +
+      (Math.min(Math.max(roi,0)/2,100)*0.25) +
+      (winRate*0.25) +
+      (Math.min(total/10,100)*0.25)
+    )));
+    // 트레이더 타입 추정
+    var traderType='🌀 Drifter',traderChar='패턴을 찾는 중';
+    if(totalPnl<0){traderType='💀 Underwater';traderChar='익사 직전';}
+    else if(total<100){traderType='🌱 Newcomer';traderChar='데이터가 부족한';}
+    else if(winRate>72&&roi>50){traderType='🦅 Precision Hunter';traderChar='절대 빗나가지 않는';}
+    else if(winRate>65&&roi>30){traderType='🦁 Apex Predator';traderChar='먹이사슬 최상위';}
+    else if(roi>100&&winRate<55){traderType='🎯 Sniper';traderChar='적게 쏘고 크게 맞히는';}
+    else if(roi>50){traderType='📈 Momentum';traderChar='흐름을 타는';}
+    else if(winRate>65){traderType='🎯 Steady Shot';traderChar='꾸준히 맞히는';}
+    else if(winRate>60){traderType='📊 All-Rounder';traderChar='균형잡힌 종합 선수';}
+
+    // 트레이더 카드 렌더링
+    var pnlColor = totalPnl>=0?'#00f5d4':'#f72585';
+    var warColor = warEst>=70?'#00f5d4':warEst>=50?'#ffbe0b':'#f72585';
+    var stroke = Math.round(warEst/100*2*Math.PI*26);
+    var dash = 2*Math.PI*26;
+
+    var topCoins = Object.entries(pnlMap)
+      .sort(function(a,b){return Math.abs(b[1])-Math.abs(a[1]);})
+      .slice(0,5);
+
+    var posHtml = positions.length===0
+      ? '<div style="font-size:11px;color:#444">포지션 없음</div>'
+      : positions.map(function(p){
+          var uc=p.upnl>=0?'#00f5d4':'#f72585';
+          return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1a2e;font-size:11px;font-family:DM Mono,monospace">'
+            +'<span style="color:'+(p.side==='LONG'?'#3a86ff':'#f72585')+'">'+(p.side==='LONG'?'▲':'▼')+' '+p.coin+' '+p.lev+'x</span>'
+            +'<span style="color:#888">$'+Math.round(p.notional).toLocaleString()+'</span>'
+            +'<span style="color:'+uc+'">'+(p.upnl>=0?'+':'')+Math.round(p.upnl).toLocaleString()+'</span>'
+            +'</div>';
+        }).join('');
+
+    var coinTagHtml = topCoins.map(function(e){
+      var c=e[1]>=0?'#00f5d4':'#f72585';
+      return '<span style="font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid '+c+';color:'+c+'">'+e[0]+'</span>';
+    }).join('');
+
+    var shortAddr = addr.slice(0,6)+'...'+addr.slice(-4);
+
+    var cardHtml = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative">'
+      // 헤더
+      +'<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:14px">'
+        +'<div style="flex:1">'
+          +'<div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--text)">'+shortAddr+'</div>'
+          +'<div style="font-size:12px;font-weight:600;color:#00f5d4;margin-top:3px">'+traderType+'</div>'
+          +'<div style="font-size:10px;color:var(--dim);font-style:italic">≈ '+traderChar+'</div>'
+          +'<div style="font-size:10px;color:#3a3a55;margin-top:2px">📊 즉석 분석 결과</div>'
+          +'<div style="font-size:10px;color:#555;margin-top:4px">'+positions.length+'개 포지션 · '+total+'건 거래</div>'
+          +'<div style="display:flex;gap:6px;margin-top:6px">'
+            +'<button onclick="window._copyAddr(this.dataset.a)" data-a="'+addr+'" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #2a2a45;background:none;color:#888;cursor:pointer">📋 복사</button>'
+            +'<a href="https://hypurrscan.io/address/'+addr+'" target="_blank" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #2a2a45;color:#888;text-decoration:none">HypurrScan ↗</a>'
+          +'</div>'
+        +'</div>'
+        +'<div style="position:relative;width:60px;height:60px;flex-shrink:0">'
+          +'<svg width="60" height="60"><circle cx="30" cy="30" r="26" fill="none" stroke="#1e1e35" stroke-width="4"/>'
+          +'<circle cx="30" cy="30" r="26" fill="none" stroke="'+warColor+'" stroke-width="4" stroke-dasharray="'+stroke+' '+dash+'" stroke-linecap="round" transform="rotate(-90 30 30)"/></svg>'
+          +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-family:Bebas Neue,sans-serif;font-size:18px;color:'+warColor+'">'+warEst+'</div>'
+          +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,20%);font-size:8px;color:var(--dim)">WAR*</div>'
+        +'</div>'
+      +'</div>'
+      // 스탯
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:'+pnlColor+'">'+(totalPnl>=0?'+':'')+Math.round(totalPnl).toLocaleString()+'</div><div style="font-size:9px;color:var(--dim);margin-top:2px">총손익</div></div>'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--text)">'+winRate+'%</div><div style="font-size:9px;color:var(--dim);margin-top:2px">승률</div></div>'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--text)">'+roi+'%</div><div style="font-size:9px;color:var(--dim);margin-top:2px">ROI</div></div>'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--text)">$'+Math.round(equity).toLocaleString()+'</div><div style="font-size:9px;color:var(--dim);margin-top:2px">잔고</div></div>'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--text)">'+total+'</div><div style="font-size:9px;color:var(--dim);margin-top:2px">거래수</div></div>'
+        +'<div style="background:#0a0a16;border-radius:8px;padding:10px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--text)">'+positions.length+'</div><div style="font-size:9px;color:var(--dim);margin-top:2px">포지션</div></div>'
+      +'</div>'
+      // 포지션
+      +'<div style="font-size:10px;color:#3a3a55;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📍 현재 포지션</div>'
+      +posHtml
+      // 코인 태그
+      +(topCoins.length>0?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:12px">'+coinTagHtml+'</div>':'')
+      // WAR 주석
+      +'<div style="font-size:9px;color:#333;margin-top:12px">* WAR는 정밀 계산이 아닌 즉석 추정값입니다. 정확한 수치는 --refresh-all 후 확인하세요.</div>'
+      // 아카이브 추가 버튼
+      +(warEst>=40&&equity>=10000
+        ?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid #1e1e35"><div style="font-size:10px;color:#555;margin-bottom:8px">WAR '+warEst+' · 조건 충족 — 트레이더 카드에 추가할 수 있어요</div>'
+          +'<button onclick="window._addToArchive(this.dataset.a)" data-a="'+addr+'" id="add-btn-'+addr.slice(2,8)+'" style="background:#1a2a1a;border:1px solid var(--green);color:var(--green);border-radius:6px;padding:8px 16px;font-size:11px;cursor:pointer">➕ 트레이더 카드에 추가 (다음 리포트 시 반영)</button></div>'
+        :'<div style="margin-top:12px;font-size:10px;color:#444">WAR '+warEst+' — 조건 미충족 (WAR 40+ · $10K+ 필요)</div>')
+      +'</div>';
+
+    result.innerHTML=cardHtml;
+    status.innerHTML='<span style="color:var(--green)">✓ 분석 완료</span>';
+
+  } catch(e) {
+    status.innerHTML='<span style="color:#f72585">오류: '+e.message+'</span>';
+  }
+}
+
+window._addToArchive=async function(addr){
+  var btn=document.getElementById('add-btn-'+addr.slice(2,8));
+  var status=document.getElementById('lookup-status');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ 등록 중...'; }
+
+  // GitHub Personal Access Token (localStorage에서 읽거나 입력 요청)
+  var token = localStorage.getItem('gh_token') || '';
+  if(!token){
+    token = prompt('GitHub Personal Access Token을 입력하세요 (repo 권한 필요, 한 번만 입력하면 저장됩니다)');
+    if(!token){ if(btn){btn.disabled=false;btn.textContent='➕ 트레이더 카드에 추가';} return; }
+    localStorage.setItem('gh_token', token);
+  }
+
+  try {
+    // 중복 이슈 확인
+    var searchRes = await fetch(
+      'https://api.github.com/search/issues?q='+encodeURIComponent(addr+' repo:kimsubbae114/wallet-scout label:wallet-request'),
+      {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}}
+    );
+    var searchData = await searchRes.json();
+    if(searchData.total_count > 0){
+      if(btn){btn.textContent='✓ 이미 등록된 주소';btn.style.color='#555';}
+      status.innerHTML='<span style="color:#ffbe0b">이미 등록 요청된 주소예요.</span>';
+      return;
+    }
+
+    // 이슈 생성
+    var issueRes = await fetch('https://api.github.com/repos/kimsubbae114/wallet-scout/issues', {
+      method:'POST',
+      headers:{
+        'Authorization':'token '+token,
+        'Accept':'application/vnd.github.v3+json',
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        title: '[wallet-request] ' + addr,
+        body: '주소: '+addr+' | WAR: '+(document.querySelector('#add-btn-'+addr.slice(2,8)+'')?.closest('div')?.textContent?.match(/WAR [0-9]+/)?.[0]||'40+'),
+        labels: ['wallet-request']
+      })
+    });
+
+    if(issueRes.ok){
+      if(btn){btn.textContent='✓ 등록 요청 완료';btn.style.background='#1a1a2e';btn.style.color='#555';}
+      status.innerHTML='<span style="color:var(--green)">✓ GitHub에 등록 요청됐어요. 다음 업데이트 시 반영됩니다.</span>';
+    } else {
+      var err = await issueRes.json();
+      throw new Error(err.message||issueRes.status);
+    }
+  } catch(e){
+    if(btn){btn.disabled=false;btn.textContent='➕ 트레이더 카드에 추가';}
+    // 토큰 오류면 초기화
+    if(e.message&&(e.message.includes('401')||e.message.includes('Bad credentials'))){
+      localStorage.removeItem('gh_token');
+      status.innerHTML='<span style="color:#f72585">토큰 오류 — 다시 시도하면 재입력 창이 뜹니다.</span>';
+    } else {
+      status.innerHTML='<span style="color:#f72585">오류: '+e.message+'</span>';
+    }
+  }
+}
+"""
+
     js_block += """function renderSentiment(){
   const root=document.getElementById('sent-root');
   if(!SENT||(!SENT.all&&!SENT.coins.length)){
@@ -1843,7 +2106,79 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
   h+='</div>'; // sent-sections 닫기
 
+  // ── 히스토리 차트 ────────────────────────────────────────────
+  if(HIST && HIST.length >= 2){
+    h+='<div style="margin-top:24px;background:#111120;border-radius:10px;padding:16px">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+    h+='<div style="font-size:12px;font-weight:600;color:#c8d0e7">📈 센티먼트 히스토리</div>';
+    h+='<div id="hist-group-label" style="font-size:10px;color:#555">전체 스마트머니</div>';
+    h+='</div>';
+    h+='<div style="font-size:10px;color:#444;margin-bottom:10px">카드 클릭 시 해당 그룹 추이 표시 · 실선=전체 점선=선택그룹</div>';
+    h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">';
+    h+='<span style="font-size:10px;color:#3a86ff">━ 전체 롱%</span>';
+    h+='<span style="font-size:10px;color:#f72585">━ 전체 숏%</span>';
+    h+='<span id="hist-legend-long" style="font-size:10px;color:#3a86ff;display:none">╌ 그룹 롱%</span>';
+    h+='<span id="hist-legend-short" style="font-size:10px;color:#f72585;display:none">╌ 그룹 숏%</span>';
+    h+='</div>';
+    h+='<div style="position:relative;width:100%;height:220px;overflow:hidden"><canvas id="histChart"></canvas></div>';
+    h+='</div>';
+  }
+
   root.innerHTML=h;
+
+  // 히스토리 차트 초기화 및 그룹 업데이트 함수
+  var _histChart=null;
+  window.updateHistChart=function(groupLabel, groupLong, groupShort){
+    var ctx=document.getElementById('histChart');
+    if(!ctx||!HIST||HIST.length<2) return;
+    var labels=HIST.map(function(d){return d.ts;});
+    var datasets=[
+      {label:'전체 롱%', data:HIST.map(function(d){return d.all?d.all.long_pct:null;}),
+       borderColor:'#3a86ff',borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
+      {label:'전체 숏%', data:HIST.map(function(d){return d.all?d.all.short_pct:null;}),
+       borderColor:'#f72585',borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
+    ];
+    if(groupLong){
+      datasets.push({label:groupLabel+' 롱%', data:groupLong,
+        borderColor:'#3a86ff',borderWidth:1.5,tension:0.3,fill:false,
+        pointRadius:2,borderDash:[5,3],backgroundColor:'transparent'});
+      datasets.push({label:groupLabel+' 숏%', data:groupShort,
+        borderColor:'#f72585',borderWidth:1.5,tension:0.3,fill:false,
+        pointRadius:2,borderDash:[5,3],backgroundColor:'transparent'});
+    }
+    if(_histChart) _histChart.destroy();
+    _histChart=new Chart(ctx,{
+      type:'line',
+      data:{labels:labels,datasets:datasets},
+      options:{
+        responsive:true,maintainAspectRatio:false,resizeDelay:0,
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'#0d0d1a',borderColor:'#2a2a45',borderWidth:1,
+            titleColor:'#888',bodyColor:'#c8d0e7',titleFont:{size:10},bodyFont:{size:11},
+            callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y+'%';}}
+          }
+        },
+        scales:{
+          x:{ticks:{color:'#3a3a55',font:{size:9},maxTicksLimit:8,maxRotation:0},grid:{color:'#1a1a2e'}},
+          y:{ticks:{color:'#3a3a55',font:{size:9},callback:function(v){return v+'%';}},grid:{color:'#1a1a2e'},min:0}
+        }
+      }
+    });
+    // 범례 표시
+    var ll=document.getElementById('hist-legend-long');
+    var ls=document.getElementById('hist-legend-short');
+    var gl=document.getElementById('hist-group-label');
+    if(ll) ll.style.display=groupLong?'':'none';
+    if(ls) ls.style.display=groupShort?'':'none';
+    if(gl) gl.textContent=groupLabel;
+  };
+
+  if(HIST && HIST.length >= 2){
+    setTimeout(function(){ window.updateHistChart('전체 스마트머니',null,null); }, 200);
+  }
 
   // ── 섹션 토글 ──────────────────────────────────────────────────
   window._activeSection='war'; // 기본 WAR 열림
@@ -2110,6 +2445,27 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
       window.setTargetsFor(secId,coins);
       if(!_animIds[secId]) window.tickBubble(secId);
     }
+
+    // 히스토리 차트 연동
+    if(window.updateHistChart && HIST && HIST.length >= 2){
+      var gLong=null, gShort=null, gLabel='전체 스마트머니';
+      if(key==='all'){
+        gLabel='전체 스마트머니';
+      } else if(SENT.band_bubbles&&SENT.band_bubbles[key]){
+        gLabel='WAR '+key;
+        gLong =HIST.map(function(d){var b=d.bands&&d.bands.find(function(x){return x.label===key;});return b?b.long_pct:null;});
+        gShort=HIST.map(function(d){var b=d.bands&&d.bands.find(function(x){return x.label===key;});return b?b.short_pct:null;});
+      } else if(SENT.type_bubbles&&SENT.type_bubbles[key]){
+        gLabel=key;
+        gLong =HIST.map(function(d){var t=d.types&&d.types.find(function(x){return x.label===key;});return t?t.long_pct:null;});
+        gShort=HIST.map(function(d){var t=d.types&&d.types.find(function(x){return x.label===key;});return t?t.short_pct:null;});
+      } else if(SENT.equity_bubbles&&SENT.equity_bubbles[key]){
+        gLabel=key;
+        gLong =HIST.map(function(d){var e=d.equities&&d.equities.find(function(x){return x.label===key;});return e?e.long_pct:null;});
+        gShort=HIST.map(function(d){var e=d.equities&&d.equities.find(function(x){return x.label===key;});return e?e.short_pct:null;});
+      }
+      window.updateHistChart(gLabel, gLong, gShort);
+    }
   };
 
   // 기본: WAR 섹션 열고 전체 버블 표시
@@ -2230,6 +2586,79 @@ async def main_async(args):
     if args.season or args.discover or args.file or args.refresh_stale or getattr(args,"refresh_all",False) or addresses:
         print_season_picks(archive, n=args.season_n)
 
+    # --sync-requests: GitHub Issues에서 wallet-request 라벨 주소 자동 수집
+    if getattr(args, "sync_requests", False):
+        import httpx as _ghx
+        gh_token = getattr(args, "gh_token", "") or ""
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        if gh_token:
+            headers["Authorization"] = f"token {gh_token}"
+        console.print("\n[bold cyan]🔄 GitHub Issues wallet-request 동기화 중...[/bold cyan]")
+        try:
+            page, sync_addrs = 1, []
+            while True:
+                r = _ghx.get(
+                    "https://api.github.com/repos/kimsubbae114/wallet-scout/issues",
+                    params={"labels": "wallet-request", "state": "open", "per_page": 100, "page": page},
+                    headers=headers, timeout=15
+                )
+                issues = r.json()
+                if not issues or not isinstance(issues, list): break
+                for iss in issues:
+                    title = iss.get("title", "")
+                    if "[wallet-request]" in title:
+                        addr = title.replace("[wallet-request]", "").strip()
+                        if addr.startswith("0x") and len(addr) >= 42:
+                            sync_addrs.append((addr, iss["number"]))
+                if len(issues) < 100: break
+                page += 1
+            console.print(f"  [dim]{len(sync_addrs)}개 요청 발견[/dim]")
+            if sync_addrs:
+                addrs = [a for a, _ in sync_addrs]
+                await process_addresses(
+                    addrs,
+                    [a[:6]+"..."+a[-4:] for a in addrs],
+                    ["manual"] * len(addrs),
+                    archive, force=True
+                )
+                archive.save()
+                # 처리된 이슈 close
+                if gh_token:
+                    for addr, num in sync_addrs:
+                        try:
+                            _ghx.patch(
+                                f"https://api.github.com/repos/kimsubbae114/wallet-scout/issues/{num}",
+                                json={"state": "closed"},
+                                headers=headers, timeout=10
+                            )
+                        except Exception: pass
+                    console.print(f"  [dim]이슈 {len(sync_addrs)}개 close 처리[/dim]")
+                console.print(f"  [green]✓ {len(sync_addrs)}개 수집 완료[/green]")
+        except Exception as e:
+            console.print(f"  [red]sync-requests 실패: {e}[/red]")
+
+    # --lookup: 주소 즉시 수집
+    if getattr(args, "lookup", None):
+        lookup_addrs = [a.strip() for a in args.lookup if a.strip()]
+        console.print(f"\n[bold cyan]🔍 지갑 조회 및 캐시 저장: {len(lookup_addrs)}개[/bold cyan]")
+        wallets_path = Path("wallets.txt")
+        existing = set()
+        if wallets_path.exists():
+            existing = {l.strip().lower() for l in wallets_path.read_text(encoding="utf-8").splitlines() if l.strip()}
+        new_w = [a for a in lookup_addrs if a.lower() not in existing]
+        if new_w:
+            with wallets_path.open("a", encoding="utf-8") as wf:
+                for a in new_w: wf.write(a + "\n")
+            console.print(f"  [dim]wallets.txt에 {len(new_w)}개 추가됨[/dim]")
+        await process_addresses(
+            lookup_addrs,
+            [a[:6]+"..."+a[-4:] for a in lookup_addrs],
+            ["manual"] * len(lookup_addrs),
+            archive, force=True
+        )
+        archive.save()
+        console.print(f"  [green]✓ 완료 — --report 로 리포트 재생성하세요[/green]")
+
     # --report: HTML 리포트 생성
     if args.report:
         # vault 주소 캐시 보정 (vaultSummaries API)
@@ -2261,12 +2690,74 @@ async def main_async(args):
             archive.save()
             console.print(f"  [dim]vault 보정: {_patched}개[/dim]")
 
+        # 센티먼트 히스토리 스냅샷 저장
+        try:
+            from datetime import datetime as _dt
+            _hist_path = Path(HIST_FILE)
+            _hist = json.loads(_hist_path.read_text(encoding="utf-8")) if _hist_path.exists() else []
+            _snap_stats = archive.qualified_stats()
+            if _snap_stats:
+                # SENT 계산 (generate_html과 동일한 로직 간략화)
+                # 메인 센티먼트와 동일: total_equity 기준 long/short %
+                def _eq(s): return max(s.get("total_equity",1),1)
+                _pos_traders = [s for s in _snap_stats if s.get("positions") and s.get("war_score",0)>=40]
+                _all_eq    = sum(_eq(s) for s in _pos_traders if sum(p["notional"] for p in s["positions"])>0)
+                _all_long  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG") for s in _pos_traders)
+                _all_short = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in _pos_traders)
+                _snap = {
+                    "ts": _dt.now().strftime("%Y-%m-%d %H:%M"),
+                    "all": {
+                        "long_pct":  round(_all_long/_all_eq*100, 1) if _all_eq>0 else 0,
+                        "short_pct": round(_all_short/_all_eq*100, 1) if _all_eq>0 else 0,
+                        "traders":   len(_pos_traders),
+                    },
+                    "bands": [],
+                    "types": [],
+                }
+                # WAR 구간별 (total_equity 기준)
+                WAR_B = [(40,50,"40-50"),(50,60,"50-60"),(60,70,"60-70"),(70,80,"70-80"),(80,999,"80+")]
+                for lo, hi, lbl in WAR_B:
+                    grp = [s for s in _pos_traders if lo <= s.get("war_score",0) < hi]
+                    geq = sum(_eq(s) for s in grp if sum(p["notional"] for p in s["positions"])>0) or 1
+                    ln  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG") for s in grp)
+                    sn  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in grp)
+                    _snap["bands"].append({"label": lbl, "long_pct": round(ln/geq*100,1), "short_pct": round(sn/geq*100,1)})
+                # 타입별 (total_equity 기준)
+                _types = {}
+                for s in _pos_traders:
+                    t = s.get("trader_type","?")
+                    if t not in _types: _types[t] = {"long":0,"short":0,"eq":0}
+                    _types[t]["eq"]    += _eq(s)
+                    _types[t]["long"]  += sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG")
+                    _types[t]["short"] += sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT")
+                for t, v in _types.items():
+                    geq = v["eq"] or 1
+                    _snap["types"].append({"label": t, "long_pct": round(v["long"]/geq*100,1), "short_pct": round(v["short"]/geq*100,1)})
+                # 잔고 규모별
+                EQ_BANDS = [(10000,50000,"$10K~50K"),(50000,200000,"$50K~200K"),
+                            (200000,500000,"$200K~500K"),(500000,1000000,"$500K~1M"),
+                            (1000000,5000000,"$1M~5M"),(5000000,999999999,"$5M+")]
+                _snap["equities"] = []
+                for lo, hi, lbl in EQ_BANDS:
+                    grp = [s for s in _pos_traders if lo <= s.get("total_equity",0) < hi]
+                    geq = sum(_eq(s) for s in grp if sum(p["notional"] for p in s.get("positions",[]))>0) or 1
+                    ln  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG") for s in grp)
+                    sn  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in grp)
+                    _snap["equities"].append({"label": lbl, "long_pct": round(ln/geq*100,1), "short_pct": round(sn/geq*100,1)})
+                _hist.append(_snap)
+                # 최대 200개 스냅샷 유지
+                if len(_hist) > 200: _hist = _hist[-200:]
+                _hist_path.write_text(json.dumps(_hist, ensure_ascii=False, indent=2), encoding="utf-8")
+                console.print(f"  [dim]히스토리 저장: {len(_hist)}개 스냅샷[/dim]")
+        except Exception as _e:
+            console.print(f"  [dim]히스토리 저장 실패: {_e}[/dim]")
+
         console.print("\n[bold magenta]▶ HTML 리포트 생성 중...[/bold magenta]")
         report_stats = archive.qualified_stats()  # $10k+ 전체
         if not report_stats:
             report_stats = archive.all_stats()
         tournament = run_tournament(report_stats)
-        html = generate_html(report_stats, tournament, archive)
+        html = generate_html(report_stats, tournament, archive, hist_path=Path(HIST_FILE))
         ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         out = f"scouting_report_{ts_str}.html"
         with open(out, "w", encoding="utf-8") as f:
@@ -2296,6 +2787,9 @@ def main():
     parser.add_argument("--season", "-s", action="store_true")
     parser.add_argument("--season-n", type=int, default=20)
     parser.add_argument("--prune", action="store_true", help="WAR 40 미만 캐시 삭제")
+    parser.add_argument("--lookup", nargs="+", metavar="ADDR", help="주소 즉시 수집 후 캐시+wallets.txt 저장")
+    parser.add_argument("--sync-requests", action="store_true", help="GitHub Issues wallet-request 라벨 주소 자동 수집")
+    parser.add_argument("--gh-token", default="", help="GitHub Personal Access Token")
     parser.add_argument("--mark-vault", nargs="+", metavar="ADDR", help="지정 주소를 vault로 수동 표시")
     parser.add_argument("--prune-war", type=float, default=40.0)
     parser.add_argument("--report", "-r", action="store_true", help="HTML 리포트 생성")
