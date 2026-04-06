@@ -10995,24 +10995,31 @@
   },
   "0xabe48f78c478973b835fd1c6b9da3b6b6896e1bf": {
     "first_discovered_at": "2026-03-30T02:30:42.943351+00:00",
-    "fetched_at": "2026-04-06T12:46:25.534758+00:00",
+    "fetched_at": "2026-04-06T13:46:15.977935+00:00",
     "stats": {
       "address": "0xabe48f78c478973b835fd1c6b9da3b6b6896e1bf",
       "label": "0xabe4...e1bf",
-      "total_equity": 19940.84195026,
-      "margin_pct": 13.818412823797718,
+      "total_equity": 19820.03760626,
+      "margin_pct": 14.209005607089637,
       "realized": 19902.800579930008,
-      "total_upnl": -153.6236,
-      "total_pnl": 19749.17697993001,
+      "total_upnl": -274.4479,
+      "total_pnl": 19628.35267993001,
       "win_rate": 80.3,
       "avg_win": 90.44,
       "avg_loss": 129.61,
       "profit_factor": 0.7,
-      "sharpe": 5.93,
+      "sharpe": 5.74,
       "mdd_pct": 563.5,
       "consistency": 67.9,
       "durability": 85.5,
       "long_pct": 0.0,
+      "war_components": {
+        "Profit": 20.5,
+        "ROI": 20.9,
+        "Big Bet": 14.7,
+        "Sharpe": 15.4,
+        "Win Rate": 12.7
+      },
       "big_bet_count": 49,
       "big_bet_rate": 98.0,
       "big_bet_pnl": 15682.12,
@@ -11054,10 +11061,10 @@
         "profit_amt": 82.0,
         "roi": 83.8,
         "big_bet": 98.1,
-        "sharpe": 77.8,
+        "sharpe": 77.1,
         "win_rate": 84.5
       },
-      "war_score": 84.4,
+      "war_score": 84.2,
       "trader_type": "🌊 Degen",
       "character": "All in or liquidated",
       "is_hf": false,
@@ -11201,24 +11208,24 @@
         },
         {
           "date": "2026-04-02",
-          "daily": -147.51,
-          "cum": 4545.15
+          "daily": -268.34,
+          "cum": 4424.33
         }
       ],
-      "source": "active",
+      "source": "manual",
       "error": null,
       "positions": [
         {
           "coin": "KAITO",
           "side": "SHORT",
-          "upnl": -44.25,
+          "upnl": -44.03,
           "notional": 2999.77,
           "lev": 2.0
         },
         {
           "coin": "XPL",
           "side": "SHORT",
-          "upnl": -109.37,
+          "upnl": -230.41,
           "notional": 2499.96,
           "lev": 2.0
         }
@@ -21269,15 +21276,15 @@
   },
   "0xf149bf2e05968492cd3f9d9265efdb9c2a8001a8": {
     "first_discovered_at": "2026-04-02T11:43:45.932903+00:00",
-    "fetched_at": "2026-04-06T12:47:17.543384+00:00",
+    "fetched_at": "2026-04-06T13:46:15.974251+00:00",
     "stats": {
       "address": "0xf149bf2e05968492cd3f9d9265efdb9c2a8001a8",
       "label": "0xf149...01a8",
-      "total_equity": 175551.03105,
-      "margin_pct": 34.909882809804124,
+      "total_equity": 174963.42889399998,
+      "margin_pct": 35.20513970612104,
       "realized": 7023.893251000001,
-      "total_upnl": 9967.83519,
-      "total_pnl": 16991.728441,
+      "total_upnl": 9674.95664,
+      "total_pnl": 16698.849891,
       "win_rate": 100.0,
       "avg_win": 585.32,
       "avg_loss": 0,
@@ -21287,6 +21294,13 @@
       "consistency": 100.0,
       "durability": 48.1,
       "long_pct": 100.0,
+      "war_components": {
+        "Profit": 20.3,
+        "ROI": 14.4,
+        "Big Bet": 15.0,
+        "Sharpe": 9.4,
+        "Win Rate": 15.0
+      },
       "big_bet_count": 1,
       "big_bet_rate": 100.0,
       "big_bet_pnl": 2097.28,
@@ -21296,7 +21310,7 @@
       "first_date": "2026-03-01",
       "last_date": "2026-03-02",
       "days_since_last": 35,
-      "roi_pct": 9.7,
+      "roi_pct": 9.5,
       "top_coins": [
         {
           "coin": "ETH",
@@ -21311,7 +21325,7 @@
       ],
       "radar": {
         "profit_amt": 81.2,
-        "roi": 57.7,
+        "roi": 57.5,
         "big_bet": 100.0,
         "sharpe": 47.1,
         "win_rate": 100.0
@@ -21323,7 +21337,7 @@
       "spot_holdings": [
         {
           "coin": "USDC",
-          "amount": 145479.201035,
+          "amount": 145185.399957,
           "usd": 0
         }
       ],
@@ -21336,17 +21350,17 @@
         },
         {
           "date": "2026-03-02",
-          "daily": 15675.49,
-          "cum": 16991.73
+          "daily": 15382.61,
+          "cum": 16698.85
         }
       ],
-      "source": "active",
+      "source": "manual",
       "error": null,
       "positions": [
         {
           "coin": "SOL",
           "side": "LONG",
-          "upnl": 9967.84,
+          "upnl": 9674.96,
           "notional": 199992.75,
           "lev": 20.0
         }
