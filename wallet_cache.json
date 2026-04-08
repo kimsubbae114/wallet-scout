@@ -86733,5 +86733,98 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x082e843a431aef031264dc232693dd710aedca88": {
+    "first_discovered_at": "2026-04-08T13:51:06.508014+00:00",
+    "fetched_at": "2026-04-08T13:51:06.508014+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x082e843a431aef031264dc232693dd710aedca88",
+      "label": "0x082e...ca88",
+      "total_equity": 15679227.709213,
+      "margin_pct": 69.43505597415968,
+      "realized": 196.52947699994525,
+      "total_upnl": 1060472.634292,
+      "total_pnl": 1060669.163769,
+      "win_rate": 70.8,
+      "avg_win": 162.2,
+      "avg_loss": 392.68,
+      "profit_factor": 0.41,
+      "sharpe": 1.0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 48.1,
+      "long_pct": 100.0,
+      "war_components": {
+        "Profit": 25.0,
+        "ROI": 13.5,
+        "Big Bet": 1.5,
+        "Sharpe": 9.4,
+        "Win Rate": 11.3
+      },
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 682,
+      "total_days": 2,
+      "data_days": 2,
+      "first_date": "2025-11-21",
+      "last_date": "2025-11-22",
+      "days_since_last": 137,
+      "roi_pct": 6.8,
+      "top_coins": [
+        {
+          "coin": "STRK",
+          "pnl": 78340.64,
+          "side": "L"
+        },
+        {
+          "coin": "PURR",
+          "pnl": -78144.11,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 100.0,
+        "roi": 53.9,
+        "big_bet": 10,
+        "sharpe": 47.1,
+        "win_rate": 75.2
+      },
+      "war_score": 60.7,
+      "trader_type": "🌀 Drifter",
+      "character": "Still finding a pattern",
+      "is_hf": true,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2025-11-21",
+          "daily": 32507.85,
+          "cum": 32507.85
+        },
+        {
+          "date": "2025-11-22",
+          "daily": 1028161.32,
+          "cum": 1060669.16
+        }
+      ],
+      "source": "manual",
+      "error": null,
+      "positions": [
+        {
+          "coin": "HYPE",
+          "side": "LONG",
+          "upnl": 1060472.63,
+          "notional": 53373839.9,
+          "lev": 5.0
+        }
+      ],
+      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
+      "type_reasons": [
+        "No dominant pattern — fallback classification"
+      ],
+      "confidence": "Early Read"
+    }
   }
 }
