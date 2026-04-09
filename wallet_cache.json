@@ -133540,5 +133540,524 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x540b6833c05442335aed721af5cadaa6c5b0236a": {
+    "first_discovered_at": "2026-04-09T13:45:26.070422+00:00",
+    "fetched_at": "2026-04-09T13:45:26.070422+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x540b6833c05442335aed721af5cadaa6c5b0236a",
+      "label": "LONG quality - SHORT unlocks low-float high-FDV",
+      "total_equity": 56572.237847,
+      "margin_pct": 47.917827193462415,
+      "realized": 89309.50468899985,
+      "total_upnl": -62819.190658000014,
+      "total_pnl": 26490.314030999834,
+      "win_rate": 61.5,
+      "avg_win": 342.38,
+      "avg_loss": 177.07,
+      "profit_factor": 1.93,
+      "sharpe": 3.33,
+      "mdd_pct": 53.2,
+      "consistency": 40.0,
+      "durability": 73.0,
+      "long_pct": 73.7,
+      "war_components": {
+        "Profit": 20.9,
+        "ROI": 18.8,
+        "Big Bet": 1.5,
+        "Sharpe": 13.2,
+        "Win Rate": 9.5
+      },
+      "follow_score": 48.5,
+      "big_bet_count": 4,
+      "big_bet_rate": 25.0,
+      "big_bet_pnl": 885.34,
+      "closed_count": 628,
+      "total_days": 15,
+      "data_days": 176,
+      "first_date": "2025-09-22",
+      "last_date": "2026-03-16",
+      "days_since_last": 24,
+      "roi_pct": 46.8,
+      "top_coins": [
+        {
+          "coin": "XPL",
+          "pnl": 17178.9,
+          "side": "S"
+        },
+        {
+          "coin": "ONDO",
+          "pnl": 16286.14,
+          "side": "S"
+        },
+        {
+          "coin": "IP",
+          "pnl": 12475.98,
+          "side": "S"
+        },
+        {
+          "coin": "SEI",
+          "pnl": 8439.86,
+          "side": "S"
+        },
+        {
+          "coin": "APT",
+          "pnl": 8413.94,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 83.6,
+        "roi": 75.2,
+        "big_bet": 10,
+        "sharpe": 66.2,
+        "win_rate": 63.5
+      },
+      "war_score": 63.9,
+      "trader_type": "🎰 High Roller",
+      "character": "Goes big or goes home",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": true,
+      "cumulative": [
+        {
+          "date": "2025-09-22",
+          "daily": 1356.22,
+          "cum": 1356.22
+        },
+        {
+          "date": "2025-09-25",
+          "daily": -231.65,
+          "cum": 1124.57
+        },
+        {
+          "date": "2025-09-30",
+          "daily": -64.02,
+          "cum": 1060.55
+        },
+        {
+          "date": "2025-10-10",
+          "daily": 37845.27,
+          "cum": 38905.82
+        },
+        {
+          "date": "2025-10-13",
+          "daily": -7020.17,
+          "cum": 31885.65
+        },
+        {
+          "date": "2025-10-30",
+          "daily": -262.55,
+          "cum": 31623.09
+        },
+        {
+          "date": "2025-11-03",
+          "daily": 177.93,
+          "cum": 31801.02
+        },
+        {
+          "date": "2025-11-04",
+          "daily": -2308.22,
+          "cum": 29492.81
+        },
+        {
+          "date": "2025-11-07",
+          "daily": 990.34,
+          "cum": 30483.15
+        },
+        {
+          "date": "2025-11-17",
+          "daily": -6807.68,
+          "cum": 23675.47
+        },
+        {
+          "date": "2025-11-21",
+          "daily": -1367.21,
+          "cum": 22308.26
+        },
+        {
+          "date": "2025-12-25",
+          "daily": -32.76,
+          "cum": 22275.51
+        },
+        {
+          "date": "2026-01-15",
+          "daily": -4061.41,
+          "cum": 18214.1
+        },
+        {
+          "date": "2026-02-12",
+          "daily": 3980.88,
+          "cum": 22194.97
+        },
+        {
+          "date": "2026-03-16",
+          "daily": 4295.34,
+          "cum": 26490.31
+        }
+      ],
+      "source": "vault",
+      "error": null,
+      "positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": -19058.76,
+          "notional": 53599.99,
+          "lev": 20.0
+        },
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": -19993.5,
+          "notional": 46577.2,
+          "lev": 20.0
+        },
+        {
+          "coin": "SOL",
+          "side": "LONG",
+          "upnl": -26891.7,
+          "notional": 48289.52,
+          "lev": 20.0
+        },
+        {
+          "coin": "HYPE",
+          "side": "LONG",
+          "upnl": -2164.84,
+          "notional": 33222.03,
+          "lev": 10.0
+        },
+        {
+          "coin": "ASTER",
+          "side": "SHORT",
+          "upnl": 3760.61,
+          "notional": 16676.38,
+          "lev": 3.0
+        },
+        {
+          "coin": "CC",
+          "side": "SHORT",
+          "upnl": 1636.18,
+          "notional": 20845.17,
+          "lev": 3.0
+        },
+        {
+          "coin": "STABLE",
+          "side": "SHORT",
+          "upnl": -107.19,
+          "notional": 27396.6,
+          "lev": 3.0
+        }
+      ],
+      "ai_summary": "The wallet clearly likes size, but the payoff profile suggests that aggression may sometimes outrun edge. Large-position styles can look brilliant in good conditions, but they do not hide mistakes when timing slips. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: high stakes, uneven control.",
+      "type_reasons": [
+        "PnL Drawdown 53% > 40%",
+        "Profit Factor 1.9x > 1.5"
+      ],
+      "confidence": "Medium Confidence"
+    }
+  },
+  "0x4af52283ea6de9236c47b28e5dbf156453df8efb": {
+    "first_discovered_at": "2026-04-09T13:45:26.075553+00:00",
+    "fetched_at": "2026-04-09T13:45:26.075553+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x4af52283ea6de9236c47b28e5dbf156453df8efb",
+      "label": "[A] Downside",
+      "total_equity": 55374.961712,
+      "margin_pct": 0.0,
+      "realized": 34277.59817399999,
+      "total_upnl": 0,
+      "total_pnl": 34277.59817399999,
+      "win_rate": 60.3,
+      "avg_win": 99.96,
+      "avg_loss": 57.7,
+      "profit_factor": 1.73,
+      "sharpe": 6.66,
+      "mdd_pct": 13.4,
+      "consistency": 59.5,
+      "durability": 81.8,
+      "long_pct": 50,
+      "war_components": {
+        "Profit": 21.2,
+        "ROI": 19.6,
+        "Big Bet": 5.6,
+        "Sharpe": 16.1,
+        "Win Rate": 9.3
+      },
+      "follow_score": 57.3,
+      "big_bet_count": 22,
+      "big_bet_rate": 54.5,
+      "big_bet_pnl": 9761.83,
+      "closed_count": 917,
+      "total_days": 42,
+      "data_days": 96,
+      "first_date": "2026-01-02",
+      "last_date": "2026-04-07",
+      "days_since_last": 2,
+      "roi_pct": 61.9,
+      "top_coins": [
+        {
+          "coin": "HYPE",
+          "pnl": 3851.52,
+          "side": "S"
+        },
+        {
+          "coin": "SOL",
+          "pnl": 2507.08,
+          "side": "L"
+        },
+        {
+          "coin": "LIT",
+          "pnl": 2111.95,
+          "side": "S"
+        },
+        {
+          "coin": "PUMP",
+          "pnl": 1892.32,
+          "side": "L"
+        },
+        {
+          "coin": "MON",
+          "pnl": 1861.08,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 84.9,
+        "roi": 78.4,
+        "big_bet": 37.1,
+        "sharpe": 80.3,
+        "win_rate": 61.8
+      },
+      "war_score": 71.8,
+      "trader_type": "🎲 Bet Maker",
+      "character": "Loves to bet big",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": true,
+      "cumulative": [
+        {
+          "date": "2026-01-02",
+          "daily": 1297.73,
+          "cum": 1297.73
+        },
+        {
+          "date": "2026-01-03",
+          "daily": -37.1,
+          "cum": 1260.63
+        },
+        {
+          "date": "2026-01-04",
+          "daily": 1915.81,
+          "cum": 3176.44
+        },
+        {
+          "date": "2026-01-05",
+          "daily": 409.18,
+          "cum": 3585.62
+        },
+        {
+          "date": "2026-01-06",
+          "daily": 7331.04,
+          "cum": 10916.67
+        },
+        {
+          "date": "2026-01-07",
+          "daily": 1158.36,
+          "cum": 12075.03
+        },
+        {
+          "date": "2026-01-08",
+          "daily": -99.78,
+          "cum": 11975.25
+        },
+        {
+          "date": "2026-01-10",
+          "daily": -209.1,
+          "cum": 11766.15
+        },
+        {
+          "date": "2026-01-11",
+          "daily": -606.47,
+          "cum": 11159.68
+        },
+        {
+          "date": "2026-01-12",
+          "daily": 921.39,
+          "cum": 12081.06
+        },
+        {
+          "date": "2026-01-13",
+          "daily": 202.43,
+          "cum": 12283.49
+        },
+        {
+          "date": "2026-01-14",
+          "daily": 721.35,
+          "cum": 13004.84
+        },
+        {
+          "date": "2026-01-15",
+          "daily": 1099.35,
+          "cum": 14104.19
+        },
+        {
+          "date": "2026-01-19",
+          "daily": 4024.05,
+          "cum": 18128.24
+        },
+        {
+          "date": "2026-01-20",
+          "daily": 9.4,
+          "cum": 18137.63
+        },
+        {
+          "date": "2026-01-21",
+          "daily": 4698.12,
+          "cum": 22835.75
+        },
+        {
+          "date": "2026-01-22",
+          "daily": 1141.1,
+          "cum": 23976.85
+        },
+        {
+          "date": "2026-01-23",
+          "daily": -397.38,
+          "cum": 23579.48
+        },
+        {
+          "date": "2026-01-25",
+          "daily": 953.77,
+          "cum": 24533.25
+        },
+        {
+          "date": "2026-01-26",
+          "daily": -328.08,
+          "cum": 24205.17
+        },
+        {
+          "date": "2026-01-27",
+          "daily": 3823.61,
+          "cum": 28028.78
+        },
+        {
+          "date": "2026-02-02",
+          "daily": -256.46,
+          "cum": 27772.32
+        },
+        {
+          "date": "2026-02-03",
+          "daily": -3365.08,
+          "cum": 24407.24
+        },
+        {
+          "date": "2026-02-05",
+          "daily": 35.5,
+          "cum": 24442.74
+        },
+        {
+          "date": "2026-02-06",
+          "daily": 2827.51,
+          "cum": 27270.25
+        },
+        {
+          "date": "2026-02-08",
+          "daily": -1712.05,
+          "cum": 25558.2
+        },
+        {
+          "date": "2026-02-15",
+          "daily": -552.42,
+          "cum": 25005.77
+        },
+        {
+          "date": "2026-02-17",
+          "daily": -174.13,
+          "cum": 24831.64
+        },
+        {
+          "date": "2026-02-25",
+          "daily": 1241.35,
+          "cum": 26072.99
+        },
+        {
+          "date": "2026-02-26",
+          "daily": 1987.6,
+          "cum": 28060.59
+        },
+        {
+          "date": "2026-02-27",
+          "daily": 1053.59,
+          "cum": 29114.18
+        },
+        {
+          "date": "2026-02-28",
+          "daily": 9514.49,
+          "cum": 38628.68
+        },
+        {
+          "date": "2026-03-03",
+          "daily": -370.32,
+          "cum": 38258.36
+        },
+        {
+          "date": "2026-03-09",
+          "daily": 1207.83,
+          "cum": 39466.19
+        },
+        {
+          "date": "2026-03-10",
+          "daily": -409.86,
+          "cum": 39056.32
+        },
+        {
+          "date": "2026-03-18",
+          "daily": 503.07,
+          "cum": 39559.39
+        },
+        {
+          "date": "2026-03-20",
+          "daily": 37.34,
+          "cum": 39596.73
+        },
+        {
+          "date": "2026-03-24",
+          "daily": -3880.49,
+          "cum": 35716.25
+        },
+        {
+          "date": "2026-03-26",
+          "daily": 368.8,
+          "cum": 36085.05
+        },
+        {
+          "date": "2026-03-29",
+          "daily": -15.43,
+          "cum": 36069.62
+        },
+        {
+          "date": "2026-03-31",
+          "daily": -1495.39,
+          "cum": 34574.23
+        },
+        {
+          "date": "2026-04-07",
+          "daily": -296.63,
+          "cum": 34277.6
+        }
+      ],
+      "source": "vault",
+      "error": null,
+      "positions": [],
+      "ai_summary": "This wallet does not yet show a strong, repeatable identity. Results may be coming from inconsistent execution, changing style, or a lack of clear edge — which makes performance harder to trust even when occasional wins look strong. Overall: no stable rhythm, no clear edge — still searching.",
+      "type_reasons": [
+        "22 big bets > 10",
+        "Big Bet Rate 55% > 50%"
+      ],
+      "confidence": "High Confidence"
+    }
   }
 }
