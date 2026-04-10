@@ -22051,82 +22051,82 @@
   },
   "0x414ade317cd254a970f97ec57185080a42f270b2": {
     "first_discovered_at": "2026-04-05T07:10:25.536808+00:00",
-    "fetched_at": "2026-04-10T08:02:27.492636+00:00",
+    "fetched_at": "2026-04-10T14:33:44.159401+00:00",
     "stats": {
       "address": "0x414ade317cd254a970f97ec57185080a42f270b2",
       "label": "0x414a...70b2",
-      "total_equity": 12979.904975,
-      "margin_pct": 0.12836640200441837,
-      "realized": 2.033855000000004,
-      "total_upnl": 6.180535,
-      "total_pnl": 8.214390000000003,
-      "win_rate": 55.3,
-      "avg_win": 0.03,
+      "total_equity": 12982.167817,
+      "margin_pct": 0.06124826848708422,
+      "realized": -4.304269999999998,
+      "total_upnl": 8.577164,
+      "total_pnl": 4.272894000000002,
+      "win_rate": 55.1,
+      "avg_win": 0.02,
       "avg_loss": 0.04,
-      "profit_factor": 0.9,
-      "sharpe": 9.08,
-      "mdd_pct": 109.6,
-      "consistency": 75.0,
-      "durability": 40.0,
-      "long_pct": 58.3,
+      "profit_factor": 0.63,
+      "sharpe": 3.73,
+      "mdd_pct": 0.0,
+      "consistency": 50.0,
+      "durability": 28.8,
+      "long_pct": 100.0,
       "war_components": {
-        "Profit": 10.4,
-        "ROI": 7.7,
+        "Profit": 9.7,
+        "ROI": 7.6,
         "Big Bet": 1.5,
-        "Sharpe": 17.4,
+        "Sharpe": 13.7,
         "Win Rate": 7.9
       },
-      "follow_score": 58.4,
+      "follow_score": 70.6,
       "big_bet_count": 0,
       "big_bet_rate": 0,
       "big_bet_pnl": 0,
-      "closed_count": 1065,
+      "closed_count": 1061,
       "total_days": 4,
       "data_days": 4,
       "first_date": "2026-04-07",
       "last_date": "2026-04-10",
       "days_since_last": 0,
-      "roi_pct": 0.1,
+      "roi_pct": 0.0,
       "top_coins": [
         {
           "coin": "HYPE",
-          "pnl": 2.03,
+          "pnl": -4.3,
           "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 41.7,
-        "roi": 30.7,
+        "profit_amt": 38.7,
+        "roi": 30.4,
         "big_bet": 10,
-        "sharpe": 87.1,
-        "win_rate": 52.8
+        "sharpe": 68.4,
+        "win_rate": 52.4
       },
-      "war_score": 44.9,
-      "trader_type": "🌊 Degen",
-      "character": "All in or liquidated",
+      "war_score": 40.4,
+      "trader_type": "🌀 Drifter",
+      "character": "Still finding a pattern",
       "is_hf": false,
       "spot_holdings": [],
       "is_vault": false,
       "cumulative": [
         {
           "date": "2026-04-07",
-          "daily": 3.84,
-          "cum": 3.84
+          "daily": -2.46,
+          "cum": -2.46
         },
         {
           "date": "2026-04-08",
           "daily": -4.21,
-          "cum": -0.37
+          "cum": -6.67
         },
         {
           "date": "2026-04-09",
           "daily": 0.96,
-          "cum": 0.59
+          "cum": -5.71
         },
         {
           "date": "2026-04-10",
-          "daily": 7.62,
-          "cum": 8.21
+          "daily": 9.98,
+          "cum": 4.27
         }
       ],
       "source": "active",
@@ -22135,22 +22135,21 @@
         {
           "coin": "BTC",
           "side": "LONG",
-          "upnl": 5.43,
+          "upnl": 8.57,
           "notional": 135.33,
           "lev": 20.0
         },
         {
           "coin": "HYPE",
-          "side": "SHORT",
-          "upnl": 0.75,
-          "notional": 96.98,
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 7.56,
           "lev": 10.0
         }
       ],
-      "ai_summary": "The aggression is clear, but the discipline is harder to trust. This wallet may still catch spectacular upside, though the drawdown behavior suggests that the line between conviction and overexposure can get thin very quickly. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Note: the sample size is still light, so all signals should be read with some caution. Overall: exciting when right, fragile when pressed.",
+      "ai_summary": "This wallet does not yet show a strong, repeatable identity. Results may be coming from inconsistent execution, changing style, or a lack of clear edge — which makes performance harder to trust even when occasional wins look strong. Note: the sample size is still light, so all signals should be read with some caution. Overall: no stable rhythm, no clear edge — still searching.",
       "type_reasons": [
-        "PnL Drawdown 110% > 100%",
-        "0 large positions taken"
+        "No dominant pattern — fallback classification"
       ],
       "confidence": "Early Read"
     },
@@ -35173,47 +35172,47 @@
   },
   "0xb1e6c5cdec135ee39957b7b53fee9ff3e3516923": {
     "first_discovered_at": "2026-04-08T00:36:34.474521+00:00",
-    "fetched_at": "2026-04-10T08:03:13.816254+00:00",
+    "fetched_at": "2026-04-10T14:33:44.164470+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0xb1e6c5cdec135ee39957b7b53fee9ff3e3516923",
       "label": "0xb1e6...6923",
-      "total_equity": 19936.914839,
-      "margin_pct": 7.6442010025481055,
-      "realized": 12757.943765,
-      "total_upnl": -39.54277,
-      "total_pnl": 12718.400995,
+      "total_equity": 20025.780295,
+      "margin_pct": 0.3743632852035142,
+      "realized": 12814.256735,
+      "total_upnl": 0.23331,
+      "total_pnl": 12814.490045,
       "win_rate": 96.7,
-      "avg_win": 23.27,
+      "avg_win": 23.26,
       "avg_loss": 164.63,
       "profit_factor": 0.14,
-      "sharpe": 10.83,
+      "sharpe": 10.98,
       "mdd_pct": 20.4,
       "consistency": 91.8,
       "durability": 92.2,
-      "long_pct": 100.0,
+      "long_pct": 0.0,
       "war_components": {
         "Profit": 19.9,
         "ROI": 19.7,
         "Big Bet": 14.4,
-        "Sharpe": 18.2,
+        "Sharpe": 18.3,
         "Win Rate": 14.6
       },
       "follow_score": 51.8,
       "big_bet_count": 184,
       "big_bet_rate": 95.7,
-      "big_bet_pnl": 13834.0,
-      "closed_count": 750,
+      "big_bet_pnl": 13777.54,
+      "closed_count": 753,
       "total_days": 49,
       "data_days": 71,
       "first_date": "2026-01-30",
       "last_date": "2026-04-10",
       "days_since_last": 0,
-      "roi_pct": 63.8,
+      "roi_pct": 64.0,
       "top_coins": [
         {
           "coin": "ETH",
-          "pnl": 7034.95,
+          "pnl": 7091.26,
           "side": "S"
         },
         {
@@ -35223,13 +35222,13 @@
         }
       ],
       "radar": {
-        "profit_amt": 79.7,
+        "profit_amt": 79.8,
         "roi": 78.7,
         "big_bet": 96.0,
-        "sharpe": 91.0,
+        "sharpe": 91.3,
         "win_rate": 97.6
       },
-      "war_score": 86.8,
+      "war_score": 86.9,
       "trader_type": "🦁 Apex Predator",
       "character": "Top of the food chain",
       "is_hf": false,
@@ -35478,8 +35477,8 @@
         },
         {
           "date": "2026-04-10",
-          "daily": -432.6,
-          "cum": 12718.4
+          "daily": -336.51,
+          "cum": 12814.49
         }
       ],
       "source": "active",
@@ -35487,9 +35486,9 @@
       "positions": [
         {
           "coin": "ETH",
-          "side": "LONG",
-          "upnl": -39.54,
-          "notional": 15279.7,
+          "side": "SHORT",
+          "upnl": 0.23,
+          "notional": 749.92,
           "lev": 10.0
         }
       ],
@@ -116226,6 +116225,99 @@
       "type_reasons": [
         "Win Rate 100% > 65%",
         "Profit Factor 99.0x > 1.5"
+      ],
+      "confidence": "Early Read"
+    }
+  },
+  "0x049bdc370620beab340b01072fa580fd57745e7d": {
+    "first_discovered_at": "2026-04-10T14:33:47.254019+00:00",
+    "fetched_at": "2026-04-10T14:33:47.254019+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x049bdc370620beab340b01072fa580fd57745e7d",
+      "label": "0x049b...5e7d",
+      "total_equity": 6064963.928938,
+      "margin_pct": 0.0,
+      "realized": 577179.4320660003,
+      "total_upnl": 0,
+      "total_pnl": 577179.4320660003,
+      "win_rate": 100.0,
+      "avg_win": 288.59,
+      "avg_loss": 0,
+      "profit_factor": 99.0,
+      "sharpe": 0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 46.6,
+      "long_pct": 50,
+      "war_components": {
+        "Profit": 24.9,
+        "ROI": 14.4,
+        "Big Bet": 15.0,
+        "Sharpe": 6.0,
+        "Win Rate": 15.0
+      },
+      "follow_score": 80.0,
+      "big_bet_count": 1,
+      "big_bet_rate": 100.0,
+      "big_bet_pnl": 17134.08,
+      "closed_count": 2000,
+      "total_days": 1,
+      "data_days": 1,
+      "first_date": "2026-04-09",
+      "last_date": "2026-04-09",
+      "days_since_last": 1,
+      "roi_pct": 9.5,
+      "top_coins": [
+        {
+          "coin": "BTC",
+          "pnl": 341057.14,
+          "side": "L"
+        },
+        {
+          "coin": "ETH",
+          "pnl": 236122.29,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 99.8,
+        "roi": 57.5,
+        "big_bet": 100.0,
+        "sharpe": 30,
+        "win_rate": 100.0
+      },
+      "war_score": 75.3,
+      "trader_type": "🦁 Apex Predator",
+      "character": "Top of the food chain",
+      "is_hf": true,
+      "spot_holdings": [
+        {
+          "coin": "HYPE",
+          "amount": 6004.059347,
+          "usd": 0
+        },
+        {
+          "coin": "USDC",
+          "amount": 1059996.006729,
+          "usd": 0
+        }
+      ],
+      "is_vault": true,
+      "cumulative": [
+        {
+          "date": "2026-04-09",
+          "daily": 577179.43,
+          "cum": 577179.43
+        }
+      ],
+      "source": "vault",
+      "error": null,
+      "positions": [],
+      "ai_summary": "This wallet wins through authority, not hesitation. It tends to identify where its edge is strongest, then commit with enough conviction to shape outcomes rather than merely participate in them. Note: the sample size is still light, so all signals should be read with some caution. Overall: a high-conviction operator built to lead, not follow.",
+      "type_reasons": [
+        "Big Bet Rate 100% > 60%",
+        "Win Rate 100% > 65%"
       ],
       "confidence": "Early Read"
     }
