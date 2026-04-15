@@ -6504,14 +6504,14 @@
   },
   "0x76c2cd1b8a249f465f8445c455cb78e0eed36f1e": {
     "first_discovered_at": "2026-04-01T13:24:57.699379+00:00",
-    "fetched_at": "2026-04-15T07:02:24.027142+00:00",
+    "fetched_at": "2026-04-15T13:43:00.168381+00:00",
     "stats": {
       "address": "0x76c2cd1b8a249f465f8445c455cb78e0eed36f1e",
-      "label": "0x76c2...6f1e",
-      "total_equity": 310667.61571483,
-      "margin_pct": 60.46657364817567,
+      "label": "0x76c2cd1b8a249f465f8445c455cb78e0eed36f1e",
+      "total_equity": 321396.21673082997,
+      "margin_pct": 57.717494943421755,
       "realized": 188777.52281500006,
-      "total_upnl": -57682.422068,
+      "total_upnl": -53996.655195,
       "total_pnl": 188777.52281500006,
       "win_rate": 28.0,
       "avg_win": 5301.5,
@@ -6521,17 +6521,17 @@
       "mdd_pct": 371.5,
       "consistency": 55.6,
       "durability": 80.0,
-      "long_pct": 69.8,
+      "long_pct": 58.8,
       "war_components": {
         "Profit": 23.5,
-        "ROI": 19.6,
-        "Big Bet": 6.4,
+        "ROI": 19.4,
+        "Big Bet": 7.3,
         "Sharpe": 10.8,
         "Win Rate": 2.5
       },
-      "follow_score": 53.5,
-      "big_bet_count": 46,
-      "big_bet_rate": 56.5,
+      "follow_score": 52.7,
+      "big_bet_count": 44,
+      "big_bet_rate": 59.1,
       "big_bet_pnl": 597767.62,
       "closed_count": 554,
       "total_days": 45,
@@ -6539,7 +6539,7 @@
       "first_date": "2025-01-15",
       "last_date": "2026-03-14",
       "days_since_last": 32,
-      "roi_pct": 60.8,
+      "roi_pct": 58.7,
       "top_coins": [
         {
           "coin": "USUAL",
@@ -6569,12 +6569,12 @@
       ],
       "radar": {
         "profit_amt": 93.9,
-        "roi": 78.2,
-        "big_bet": 42.5,
+        "roi": 77.8,
+        "big_bet": 48.4,
         "sharpe": 54.1,
         "win_rate": 16.8
       },
-      "war_score": 62.8,
+      "war_score": 63.5,
       "trader_type": "🌊 Degen",
       "character": "All in or liquidated",
       "is_hf": false,
@@ -6807,9 +6807,108 @@
           "cum": 201106.98
         }
       ],
-      "source": "active",
+      "source": "0x76c2cd1b8a249f465f8445c455cb78e0eed36f1e",
       "error": null,
       "positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": 2616.56,
+          "notional": 164639.72,
+          "lev": 20.0
+        },
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": 13218.33,
+          "notional": 260485.9,
+          "lev": 20.0
+        },
+        {
+          "coin": "SOL",
+          "side": "SHORT",
+          "upnl": 139.17,
+          "notional": 69815.63,
+          "lev": 20.0
+        },
+        {
+          "coin": "AVAX",
+          "side": "SHORT",
+          "upnl": -449.92,
+          "notional": 76730.14,
+          "lev": 10.0
+        },
+        {
+          "coin": "BNB",
+          "side": "SHORT",
+          "upnl": -3509.44,
+          "notional": 357116.28,
+          "lev": 10.0
+        },
+        {
+          "coin": "DOGE",
+          "side": "SHORT",
+          "upnl": 75.96,
+          "notional": 53083.66,
+          "lev": 10.0
+        },
+        {
+          "coin": "CRV",
+          "side": "LONG",
+          "upnl": -26441.86,
+          "notional": 120929.5,
+          "lev": 10.0
+        },
+        {
+          "coin": "LINK",
+          "side": "LONG",
+          "upnl": -5.68,
+          "notional": 1137.25,
+          "lev": 10.0
+        },
+        {
+          "coin": "XRP",
+          "side": "SHORT",
+          "upnl": -726.54,
+          "notional": 196755.89,
+          "lev": 20.0
+        },
+        {
+          "coin": "AAVE",
+          "side": "LONG",
+          "upnl": -24292.19,
+          "notional": 127512.1,
+          "lev": 10.0
+        },
+        {
+          "coin": "TRX",
+          "side": "LONG",
+          "upnl": 14282.26,
+          "notional": 399075.86,
+          "lev": 10.0
+        },
+        {
+          "coin": "UNI",
+          "side": "LONG",
+          "upnl": -33469.5,
+          "notional": 256034.1,
+          "lev": 10.0
+        },
+        {
+          "coin": "ADA",
+          "side": "SHORT",
+          "upnl": 4566.21,
+          "notional": 179943.89,
+          "lev": 10.0
+        }
+      ],
+      "ai_summary": "The aggression is clear, but the discipline is harder to trust. This wallet may still catch spectacular upside, though the drawdown behavior suggests that the line between conviction and overexposure can get thin very quickly. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: exciting when right, fragile when pressed.",
+      "type_reasons": [
+        "PnL Drawdown 371% > 100%",
+        "44 large positions taken"
+      ],
+      "confidence": "High Confidence",
+      "prev_positions": [
         {
           "coin": "BTC",
           "side": "LONG",
@@ -6902,1495 +7001,7 @@
           "lev": 10.0
         }
       ],
-      "ai_summary": "The aggression is clear, but the discipline is harder to trust. This wallet may still catch spectacular upside, though the drawdown behavior suggests that the line between conviction and overexposure can get thin very quickly. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: exciting when right, fragile when pressed.",
-      "type_reasons": [
-        "PnL Drawdown 371% > 100%",
-        "46 large positions taken"
-      ],
-      "confidence": "High Confidence",
-      "prev_positions": [
-        {
-          "coin": "BTC",
-          "side": "LONG",
-          "upnl": 7302.89,
-          "notional": 150134.46,
-          "lev": 20.0
-        },
-        {
-          "coin": "ETH",
-          "side": "LONG",
-          "upnl": 28539.18,
-          "notional": 261599.65,
-          "lev": 20.0
-        },
-        {
-          "coin": "SOL",
-          "side": "SHORT",
-          "upnl": -5838.23,
-          "notional": 167472.67,
-          "lev": 20.0
-        },
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": -723.27,
-          "notional": 84572.88,
-          "lev": 10.0
-        },
-        {
-          "coin": "BNB",
-          "side": "SHORT",
-          "upnl": -2866.22,
-          "notional": 264819.12,
-          "lev": 10.0
-        },
-        {
-          "coin": "DOGE",
-          "side": "SHORT",
-          "upnl": -4355.21,
-          "notional": 262469.01,
-          "lev": 10.0
-        },
-        {
-          "coin": "CRV",
-          "side": "LONG",
-          "upnl": -28205.61,
-          "notional": 120929.5,
-          "lev": 10.0
-        },
-        {
-          "coin": "LINK",
-          "side": "LONG",
-          "upnl": 43.89,
-          "notional": 21811.73,
-          "lev": 10.0
-        },
-        {
-          "coin": "XRP",
-          "side": "SHORT",
-          "upnl": -2507.04,
-          "notional": 170262.64,
-          "lev": 20.0
-        },
-        {
-          "coin": "AAVE",
-          "side": "LONG",
-          "upnl": -27192.19,
-          "notional": 127512.1,
-          "lev": 10.0
-        },
-        {
-          "coin": "TRX",
-          "side": "LONG",
-          "upnl": 7359.81,
-          "notional": 253644.29,
-          "lev": 10.0
-        },
-        {
-          "coin": "UNI",
-          "side": "LONG",
-          "upnl": -33392.5,
-          "notional": 256034.1,
-          "lev": 10.0
-        },
-        {
-          "coin": "ADA",
-          "side": "SHORT",
-          "upnl": 5861.66,
-          "notional": 272873.33,
-          "lev": 10.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T07:03:34.400302+00:00"
-    },
-    "schema_ver": "3"
-  },
-  "0x123dbca6a27005a3c4ce10cb66ee8ece8fc13bff": {
-    "first_discovered_at": "2026-04-01T13:25:36.724045+00:00",
-    "fetched_at": "2026-04-15T07:02:24.033938+00:00",
-    "stats": {
-      "address": "0x123dbca6a27005a3c4ce10cb66ee8ece8fc13bff",
-      "label": "0x123d...3bff",
-      "total_equity": 5391345.849128,
-      "margin_pct": 58.41372310810606,
-      "realized": 14573.567341,
-      "total_upnl": -1985376.1111599996,
-      "total_pnl": 14573.567341,
-      "win_rate": 62.7,
-      "avg_win": 78.28,
-      "avg_loss": 55.14,
-      "profit_factor": 1.42,
-      "sharpe": 0,
-      "mdd_pct": 0.0,
-      "consistency": 100.0,
-      "durability": 46.6,
-      "long_pct": 49.0,
-      "war_components": {
-        "Profit": 20.1,
-        "ROI": 8.2,
-        "Big Bet": 1.5,
-        "Sharpe": 6.0,
-        "Win Rate": 9.8
-      },
-      "follow_score": 84.2,
-      "big_bet_count": 0,
-      "big_bet_rate": 0,
-      "big_bet_pnl": 0,
-      "closed_count": 510,
-      "total_days": 1,
-      "data_days": 1,
-      "first_date": "2026-04-15",
-      "last_date": "2026-04-15",
-      "days_since_last": 0,
-      "roi_pct": 0.3,
-      "top_coins": [
-        {
-          "coin": "WLD",
-          "pnl": 10385.35,
-          "side": "S"
-        },
-        {
-          "coin": "NEAR",
-          "pnl": 9709.23,
-          "side": "S"
-        },
-        {
-          "coin": "TON",
-          "pnl": 3993.05,
-          "side": "S"
-        },
-        {
-          "coin": "PUMP",
-          "pnl": 961.85,
-          "side": "S"
-        },
-        {
-          "coin": "EIGEN",
-          "pnl": -1712.86,
-          "side": "L"
-        }
-      ],
-      "radar": {
-        "profit_amt": 80.4,
-        "roi": 32.8,
-        "big_bet": 10,
-        "sharpe": 30,
-        "win_rate": 65.3
-      },
-      "war_score": 45.6,
-      "trader_type": "📦 Consistent",
-      "character": "Quietly stacking wins",
-      "is_hf": true,
-      "spot_holdings": [],
-      "is_vault": false,
-      "cumulative": [
-        {
-          "date": "2026-04-15",
-          "daily": 14573.57,
-          "cum": 14573.57
-        }
-      ],
-      "source": "active",
-      "error": null,
-      "positions": [
-        {
-          "coin": "BTC",
-          "side": "LONG",
-          "upnl": -54384.67,
-          "notional": 141534.43,
-          "lev": 20.0
-        },
-        {
-          "coin": "ETH",
-          "side": "SHORT",
-          "upnl": 229511.94,
-          "notional": 1394321.82,
-          "lev": 20.0
-        },
-        {
-          "coin": "ATOM",
-          "side": "LONG",
-          "upnl": -11070.44,
-          "notional": 63050.42,
-          "lev": 5.0
-        },
-        {
-          "coin": "DYDX",
-          "side": "LONG",
-          "upnl": -14.27,
-          "notional": 15.55,
-          "lev": 5.0
-        },
-        {
-          "coin": "SOL",
-          "side": "LONG",
-          "upnl": -171950.27,
-          "notional": 4605590.01,
-          "lev": 20.0
-        },
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": 13783.1,
-          "notional": 1043149.9,
-          "lev": 10.0
-        },
-        {
-          "coin": "BNB",
-          "side": "LONG",
-          "upnl": -580124.51,
-          "notional": 2394429.03,
-          "lev": 10.0
-        },
-        {
-          "coin": "APE",
-          "side": "LONG",
-          "upnl": -97.19,
-          "notional": 115.1,
-          "lev": 5.0
-        },
-        {
-          "coin": "OP",
-          "side": "LONG",
-          "upnl": -436.84,
-          "notional": 6529.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "LTC",
-          "side": "SHORT",
-          "upnl": 237583.25,
-          "notional": 706367.78,
-          "lev": 10.0
-        },
-        {
-          "coin": "ARB",
-          "side": "LONG",
-          "upnl": 74.6,
-          "notional": 48624.96,
-          "lev": 10.0
-        },
-        {
-          "coin": "DOGE",
-          "side": "LONG",
-          "upnl": -150850.85,
-          "notional": 641059.35,
-          "lev": 10.0
-        },
-        {
-          "coin": "INJ",
-          "side": "LONG",
-          "upnl": -32290.85,
-          "notional": 68590.48,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUI",
-          "side": "LONG",
-          "upnl": -4907.74,
-          "notional": 361890.63,
-          "lev": 10.0
-        },
-        {
-          "coin": "kPEPE",
-          "side": "LONG",
-          "upnl": -43172.83,
-          "notional": 158640.97,
-          "lev": 10.0
-        },
-        {
-          "coin": "CRV",
-          "side": "LONG",
-          "upnl": -16.6,
-          "notional": 36.41,
-          "lev": 10.0
-        },
-        {
-          "coin": "LDO",
-          "side": "LONG",
-          "upnl": 9.87,
-          "notional": 72.13,
-          "lev": 5.0
-        },
-        {
-          "coin": "LINK",
-          "side": "SHORT",
-          "upnl": 407433.69,
-          "notional": 1957444.72,
-          "lev": 10.0
-        },
-        {
-          "coin": "GMX",
-          "side": "SHORT",
-          "upnl": 25.84,
-          "notional": 43.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "SNX",
-          "side": "LONG",
-          "upnl": -16.65,
-          "notional": 34.87,
-          "lev": 3.0
-        },
-        {
-          "coin": "XRP",
-          "side": "LONG",
-          "upnl": 12012.8,
-          "notional": 1432017.93,
-          "lev": 20.0
-        },
-        {
-          "coin": "BCH",
-          "side": "SHORT",
-          "upnl": 49683.83,
-          "notional": 338574.12,
-          "lev": 10.0
-        },
-        {
-          "coin": "APT",
-          "side": "LONG",
-          "upnl": -955312.42,
-          "notional": 1419851.92,
-          "lev": 10.0
-        },
-        {
-          "coin": "AAVE",
-          "side": "SHORT",
-          "upnl": 28489.93,
-          "notional": 1400507.19,
-          "lev": 10.0
-        },
-        {
-          "coin": "COMP",
-          "side": "LONG",
-          "upnl": -0.23,
-          "notional": 0.44,
-          "lev": 5.0
-        },
-        {
-          "coin": "WLD",
-          "side": "SHORT",
-          "upnl": 475213.41,
-          "notional": 1082965.25,
-          "lev": 10.0
-        },
-        {
-          "coin": "TRX",
-          "side": "SHORT",
-          "upnl": -6137.84,
-          "notional": 240062.51,
-          "lev": 10.0
-        },
-        {
-          "coin": "kSHIB",
-          "side": "LONG",
-          "upnl": -293787.16,
-          "notional": 540215.95,
-          "lev": 10.0
-        },
-        {
-          "coin": "UNI",
-          "side": "LONG",
-          "upnl": 2.54,
-          "notional": 628.27,
-          "lev": 10.0
-        },
-        {
-          "coin": "SEI",
-          "side": "LONG",
-          "upnl": -152470.8,
-          "notional": 262501.84,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZRO",
-          "side": "SHORT",
-          "upnl": 40888.94,
-          "notional": 204925.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "DOT",
-          "side": "LONG",
-          "upnl": -270131.65,
-          "notional": 949280.75,
-          "lev": 10.0
-        },
-        {
-          "coin": "TRB",
-          "side": "LONG",
-          "upnl": -15.3,
-          "notional": 23.31,
-          "lev": 3.0
-        },
-        {
-          "coin": "ARK",
-          "side": "LONG",
-          "upnl": -8.92,
-          "notional": 16.47,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIGTIME",
-          "side": "SHORT",
-          "upnl": 1394.61,
-          "notional": 1766.29,
-          "lev": 3.0
-        },
-        {
-          "coin": "BLUR",
-          "side": "LONG",
-          "upnl": -333.5,
-          "notional": 446.88,
-          "lev": 3.0
-        },
-        {
-          "coin": "TIA",
-          "side": "LONG",
-          "upnl": -9192.45,
-          "notional": 18193.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "ADA",
-          "side": "LONG",
-          "upnl": -743828.69,
-          "notional": 2134720.23,
-          "lev": 10.0
-        },
-        {
-          "coin": "TON",
-          "side": "SHORT",
-          "upnl": 129408.16,
-          "notional": 292812.56,
-          "lev": 10.0
-        },
-        {
-          "coin": "PENDLE",
-          "side": "SHORT",
-          "upnl": 61.87,
-          "notional": 87.87,
-          "lev": 5.0
-        },
-        {
-          "coin": "FET",
-          "side": "LONG",
-          "upnl": -0.49,
-          "notional": 7.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "NEAR",
-          "side": "SHORT",
-          "upnl": 613156.88,
-          "notional": 1737799.57,
-          "lev": 10.0
-        },
-        {
-          "coin": "NEO",
-          "side": "LONG",
-          "upnl": -832.2,
-          "notional": 1025.71,
-          "lev": 5.0
-        },
-        {
-          "coin": "FIL",
-          "side": "LONG",
-          "upnl": -7185.49,
-          "notional": 18562.81,
-          "lev": 5.0
-        },
-        {
-          "coin": "PYTH",
-          "side": "LONG",
-          "upnl": -0.11,
-          "notional": 0.16,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUSHI",
-          "side": "LONG",
-          "upnl": -181.07,
-          "notional": 250.96,
-          "lev": 3.0
-        },
-        {
-          "coin": "IMX",
-          "side": "SHORT",
-          "upnl": 74.3,
-          "notional": 105.71,
-          "lev": 5.0
-        },
-        {
-          "coin": "kBONK",
-          "side": "SHORT",
-          "upnl": 6155.59,
-          "notional": 10234.93,
-          "lev": 10.0
-        },
-        {
-          "coin": "JUP",
-          "side": "LONG",
-          "upnl": -0.44,
-          "notional": 2.75,
-          "lev": 10.0
-        },
-        {
-          "coin": "JTO",
-          "side": "SHORT",
-          "upnl": 418.08,
-          "notional": 494.66,
-          "lev": 5.0
-        },
-        {
-          "coin": "WIF",
-          "side": "LONG",
-          "upnl": -1.55,
-          "notional": 48.61,
-          "lev": 5.0
-        },
-        {
-          "coin": "ETC",
-          "side": "SHORT",
-          "upnl": -28.91,
-          "notional": 18016.21,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZETA",
-          "side": "LONG",
-          "upnl": -6.05,
-          "notional": 8.48,
-          "lev": 3.0
-        },
-        {
-          "coin": "W",
-          "side": "SHORT",
-          "upnl": 217.64,
-          "notional": 242.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "TAO",
-          "side": "SHORT",
-          "upnl": 441879.42,
-          "notional": 3033704.02,
-          "lev": 5.0
-        },
-        {
-          "coin": "AR",
-          "side": "SHORT",
-          "upnl": 1413.9,
-          "notional": 1568.46,
-          "lev": 5.0
-        },
-        {
-          "coin": "kFLOKI",
-          "side": "SHORT",
-          "upnl": 71.62,
-          "notional": 97.56,
-          "lev": 5.0
-        },
-        {
-          "coin": "BOME",
-          "side": "LONG",
-          "upnl": -9.13,
-          "notional": 11.11,
-          "lev": 3.0
-        },
-        {
-          "coin": "ETHFI",
-          "side": "SHORT",
-          "upnl": 71.29,
-          "notional": 103.7,
-          "lev": 5.0
-        },
-        {
-          "coin": "ENA",
-          "side": "SHORT",
-          "upnl": 66251.73,
-          "notional": 376791.8,
-          "lev": 10.0
-        },
-        {
-          "coin": "EIGEN",
-          "side": "LONG",
-          "upnl": -74147.45,
-          "notional": 138182.73,
-          "lev": 5.0
-        },
-        {
-          "coin": "TURBO",
-          "side": "LONG",
-          "upnl": -3.97,
-          "notional": 4.98,
-          "lev": 3.0
-        },
-        {
-          "coin": "BRETT",
-          "side": "LONG",
-          "upnl": -48.11,
-          "notional": 55.39,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZK",
-          "side": "SHORT",
-          "upnl": 148.92,
-          "notional": 199.59,
-          "lev": 5.0
-        },
-        {
-          "coin": "RENDER",
-          "side": "LONG",
-          "upnl": -5.89,
-          "notional": 85.8,
-          "lev": 5.0
-        },
-        {
-          "coin": "POL",
-          "side": "LONG",
-          "upnl": -141311.52,
-          "notional": 213911.67,
-          "lev": 5.0
-        },
-        {
-          "coin": "GOAT",
-          "side": "LONG",
-          "upnl": -334.95,
-          "notional": 376.92,
-          "lev": 3.0
-        },
-        {
-          "coin": "MOODENG",
-          "side": "LONG",
-          "upnl": -10.91,
-          "notional": 23.48,
-          "lev": 3.0
-        },
-        {
-          "coin": "PNUT",
-          "side": "SHORT",
-          "upnl": 67.31,
-          "notional": 97.22,
-          "lev": 3.0
-        },
-        {
-          "coin": "XLM",
-          "side": "LONG",
-          "upnl": -3077.17,
-          "notional": 5998.97,
-          "lev": 5.0
-        },
-        {
-          "coin": "ALGO",
-          "side": "LONG",
-          "upnl": -0.17,
-          "notional": 0.28,
-          "lev": 5.0
-        },
-        {
-          "coin": "HYPE",
-          "side": "SHORT",
-          "upnl": -136795.43,
-          "notional": 1138169.51,
-          "lev": 10.0
-        },
-        {
-          "coin": "VIRTUAL",
-          "side": "SHORT",
-          "upnl": 41503.68,
-          "notional": 354317.15,
-          "lev": 5.0
-        },
-        {
-          "coin": "PENGU",
-          "side": "SHORT",
-          "upnl": 98.43,
-          "notional": 129.94,
-          "lev": 5.0
-        },
-        {
-          "coin": "USUAL",
-          "side": "LONG",
-          "upnl": -48.27,
-          "notional": 82.02,
-          "lev": 3.0
-        },
-        {
-          "coin": "FARTCOIN",
-          "side": "LONG",
-          "upnl": -2.97,
-          "notional": 63.9,
-          "lev": 10.0
-        },
-        {
-          "coin": "ZEREBRO",
-          "side": "SHORT",
-          "upnl": 48.24,
-          "notional": 73.93,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIO",
-          "side": "LONG",
-          "upnl": -58.39,
-          "notional": 68.64,
-          "lev": 3.0
-        },
-        {
-          "coin": "GRIFFAIN",
-          "side": "LONG",
-          "upnl": -24.26,
-          "notional": 37.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "SPX",
-          "side": "SHORT",
-          "upnl": 113.6,
-          "notional": 150.15,
-          "lev": 5.0
-        },
-        {
-          "coin": "TRUMP",
-          "side": "LONG",
-          "upnl": -354519.02,
-          "notional": 1457374.69,
-          "lev": 10.0
-        },
-        {
-          "coin": "MELANIA",
-          "side": "LONG",
-          "upnl": -7.53,
-          "notional": 8.86,
-          "lev": 3.0
-        },
-        {
-          "coin": "IP",
-          "side": "SHORT",
-          "upnl": 1658.54,
-          "notional": 1806.4,
-          "lev": 3.0
-        },
-        {
-          "coin": "KAITO",
-          "side": "LONG",
-          "upnl": -0.91,
-          "notional": 1.35,
-          "lev": 5.0
-        },
-        {
-          "coin": "PAXG",
-          "side": "LONG",
-          "upnl": 55.58,
-          "notional": 261.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZORA",
-          "side": "SHORT",
-          "upnl": 0.08,
-          "notional": 0.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "PUMP",
-          "side": "SHORT",
-          "upnl": 5758.14,
-          "notional": 20002.5,
-          "lev": 10.0
-        },
-        {
-          "coin": "WLFI",
-          "side": "LONG",
-          "upnl": -65454.78,
-          "notional": 229109.2,
-          "lev": 5.0
-        },
-        {
-          "coin": "ASTER",
-          "side": "SHORT",
-          "upnl": 14844.8,
-          "notional": 1053881.11,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZEC",
-          "side": "SHORT",
-          "upnl": 37205.99,
-          "notional": 914198.49,
-          "lev": 10.0
-        },
-        {
-          "coin": "MON",
-          "side": "SHORT",
-          "upnl": -577581.65,
-          "notional": 708605.19,
-          "lev": 5.0
-        },
-        {
-          "coin": "ICP",
-          "side": "SHORT",
-          "upnl": 63.23,
-          "notional": 178.54,
-          "lev": 5.0
-        }
-      ],
-      "ai_summary": "This wallet builds results through consistency rather than conviction. It is not trying to be the biggest or the fastest — it is trying to be the one that is still profitable when others are not. Note: the sample size is still light, so all signals should be read with some caution. Overall: steady, unspectacular, and quietly effective.",
-      "type_reasons": [
-        "Win Rate 63% > 55%",
-        "Profit Factor 1.4x > 1.2"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "BTC",
-          "side": "LONG",
-          "upnl": -53552.67,
-          "notional": 141534.43,
-          "lev": 20.0
-        },
-        {
-          "coin": "ETH",
-          "side": "SHORT",
-          "upnl": 200448.17,
-          "notional": 1394321.82,
-          "lev": 20.0
-        },
-        {
-          "coin": "ATOM",
-          "side": "LONG",
-          "upnl": -10274.57,
-          "notional": 63050.42,
-          "lev": 5.0
-        },
-        {
-          "coin": "DYDX",
-          "side": "LONG",
-          "upnl": -14.23,
-          "notional": 15.55,
-          "lev": 5.0
-        },
-        {
-          "coin": "SOL",
-          "side": "LONG",
-          "upnl": -10890.23,
-          "notional": 4605590.01,
-          "lev": 20.0
-        },
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": 151.11,
-          "notional": 1040250.26,
-          "lev": 10.0
-        },
-        {
-          "coin": "BNB",
-          "side": "LONG",
-          "upnl": -578736.37,
-          "notional": 2394429.03,
-          "lev": 10.0
-        },
-        {
-          "coin": "APE",
-          "side": "LONG",
-          "upnl": -97.36,
-          "notional": 115.1,
-          "lev": 5.0
-        },
-        {
-          "coin": "OP",
-          "side": "LONG",
-          "upnl": -341.0,
-          "notional": 6529.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "LTC",
-          "side": "SHORT",
-          "upnl": 234818.43,
-          "notional": 706367.78,
-          "lev": 10.0
-        },
-        {
-          "coin": "ARB",
-          "side": "LONG",
-          "upnl": 694.58,
-          "notional": 48624.96,
-          "lev": 10.0
-        },
-        {
-          "coin": "DOGE",
-          "side": "LONG",
-          "upnl": -148873.05,
-          "notional": 641059.35,
-          "lev": 10.0
-        },
-        {
-          "coin": "INJ",
-          "side": "LONG",
-          "upnl": -32027.49,
-          "notional": 68590.48,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUI",
-          "side": "LONG",
-          "upnl": 232.96,
-          "notional": 349157.94,
-          "lev": 10.0
-        },
-        {
-          "coin": "kPEPE",
-          "side": "LONG",
-          "upnl": -39294.8,
-          "notional": 158640.97,
-          "lev": 10.0
-        },
-        {
-          "coin": "CRV",
-          "side": "LONG",
-          "upnl": -16.43,
-          "notional": 36.41,
-          "lev": 10.0
-        },
-        {
-          "coin": "LDO",
-          "side": "LONG",
-          "upnl": 12.38,
-          "notional": 72.13,
-          "lev": 5.0
-        },
-        {
-          "coin": "LINK",
-          "side": "SHORT",
-          "upnl": 378086.57,
-          "notional": 1956529.51,
-          "lev": 10.0
-        },
-        {
-          "coin": "GMX",
-          "side": "SHORT",
-          "upnl": 25.78,
-          "notional": 43.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "SNX",
-          "side": "LONG",
-          "upnl": -16.51,
-          "notional": 34.87,
-          "lev": 3.0
-        },
-        {
-          "coin": "XRP",
-          "side": "LONG",
-          "upnl": 29810.09,
-          "notional": 1432017.93,
-          "lev": 20.0
-        },
-        {
-          "coin": "BCH",
-          "side": "SHORT",
-          "upnl": 47027.2,
-          "notional": 338574.12,
-          "lev": 10.0
-        },
-        {
-          "coin": "APT",
-          "side": "LONG",
-          "upnl": -950766.13,
-          "notional": 1419851.92,
-          "lev": 10.0
-        },
-        {
-          "coin": "AAVE",
-          "side": "SHORT",
-          "upnl": 29559.19,
-          "notional": 1058495.45,
-          "lev": 10.0
-        },
-        {
-          "coin": "COMP",
-          "side": "LONG",
-          "upnl": -0.23,
-          "notional": 0.44,
-          "lev": 5.0
-        },
-        {
-          "coin": "WLD",
-          "side": "SHORT",
-          "upnl": 446706.6,
-          "notional": 1087503.62,
-          "lev": 10.0
-        },
-        {
-          "coin": "TRX",
-          "side": "SHORT",
-          "upnl": -4388.99,
-          "notional": 239708.83,
-          "lev": 10.0
-        },
-        {
-          "coin": "kSHIB",
-          "side": "LONG",
-          "upnl": -291121.83,
-          "notional": 540215.95,
-          "lev": 10.0
-        },
-        {
-          "coin": "UNI",
-          "side": "LONG",
-          "upnl": 11.67,
-          "notional": 628.27,
-          "lev": 10.0
-        },
-        {
-          "coin": "SEI",
-          "side": "LONG",
-          "upnl": -185438.29,
-          "notional": 327592.34,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZRO",
-          "side": "SHORT",
-          "upnl": 31505.02,
-          "notional": 204925.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "DOT",
-          "side": "LONG",
-          "upnl": -249679.6,
-          "notional": 949280.75,
-          "lev": 10.0
-        },
-        {
-          "coin": "TRB",
-          "side": "LONG",
-          "upnl": -15.49,
-          "notional": 23.31,
-          "lev": 3.0
-        },
-        {
-          "coin": "ARK",
-          "side": "LONG",
-          "upnl": -8.9,
-          "notional": 16.47,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIGTIME",
-          "side": "SHORT",
-          "upnl": 1408.63,
-          "notional": 1766.29,
-          "lev": 3.0
-        },
-        {
-          "coin": "BLUR",
-          "side": "LONG",
-          "upnl": -329.79,
-          "notional": 446.88,
-          "lev": 3.0
-        },
-        {
-          "coin": "TIA",
-          "side": "LONG",
-          "upnl": -9214.52,
-          "notional": 18193.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "ADA",
-          "side": "LONG",
-          "upnl": -712096.83,
-          "notional": 2134720.23,
-          "lev": 10.0
-        },
-        {
-          "coin": "TON",
-          "side": "SHORT",
-          "upnl": 150134.16,
-          "notional": 364387.4,
-          "lev": 10.0
-        },
-        {
-          "coin": "PENDLE",
-          "side": "SHORT",
-          "upnl": 61.03,
-          "notional": 87.87,
-          "lev": 5.0
-        },
-        {
-          "coin": "FET",
-          "side": "LONG",
-          "upnl": -0.13,
-          "notional": 7.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "NEAR",
-          "side": "SHORT",
-          "upnl": 616031.58,
-          "notional": 1937201.86,
-          "lev": 10.0
-        },
-        {
-          "coin": "NEO",
-          "side": "LONG",
-          "upnl": -833.3,
-          "notional": 1025.71,
-          "lev": 5.0
-        },
-        {
-          "coin": "FIL",
-          "side": "LONG",
-          "upnl": -7118.53,
-          "notional": 18562.81,
-          "lev": 5.0
-        },
-        {
-          "coin": "PYTH",
-          "side": "LONG",
-          "upnl": -0.11,
-          "notional": 0.16,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUSHI",
-          "side": "LONG",
-          "upnl": -181.23,
-          "notional": 250.96,
-          "lev": 3.0
-        },
-        {
-          "coin": "IMX",
-          "side": "SHORT",
-          "upnl": 75.4,
-          "notional": 105.71,
-          "lev": 5.0
-        },
-        {
-          "coin": "kBONK",
-          "side": "SHORT",
-          "upnl": 29567.34,
-          "notional": 49497.84,
-          "lev": 10.0
-        },
-        {
-          "coin": "JUP",
-          "side": "LONG",
-          "upnl": -0.39,
-          "notional": 2.75,
-          "lev": 10.0
-        },
-        {
-          "coin": "JTO",
-          "side": "SHORT",
-          "upnl": 417.27,
-          "notional": 494.66,
-          "lev": 5.0
-        },
-        {
-          "coin": "WIF",
-          "side": "SHORT",
-          "upnl": 12409.75,
-          "notional": 31844.0,
-          "lev": 5.0
-        },
-        {
-          "coin": "ETC",
-          "side": "SHORT",
-          "upnl": -383.31,
-          "notional": 18016.21,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZETA",
-          "side": "LONG",
-          "upnl": -6.03,
-          "notional": 8.48,
-          "lev": 3.0
-        },
-        {
-          "coin": "W",
-          "side": "SHORT",
-          "upnl": 217.25,
-          "notional": 242.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "TAO",
-          "side": "SHORT",
-          "upnl": 359347.53,
-          "notional": 2749478.76,
-          "lev": 5.0
-        },
-        {
-          "coin": "AR",
-          "side": "SHORT",
-          "upnl": 1412.76,
-          "notional": 1568.46,
-          "lev": 5.0
-        },
-        {
-          "coin": "kFLOKI",
-          "side": "SHORT",
-          "upnl": 71.03,
-          "notional": 97.56,
-          "lev": 5.0
-        },
-        {
-          "coin": "BOME",
-          "side": "LONG",
-          "upnl": -9.08,
-          "notional": 11.11,
-          "lev": 3.0
-        },
-        {
-          "coin": "ETHFI",
-          "side": "SHORT",
-          "upnl": 70.69,
-          "notional": 103.7,
-          "lev": 5.0
-        },
-        {
-          "coin": "ENA",
-          "side": "SHORT",
-          "upnl": 61673.31,
-          "notional": 376791.8,
-          "lev": 10.0
-        },
-        {
-          "coin": "EIGEN",
-          "side": "LONG",
-          "upnl": -115359.85,
-          "notional": 218644.12,
-          "lev": 5.0
-        },
-        {
-          "coin": "TURBO",
-          "side": "LONG",
-          "upnl": -3.99,
-          "notional": 4.98,
-          "lev": 3.0
-        },
-        {
-          "coin": "BRETT",
-          "side": "LONG",
-          "upnl": -47.81,
-          "notional": 55.39,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZK",
-          "side": "SHORT",
-          "upnl": 147.2,
-          "notional": 199.59,
-          "lev": 5.0
-        },
-        {
-          "coin": "RENDER",
-          "side": "LONG",
-          "upnl": -4.09,
-          "notional": 85.8,
-          "lev": 5.0
-        },
-        {
-          "coin": "POL",
-          "side": "LONG",
-          "upnl": -141114.84,
-          "notional": 213911.67,
-          "lev": 5.0
-        },
-        {
-          "coin": "GOAT",
-          "side": "LONG",
-          "upnl": -334.38,
-          "notional": 376.92,
-          "lev": 3.0
-        },
-        {
-          "coin": "MOODENG",
-          "side": "LONG",
-          "upnl": -10.82,
-          "notional": 23.48,
-          "lev": 3.0
-        },
-        {
-          "coin": "PNUT",
-          "side": "SHORT",
-          "upnl": 67.37,
-          "notional": 97.22,
-          "lev": 3.0
-        },
-        {
-          "coin": "XLM",
-          "side": "LONG",
-          "upnl": -3078.68,
-          "notional": 5998.97,
-          "lev": 5.0
-        },
-        {
-          "coin": "ALGO",
-          "side": "LONG",
-          "upnl": -0.17,
-          "notional": 0.28,
-          "lev": 5.0
-        },
-        {
-          "coin": "HYPE",
-          "side": "SHORT",
-          "upnl": -175591.73,
-          "notional": 1138169.51,
-          "lev": 10.0
-        },
-        {
-          "coin": "VIRTUAL",
-          "side": "SHORT",
-          "upnl": 36220.86,
-          "notional": 354317.15,
-          "lev": 5.0
-        },
-        {
-          "coin": "PENGU",
-          "side": "SHORT",
-          "upnl": 98.46,
-          "notional": 129.94,
-          "lev": 5.0
-        },
-        {
-          "coin": "USUAL",
-          "side": "LONG",
-          "upnl": -47.89,
-          "notional": 82.02,
-          "lev": 3.0
-        },
-        {
-          "coin": "FARTCOIN",
-          "side": "LONG",
-          "upnl": 4.62,
-          "notional": 63.9,
-          "lev": 10.0
-        },
-        {
-          "coin": "ZEREBRO",
-          "side": "SHORT",
-          "upnl": 47.95,
-          "notional": 73.93,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIO",
-          "side": "LONG",
-          "upnl": -59.54,
-          "notional": 68.64,
-          "lev": 3.0
-        },
-        {
-          "coin": "GRIFFAIN",
-          "side": "LONG",
-          "upnl": -24.37,
-          "notional": 37.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "SPX",
-          "side": "SHORT",
-          "upnl": 112.88,
-          "notional": 150.15,
-          "lev": 5.0
-        },
-        {
-          "coin": "TRUMP",
-          "side": "LONG",
-          "upnl": -339643.32,
-          "notional": 1457374.69,
-          "lev": 10.0
-        },
-        {
-          "coin": "MELANIA",
-          "side": "LONG",
-          "upnl": -7.54,
-          "notional": 8.86,
-          "lev": 3.0
-        },
-        {
-          "coin": "IP",
-          "side": "SHORT",
-          "upnl": 1656.4,
-          "notional": 1806.4,
-          "lev": 3.0
-        },
-        {
-          "coin": "KAITO",
-          "side": "LONG",
-          "upnl": -0.92,
-          "notional": 1.35,
-          "lev": 5.0
-        },
-        {
-          "coin": "PAXG",
-          "side": "LONG",
-          "upnl": 53.66,
-          "notional": 261.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZORA",
-          "side": "SHORT",
-          "upnl": 0.08,
-          "notional": 0.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "PUMP",
-          "side": "SHORT",
-          "upnl": 27464.11,
-          "notional": 100695.87,
-          "lev": 10.0
-        },
-        {
-          "coin": "WLFI",
-          "side": "LONG",
-          "upnl": -72378.14,
-          "notional": 254772.89,
-          "lev": 5.0
-        },
-        {
-          "coin": "ASTER",
-          "side": "SHORT",
-          "upnl": 4271.68,
-          "notional": 1053881.11,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZEC",
-          "side": "SHORT",
-          "upnl": 5662.7,
-          "notional": 914198.49,
-          "lev": 10.0
-        },
-        {
-          "coin": "MON",
-          "side": "SHORT",
-          "upnl": -683861.0,
-          "notional": 708605.19,
-          "lev": 5.0
-        },
-        {
-          "coin": "ICP",
-          "side": "SHORT",
-          "upnl": 59.85,
-          "notional": 178.54,
-          "lev": 5.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T07:03:34.407821+00:00"
+      "prev_positions_ts": "2026-04-15T07:02:24.027142+00:00"
     },
     "schema_ver": "3"
   },
@@ -19582,10 +18193,10 @@
   },
   "0x8dfbfc273b2bc67f1523b7106e124a375ed67c31": {
     "first_discovered_at": "2026-04-04T09:05:16.511106+00:00",
-    "fetched_at": "2026-04-15T07:03:11.669703+00:00",
+    "fetched_at": "2026-04-15T13:43:11.762902+00:00",
     "stats": {
       "address": "0x8dfbfc273b2bc67f1523b7106e124a375ed67c31",
-      "label": "0x8dfb...7c31",
+      "label": "0x8dfbfc273b2bc67f1523b7106e124a375ed67c31",
       "total_equity": 61683.012268,
       "margin_pct": 0.0,
       "realized": 19207.28552499998,
@@ -20031,7 +18642,7 @@
           "cum": 19207.29
         }
       ],
-      "source": "active",
+      "source": "0x8dfbfc273b2bc67f1523b7106e124a375ed67c31",
       "error": null,
       "positions": [],
       "ai_summary": "This wallet wins by staying selective and being right more often than most. The combination of high accuracy and disciplined return quality suggests a trader who waits for clean setups, enters without hesitation, and avoids wasting risk on low-conviction noise. Overall: a sharp, disciplined wallet that lets precision compound.",
@@ -55142,103 +53753,995 @@
   },
   "0xeb83d07a84ceb12ae6296fe10e880c05efb9cf7c": {
     "first_discovered_at": "2026-04-09T08:04:44.559838+00:00",
-    "fetched_at": "2026-04-15T02:04:09.859302+00:00",
+    "fetched_at": "2026-04-15T13:43:06.299224+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0xeb83d07a84ceb12ae6296fe10e880c05efb9cf7c",
-      "label": "0xeb83...cf7c",
-      "total_equity": 98014.000383,
-      "margin_pct": 34.81209029798773,
-      "realized": 3252.1185809999974,
-      "total_upnl": -630.1746810000001,
-      "total_pnl": 3252.1185809999974,
-      "win_rate": 65.3,
-      "avg_win": 5.79,
-      "avg_loss": 2.13,
-      "profit_factor": 2.72,
-      "sharpe": 14.77,
-      "mdd_pct": 3.8,
-      "consistency": 66.7,
-      "durability": 34.7,
-      "long_pct": 55.5,
+      "label": "0xeb83d07a84ceb12ae6296fe10e880c05efb9cf7c",
+      "total_equity": 99487.109281,
+      "margin_pct": 35.13097927921691,
+      "realized": 3795.4836019999943,
+      "total_upnl": -176.83154399999998,
+      "total_pnl": 3795.4836019999943,
+      "win_rate": 64.8,
+      "avg_win": 6.56,
+      "avg_loss": 2.14,
+      "profit_factor": 3.06,
+      "sharpe": 0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 48.1,
+      "long_pct": 65.0,
       "war_components": {
-        "Profit": 18.1,
-        "ROI": 11.8,
+        "Profit": 18.4,
+        "ROI": 12.1,
         "Big Bet": 1.5,
-        "Sharpe": 19.6,
-        "Win Rate": 10.3
+        "Sharpe": 6.0,
+        "Win Rate": 10.2
       },
-      "follow_score": 91.5,
+      "follow_score": 100.0,
       "big_bet_count": 0,
       "big_bet_rate": 0,
       "big_bet_pnl": 0,
-      "closed_count": 1069,
-      "total_days": 3,
-      "data_days": 3,
-      "first_date": "2026-04-13",
+      "closed_count": 1085,
+      "total_days": 2,
+      "data_days": 2,
+      "first_date": "2026-04-14",
       "last_date": "2026-04-15",
       "days_since_last": 0,
-      "roi_pct": 3.3,
+      "roi_pct": 3.8,
       "top_coins": [
         {
           "coin": "TAO",
-          "pnl": 2934.05,
+          "pnl": 3307.85,
           "side": "S"
         },
         {
           "coin": "WLD",
-          "pnl": 437.49,
+          "pnl": 776.24,
           "side": "S"
         },
         {
+          "coin": "JTO",
+          "pnl": 141.04,
+          "side": "L"
+        },
+        {
           "coin": "IMX",
-          "pnl": 146.02,
+          "pnl": 130.03,
           "side": "L"
         },
         {
           "coin": "HYPER",
-          "pnl": 129.36,
+          "pnl": 70.23,
           "side": "L"
-        },
-        {
-          "coin": "VINE",
-          "pnl": 100.16,
-          "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 72.6,
-        "roi": 47.1,
+        "profit_amt": 73.4,
+        "roi": 48.4,
         "big_bet": 10,
-        "sharpe": 98.2,
-        "win_rate": 68.7
+        "sharpe": 30,
+        "win_rate": 68.1
       },
-      "war_score": 61.3,
-      "trader_type": "🧊 Ice Quant",
-      "character": "Cold, emotionless algo",
+      "war_score": 48.2,
+      "trader_type": "💰 Value Hunter",
+      "character": "Wins on risk/reward ratio",
       "is_hf": true,
       "spot_holdings": [],
       "is_vault": false,
       "cumulative": [
         {
-          "date": "2026-04-13",
-          "daily": 330.78,
-          "cum": 330.78
-        },
-        {
           "date": "2026-04-14",
-          "daily": 3048.79,
-          "cum": 3379.57
+          "daily": 2945.86,
+          "cum": 2945.86
         },
         {
           "date": "2026-04-15",
-          "daily": -127.45,
-          "cum": 3252.12
+          "daily": 849.62,
+          "cum": 3795.48
         }
       ],
-      "source": "active",
+      "source": "0xeb83d07a84ceb12ae6296fe10e880c05efb9cf7c",
       "error": null,
       "positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": 5.69,
+          "notional": 26.1,
+          "lev": 20.0
+        },
+        {
+          "coin": "ETH",
+          "side": "SHORT",
+          "upnl": -0.48,
+          "notional": 3.7,
+          "lev": 20.0
+        },
+        {
+          "coin": "ATOM",
+          "side": "SHORT",
+          "upnl": 0.73,
+          "notional": 29.18,
+          "lev": 5.0
+        },
+        {
+          "coin": "BNB",
+          "side": "SHORT",
+          "upnl": -0.41,
+          "notional": 6.37,
+          "lev": 10.0
+        },
+        {
+          "coin": "OP",
+          "side": "SHORT",
+          "upnl": -0.0,
+          "notional": 0.06,
+          "lev": 5.0
+        },
+        {
+          "coin": "ARB",
+          "side": "SHORT",
+          "upnl": -0.01,
+          "notional": 0.43,
+          "lev": 10.0
+        },
+        {
+          "coin": "CRV",
+          "side": "SHORT",
+          "upnl": 2.04,
+          "notional": 672.14,
+          "lev": 10.0
+        },
+        {
+          "coin": "LDO",
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 0.04,
+          "lev": 5.0
+        },
+        {
+          "coin": "LINK",
+          "side": "SHORT",
+          "upnl": -2.14,
+          "notional": 9.72,
+          "lev": 10.0
+        },
+        {
+          "coin": "STX",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.09,
+          "lev": 5.0
+        },
+        {
+          "coin": "CFX",
+          "side": "SHORT",
+          "upnl": -0.4,
+          "notional": 15.35,
+          "lev": 5.0
+        },
+        {
+          "coin": "GMX",
+          "side": "LONG",
+          "upnl": 0.08,
+          "notional": 17.1,
+          "lev": 3.0
+        },
+        {
+          "coin": "SNX",
+          "side": "SHORT",
+          "upnl": -0.02,
+          "notional": 0.18,
+          "lev": 3.0
+        },
+        {
+          "coin": "XRP",
+          "side": "LONG",
+          "upnl": 1.92,
+          "notional": 8.98,
+          "lev": 20.0
+        },
+        {
+          "coin": "APT",
+          "side": "SHORT",
+          "upnl": 0.01,
+          "notional": 0.05,
+          "lev": 10.0
+        },
+        {
+          "coin": "COMP",
+          "side": "SHORT",
+          "upnl": -1.23,
+          "notional": 36.35,
+          "lev": 5.0
+        },
+        {
+          "coin": "WLD",
+          "side": "SHORT",
+          "upnl": 317.62,
+          "notional": 4677.87,
+          "lev": 10.0
+        },
+        {
+          "coin": "YGG",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.04,
+          "lev": 3.0
+        },
+        {
+          "coin": "TRX",
+          "side": "LONG",
+          "upnl": 3.71,
+          "notional": 43.32,
+          "lev": 10.0
+        },
+        {
+          "coin": "UNI",
+          "side": "SHORT",
+          "upnl": 0.01,
+          "notional": 0.33,
+          "lev": 10.0
+        },
+        {
+          "coin": "SEI",
+          "side": "LONG",
+          "upnl": 0.83,
+          "notional": 354.6,
+          "lev": 5.0
+        },
+        {
+          "coin": "RUNE",
+          "side": "SHORT",
+          "upnl": -1.37,
+          "notional": 44.14,
+          "lev": 5.0
+        },
+        {
+          "coin": "ZRO",
+          "side": "SHORT",
+          "upnl": 125.31,
+          "notional": 4478.52,
+          "lev": 5.0
+        },
+        {
+          "coin": "BANANA",
+          "side": "LONG",
+          "upnl": 2.91,
+          "notional": 47.95,
+          "lev": 3.0
+        },
+        {
+          "coin": "TRB",
+          "side": "LONG",
+          "upnl": 0.2,
+          "notional": 15.3,
+          "lev": 3.0
+        },
+        {
+          "coin": "ARK",
+          "side": "LONG",
+          "upnl": 7.33,
+          "notional": 3407.45,
+          "lev": 3.0
+        },
+        {
+          "coin": "BIGTIME",
+          "side": "LONG",
+          "upnl": -0.2,
+          "notional": 25.63,
+          "lev": 3.0
+        },
+        {
+          "coin": "KAS",
+          "side": "SHORT",
+          "upnl": 1.08,
+          "notional": 48.21,
+          "lev": 3.0
+        },
+        {
+          "coin": "BLUR",
+          "side": "SHORT",
+          "upnl": -1.07,
+          "notional": 23.14,
+          "lev": 3.0
+        },
+        {
+          "coin": "TIA",
+          "side": "LONG",
+          "upnl": 0.01,
+          "notional": 0.12,
+          "lev": 5.0
+        },
+        {
+          "coin": "BSV",
+          "side": "LONG",
+          "upnl": -0.22,
+          "notional": 3.59,
+          "lev": 3.0
+        },
+        {
+          "coin": "ADA",
+          "side": "LONG",
+          "upnl": -2.8,
+          "notional": 45.24,
+          "lev": 10.0
+        },
+        {
+          "coin": "TON",
+          "side": "SHORT",
+          "upnl": 0.1,
+          "notional": 4.74,
+          "lev": 10.0
+        },
+        {
+          "coin": "MINA",
+          "side": "SHORT",
+          "upnl": -0.03,
+          "notional": 19.64,
+          "lev": 3.0
+        },
+        {
+          "coin": "POLYX",
+          "side": "LONG",
+          "upnl": 1.68,
+          "notional": 37.88,
+          "lev": 3.0
+        },
+        {
+          "coin": "GAS",
+          "side": "LONG",
+          "upnl": -7.11,
+          "notional": 1684.65,
+          "lev": 3.0
+        },
+        {
+          "coin": "FET",
+          "side": "LONG",
+          "upnl": -0.01,
+          "notional": 0.46,
+          "lev": 5.0
+        },
+        {
+          "coin": "MEME",
+          "side": "LONG",
+          "upnl": -0.03,
+          "notional": 0.18,
+          "lev": 3.0
+        },
+        {
+          "coin": "ORDI",
+          "side": "SHORT",
+          "upnl": -0.04,
+          "notional": 0.19,
+          "lev": 3.0
+        },
+        {
+          "coin": "NEO",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.06,
+          "lev": 5.0
+        },
+        {
+          "coin": "ZEN",
+          "side": "SHORT",
+          "upnl": 0.34,
+          "notional": 21.75,
+          "lev": 5.0
+        },
+        {
+          "coin": "FIL",
+          "side": "LONG",
+          "upnl": 0.43,
+          "notional": 2.93,
+          "lev": 5.0
+        },
+        {
+          "coin": "PYTH",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.05,
+          "lev": 5.0
+        },
+        {
+          "coin": "IMX",
+          "side": "LONG",
+          "upnl": 81.41,
+          "notional": 1381.25,
+          "lev": 5.0
+        },
+        {
+          "coin": "GMT",
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 0.06,
+          "lev": 3.0
+        },
+        {
+          "coin": "SUPER",
+          "side": "LONG",
+          "upnl": 0.03,
+          "notional": 0.8,
+          "lev": 3.0
+        },
+        {
+          "coin": "USTC",
+          "side": "LONG",
+          "upnl": 1.71,
+          "notional": 40.1,
+          "lev": 3.0
+        },
+        {
+          "coin": "RSR",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 0.12,
+          "lev": 3.0
+        },
+        {
+          "coin": "GALA",
+          "side": "LONG",
+          "upnl": -0.2,
+          "notional": 1.32,
+          "lev": 3.0
+        },
+        {
+          "coin": "ACE",
+          "side": "LONG",
+          "upnl": 0.43,
+          "notional": 40.82,
+          "lev": 3.0
+        },
+        {
+          "coin": "MAV",
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 0.15,
+          "lev": 3.0
+        },
+        {
+          "coin": "PEOPLE",
+          "side": "SHORT",
+          "upnl": -1.08,
+          "notional": 8.22,
+          "lev": 3.0
+        },
+        {
+          "coin": "ENS",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 16.33,
+          "lev": 5.0
+        },
+        {
+          "coin": "ETC",
+          "side": "SHORT",
+          "upnl": -0.0,
+          "notional": 1.75,
+          "lev": 5.0
+        },
+        {
+          "coin": "XAI",
+          "side": "LONG",
+          "upnl": -2.23,
+          "notional": 820.68,
+          "lev": 3.0
+        },
+        {
+          "coin": "MANTA",
+          "side": "LONG",
+          "upnl": 0.43,
+          "notional": 31.73,
+          "lev": 3.0
+        },
+        {
+          "coin": "UMA",
+          "side": "LONG",
+          "upnl": 0.25,
+          "notional": 39.03,
+          "lev": 3.0
+        },
+        {
+          "coin": "ALT",
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 0.05,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZETA",
+          "side": "LONG",
+          "upnl": 41.87,
+          "notional": 3084.61,
+          "lev": 3.0
+        },
+        {
+          "coin": "DYM",
+          "side": "LONG",
+          "upnl": -6.09,
+          "notional": 35.71,
+          "lev": 3.0
+        },
+        {
+          "coin": "W",
+          "side": "LONG",
+          "upnl": -765.29,
+          "notional": 26080.21,
+          "lev": 5.0
+        },
+        {
+          "coin": "STRK",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.06,
+          "lev": 5.0
+        },
+        {
+          "coin": "TAO",
+          "side": "SHORT",
+          "upnl": 3.94,
+          "notional": 53.28,
+          "lev": 5.0
+        },
+        {
+          "coin": "AR",
+          "side": "SHORT",
+          "upnl": -0.0,
+          "notional": 0.03,
+          "lev": 5.0
+        },
+        {
+          "coin": "BOME",
+          "side": "LONG",
+          "upnl": -5.42,
+          "notional": 17.63,
+          "lev": 3.0
+        },
+        {
+          "coin": "ETHFI",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 0.22,
+          "lev": 5.0
+        },
+        {
+          "coin": "ENA",
+          "side": "SHORT",
+          "upnl": 0.02,
+          "notional": 0.5,
+          "lev": 10.0
+        },
+        {
+          "coin": "TNSR",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.28,
+          "lev": 3.0
+        },
+        {
+          "coin": "SAGA",
+          "side": "LONG",
+          "upnl": 107.36,
+          "notional": 7770.59,
+          "lev": 3.0
+        },
+        {
+          "coin": "MERL",
+          "side": "SHORT",
+          "upnl": -0.95,
+          "notional": 50.7,
+          "lev": 3.0
+        },
+        {
+          "coin": "HBAR",
+          "side": "SHORT",
+          "upnl": 4.39,
+          "notional": 40.13,
+          "lev": 5.0
+        },
+        {
+          "coin": "POPCAT",
+          "side": "SHORT",
+          "upnl": -0.29,
+          "notional": 7.17,
+          "lev": 3.0
+        },
+        {
+          "coin": "EIGEN",
+          "side": "LONG",
+          "upnl": 0.54,
+          "notional": 295.09,
+          "lev": 5.0
+        },
+        {
+          "coin": "REZ",
+          "side": "LONG",
+          "upnl": 366.07,
+          "notional": 12574.32,
+          "lev": 3.0
+        },
+        {
+          "coin": "NOT",
+          "side": "LONG",
+          "upnl": 0.0,
+          "notional": 0.06,
+          "lev": 3.0
+        },
+        {
+          "coin": "TURBO",
+          "side": "LONG",
+          "upnl": 0.94,
+          "notional": 47.71,
+          "lev": 3.0
+        },
+        {
+          "coin": "BRETT",
+          "side": "SHORT",
+          "upnl": -0.04,
+          "notional": 19.72,
+          "lev": 3.0
+        },
+        {
+          "coin": "IO",
+          "side": "LONG",
+          "upnl": -0.18,
+          "notional": 15.57,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZK",
+          "side": "SHORT",
+          "upnl": -0.77,
+          "notional": 32.01,
+          "lev": 5.0
+        },
+        {
+          "coin": "MEW",
+          "side": "SHORT",
+          "upnl": 0.77,
+          "notional": 6.3,
+          "lev": 3.0
+        },
+        {
+          "coin": "CELO",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 0.08,
+          "lev": 3.0
+        },
+        {
+          "coin": "HMSTR",
+          "side": "SHORT",
+          "upnl": 2.23,
+          "notional": 72.06,
+          "lev": 3.0
+        },
+        {
+          "coin": "SCR",
+          "side": "LONG",
+          "upnl": -0.01,
+          "notional": 0.3,
+          "lev": 3.0
+        },
+        {
+          "coin": "GOAT",
+          "side": "SHORT",
+          "upnl": 0.01,
+          "notional": 0.05,
+          "lev": 3.0
+        },
+        {
+          "coin": "GRASS",
+          "side": "LONG",
+          "upnl": -1.8,
+          "notional": 40.86,
+          "lev": 3.0
+        },
+        {
+          "coin": "PNUT",
+          "side": "LONG",
+          "upnl": 4.05,
+          "notional": 22.45,
+          "lev": 3.0
+        },
+        {
+          "coin": "CHILLGUY",
+          "side": "LONG",
+          "upnl": -0.85,
+          "notional": 29.54,
+          "lev": 3.0
+        },
+        {
+          "coin": "SAND",
+          "side": "LONG",
+          "upnl": -0.22,
+          "notional": 11.98,
+          "lev": 5.0
+        },
+        {
+          "coin": "ALGO",
+          "side": "SHORT",
+          "upnl": -1.08,
+          "notional": 2.92,
+          "lev": 5.0
+        },
+        {
+          "coin": "MOVE",
+          "side": "LONG",
+          "upnl": -88.28,
+          "notional": 2723.06,
+          "lev": 3.0
+        },
+        {
+          "coin": "PENGU",
+          "side": "LONG",
+          "upnl": -1.86,
+          "notional": 43.1,
+          "lev": 5.0
+        },
+        {
+          "coin": "USUAL",
+          "side": "SHORT",
+          "upnl": -1.1,
+          "notional": 21.27,
+          "lev": 3.0
+        },
+        {
+          "coin": "FARTCOIN",
+          "side": "SHORT",
+          "upnl": -0.01,
+          "notional": 0.05,
+          "lev": 10.0
+        },
+        {
+          "coin": "AIXBT",
+          "side": "SHORT",
+          "upnl": 2.24,
+          "notional": 25.13,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZEREBRO",
+          "side": "LONG",
+          "upnl": -0.21,
+          "notional": 21.11,
+          "lev": 3.0
+        },
+        {
+          "coin": "GRIFFAIN",
+          "side": "LONG",
+          "upnl": -36.27,
+          "notional": 608.73,
+          "lev": 3.0
+        },
+        {
+          "coin": "SPX",
+          "side": "SHORT",
+          "upnl": -7.24,
+          "notional": 27.17,
+          "lev": 5.0
+        },
+        {
+          "coin": "S",
+          "side": "LONG",
+          "upnl": 70.98,
+          "notional": 4877.04,
+          "lev": 5.0
+        },
+        {
+          "coin": "MORPHO",
+          "side": "SHORT",
+          "upnl": 0.14,
+          "notional": 14.04,
+          "lev": 5.0
+        },
+        {
+          "coin": "ANIME",
+          "side": "LONG",
+          "upnl": 0.18,
+          "notional": 46.04,
+          "lev": 3.0
+        },
+        {
+          "coin": "VINE",
+          "side": "SHORT",
+          "upnl": 0.42,
+          "notional": 10.6,
+          "lev": 3.0
+        },
+        {
+          "coin": "VVV",
+          "side": "SHORT",
+          "upnl": 0.07,
+          "notional": 6.35,
+          "lev": 3.0
+        },
+        {
+          "coin": "BERA",
+          "side": "LONG",
+          "upnl": -0.91,
+          "notional": 18.52,
+          "lev": 5.0
+        },
+        {
+          "coin": "LAYER",
+          "side": "SHORT",
+          "upnl": -0.65,
+          "notional": 16.63,
+          "lev": 3.0
+        },
+        {
+          "coin": "IP",
+          "side": "SHORT",
+          "upnl": 159.44,
+          "notional": 15711.34,
+          "lev": 3.0
+        },
+        {
+          "coin": "KAITO",
+          "side": "LONG",
+          "upnl": 0.05,
+          "notional": 0.39,
+          "lev": 5.0
+        },
+        {
+          "coin": "NIL",
+          "side": "LONG",
+          "upnl": 1.14,
+          "notional": 26.04,
+          "lev": 3.0
+        },
+        {
+          "coin": "PAXG",
+          "side": "SHORT",
+          "upnl": 0.44,
+          "notional": 5.25,
+          "lev": 10.0
+        },
+        {
+          "coin": "PROMPT",
+          "side": "SHORT",
+          "upnl": -465.39,
+          "notional": 11484.64,
+          "lev": 3.0
+        },
+        {
+          "coin": "BABY",
+          "side": "LONG",
+          "upnl": -23.03,
+          "notional": 1278.36,
+          "lev": 3.0
+        },
+        {
+          "coin": "WCT",
+          "side": "SHORT",
+          "upnl": -0.01,
+          "notional": 0.12,
+          "lev": 3.0
+        },
+        {
+          "coin": "HYPER",
+          "side": "LONG",
+          "upnl": 106.39,
+          "notional": 2386.27,
+          "lev": 3.0
+        },
+        {
+          "coin": "INIT",
+          "side": "LONG",
+          "upnl": 0.19,
+          "notional": 14.39,
+          "lev": 3.0
+        },
+        {
+          "coin": "DOOD",
+          "side": "SHORT",
+          "upnl": -0.0,
+          "notional": 0.16,
+          "lev": 3.0
+        },
+        {
+          "coin": "NXPC",
+          "side": "SHORT",
+          "upnl": 0.99,
+          "notional": 41.04,
+          "lev": 3.0
+        },
+        {
+          "coin": "SOPH",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.16,
+          "lev": 3.0
+        },
+        {
+          "coin": "RESOLV",
+          "side": "LONG",
+          "upnl": -2.29,
+          "notional": 36.61,
+          "lev": 3.0
+        },
+        {
+          "coin": "SYRUP",
+          "side": "SHORT",
+          "upnl": 1.46,
+          "notional": 41.93,
+          "lev": 3.0
+        },
+        {
+          "coin": "PUMP",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 0.16,
+          "lev": 10.0
+        },
+        {
+          "coin": "PROVE",
+          "side": "LONG",
+          "upnl": 6.38,
+          "notional": 7174.13,
+          "lev": 3.0
+        },
+        {
+          "coin": "WLFI",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.08,
+          "lev": 5.0
+        },
+        {
+          "coin": "LINEA",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.01,
+          "lev": 3.0
+        },
+        {
+          "coin": "SKY",
+          "side": "LONG",
+          "upnl": -0.66,
+          "notional": 13.31,
+          "lev": 3.0
+        },
+        {
+          "coin": "AVNT",
+          "side": "LONG",
+          "upnl": -7.48,
+          "notional": 3815.48,
+          "lev": 5.0
+        },
+        {
+          "coin": "HEMI",
+          "side": "SHORT",
+          "upnl": -176.36,
+          "notional": 5970.3,
+          "lev": 3.0
+        },
+        {
+          "coin": "2Z",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.08,
+          "lev": 3.0
+        },
+        {
+          "coin": "MON",
+          "side": "SHORT",
+          "upnl": -0.0,
+          "notional": 0.03,
+          "lev": 5.0
+        }
+      ],
+      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
+      "type_reasons": [
+        "Profit Factor 3.1x > 2.5",
+        "Big Bet Rate 0% < 20% (selective)"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "BTC",
           "side": "LONG",
@@ -56136,932 +55639,7 @@
           "lev": 5.0
         }
       ],
-      "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
-      "type_reasons": [
-        "Sharpe* 14.77 > 8",
-        "Big Bet Rate 0% < 30%"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "BTC",
-          "side": "LONG",
-          "upnl": 6.01,
-          "notional": 26.1,
-          "lev": 20.0
-        },
-        {
-          "coin": "ETH",
-          "side": "SHORT",
-          "upnl": -0.6,
-          "notional": 3.7,
-          "lev": 20.0
-        },
-        {
-          "coin": "ATOM",
-          "side": "SHORT",
-          "upnl": 0.59,
-          "notional": 29.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.19,
-          "lev": 10.0
-        },
-        {
-          "coin": "BNB",
-          "side": "SHORT",
-          "upnl": -0.42,
-          "notional": 6.37,
-          "lev": 10.0
-        },
-        {
-          "coin": "OP",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.01,
-          "lev": 5.0
-        },
-        {
-          "coin": "ARB",
-          "side": "SHORT",
-          "upnl": -0.01,
-          "notional": 0.43,
-          "lev": 10.0
-        },
-        {
-          "coin": "CRV",
-          "side": "SHORT",
-          "upnl": 0.1,
-          "notional": 3.41,
-          "lev": 10.0
-        },
-        {
-          "coin": "LDO",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.04,
-          "lev": 5.0
-        },
-        {
-          "coin": "LINK",
-          "side": "SHORT",
-          "upnl": -2.27,
-          "notional": 9.72,
-          "lev": 10.0
-        },
-        {
-          "coin": "STX",
-          "side": "LONG",
-          "upnl": 0.63,
-          "notional": 3249.24,
-          "lev": 5.0
-        },
-        {
-          "coin": "CFX",
-          "side": "SHORT",
-          "upnl": -0.1,
-          "notional": 15.35,
-          "lev": 5.0
-        },
-        {
-          "coin": "GMX",
-          "side": "LONG",
-          "upnl": -0.09,
-          "notional": 17.1,
-          "lev": 3.0
-        },
-        {
-          "coin": "SNX",
-          "side": "SHORT",
-          "upnl": -0.02,
-          "notional": 0.18,
-          "lev": 3.0
-        },
-        {
-          "coin": "XRP",
-          "side": "LONG",
-          "upnl": 2.01,
-          "notional": 8.98,
-          "lev": 20.0
-        },
-        {
-          "coin": "APT",
-          "side": "SHORT",
-          "upnl": 0.01,
-          "notional": 0.05,
-          "lev": 10.0
-        },
-        {
-          "coin": "COMP",
-          "side": "SHORT",
-          "upnl": -0.1,
-          "notional": 28.22,
-          "lev": 5.0
-        },
-        {
-          "coin": "WLD",
-          "side": "SHORT",
-          "upnl": 72.49,
-          "notional": 10592.85,
-          "lev": 10.0
-        },
-        {
-          "coin": "YGG",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.04,
-          "lev": 3.0
-        },
-        {
-          "coin": "TRX",
-          "side": "LONG",
-          "upnl": 2.94,
-          "notional": 43.32,
-          "lev": 10.0
-        },
-        {
-          "coin": "UNI",
-          "side": "SHORT",
-          "upnl": 0.01,
-          "notional": 0.33,
-          "lev": 10.0
-        },
-        {
-          "coin": "RUNE",
-          "side": "SHORT",
-          "upnl": -1.67,
-          "notional": 44.14,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZRO",
-          "side": "SHORT",
-          "upnl": -62.13,
-          "notional": 1813.33,
-          "lev": 5.0
-        },
-        {
-          "coin": "DOT",
-          "side": "LONG",
-          "upnl": -1.15,
-          "notional": 6.26,
-          "lev": 10.0
-        },
-        {
-          "coin": "BANANA",
-          "side": "LONG",
-          "upnl": 3.68,
-          "notional": 47.95,
-          "lev": 3.0
-        },
-        {
-          "coin": "ARK",
-          "side": "LONG",
-          "upnl": 13.45,
-          "notional": 458.79,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIGTIME",
-          "side": "LONG",
-          "upnl": -0.7,
-          "notional": 25.63,
-          "lev": 3.0
-        },
-        {
-          "coin": "KAS",
-          "side": "SHORT",
-          "upnl": 0.64,
-          "notional": 48.21,
-          "lev": 3.0
-        },
-        {
-          "coin": "BLUR",
-          "side": "SHORT",
-          "upnl": -1.89,
-          "notional": 23.14,
-          "lev": 3.0
-        },
-        {
-          "coin": "TIA",
-          "side": "LONG",
-          "upnl": 0.01,
-          "notional": 0.12,
-          "lev": 5.0
-        },
-        {
-          "coin": "BSV",
-          "side": "LONG",
-          "upnl": -0.17,
-          "notional": 3.59,
-          "lev": 3.0
-        },
-        {
-          "coin": "ADA",
-          "side": "LONG",
-          "upnl": -2.19,
-          "notional": 45.24,
-          "lev": 10.0
-        },
-        {
-          "coin": "TON",
-          "side": "SHORT",
-          "upnl": -0.17,
-          "notional": 4.74,
-          "lev": 10.0
-        },
-        {
-          "coin": "MINA",
-          "side": "SHORT",
-          "upnl": -185.66,
-          "notional": 9952.93,
-          "lev": 3.0
-        },
-        {
-          "coin": "POLYX",
-          "side": "LONG",
-          "upnl": 2.56,
-          "notional": 37.88,
-          "lev": 3.0
-        },
-        {
-          "coin": "GAS",
-          "side": "LONG",
-          "upnl": 5.35,
-          "notional": 208.13,
-          "lev": 3.0
-        },
-        {
-          "coin": "FET",
-          "side": "LONG",
-          "upnl": 0.01,
-          "notional": 0.46,
-          "lev": 5.0
-        },
-        {
-          "coin": "MEME",
-          "side": "LONG",
-          "upnl": -0.03,
-          "notional": 0.18,
-          "lev": 3.0
-        },
-        {
-          "coin": "ORDI",
-          "side": "SHORT",
-          "upnl": -0.01,
-          "notional": 0.19,
-          "lev": 3.0
-        },
-        {
-          "coin": "NEO",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZEN",
-          "side": "SHORT",
-          "upnl": -0.21,
-          "notional": 21.75,
-          "lev": 5.0
-        },
-        {
-          "coin": "FIL",
-          "side": "LONG",
-          "upnl": 0.41,
-          "notional": 2.93,
-          "lev": 5.0
-        },
-        {
-          "coin": "PYTH",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.05,
-          "lev": 5.0
-        },
-        {
-          "coin": "IMX",
-          "side": "LONG",
-          "upnl": 111.27,
-          "notional": 3625.1,
-          "lev": 5.0
-        },
-        {
-          "coin": "GMT",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.06,
-          "lev": 3.0
-        },
-        {
-          "coin": "SUPER",
-          "side": "LONG",
-          "upnl": 0.02,
-          "notional": 0.8,
-          "lev": 3.0
-        },
-        {
-          "coin": "USTC",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.05,
-          "lev": 3.0
-        },
-        {
-          "coin": "RSR",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.12,
-          "lev": 3.0
-        },
-        {
-          "coin": "GALA",
-          "side": "LONG",
-          "upnl": -0.22,
-          "notional": 1.32,
-          "lev": 3.0
-        },
-        {
-          "coin": "JTO",
-          "side": "LONG",
-          "upnl": 303.43,
-          "notional": 13115.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "ACE",
-          "side": "LONG",
-          "upnl": -0.25,
-          "notional": 40.82,
-          "lev": 3.0
-        },
-        {
-          "coin": "MAV",
-          "side": "LONG",
-          "upnl": -0.01,
-          "notional": 0.15,
-          "lev": 3.0
-        },
-        {
-          "coin": "PEOPLE",
-          "side": "SHORT",
-          "upnl": -0.59,
-          "notional": 8.22,
-          "lev": 3.0
-        },
-        {
-          "coin": "ENS",
-          "side": "SHORT",
-          "upnl": -0.17,
-          "notional": 16.33,
-          "lev": 5.0
-        },
-        {
-          "coin": "ETC",
-          "side": "SHORT",
-          "upnl": -0.03,
-          "notional": 1.75,
-          "lev": 5.0
-        },
-        {
-          "coin": "XAI",
-          "side": "LONG",
-          "upnl": 5.94,
-          "notional": 222.03,
-          "lev": 3.0
-        },
-        {
-          "coin": "MANTA",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 12.36,
-          "lev": 3.0
-        },
-        {
-          "coin": "UMA",
-          "side": "LONG",
-          "upnl": -0.02,
-          "notional": 0.14,
-          "lev": 3.0
-        },
-        {
-          "coin": "ALT",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.05,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZETA",
-          "side": "LONG",
-          "upnl": 21.02,
-          "notional": 1190.26,
-          "lev": 3.0
-        },
-        {
-          "coin": "DYM",
-          "side": "LONG",
-          "upnl": -6.21,
-          "notional": 35.71,
-          "lev": 3.0
-        },
-        {
-          "coin": "W",
-          "side": "LONG",
-          "upnl": -685.45,
-          "notional": 25992.51,
-          "lev": 5.0
-        },
-        {
-          "coin": "STRK",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "TAO",
-          "side": "SHORT",
-          "upnl": 2097.52,
-          "notional": 39416.85,
-          "lev": 5.0
-        },
-        {
-          "coin": "AR",
-          "side": "SHORT",
-          "upnl": -0.0,
-          "notional": 0.03,
-          "lev": 5.0
-        },
-        {
-          "coin": "BOME",
-          "side": "LONG",
-          "upnl": -5.56,
-          "notional": 17.63,
-          "lev": 3.0
-        },
-        {
-          "coin": "ETHFI",
-          "side": "SHORT",
-          "upnl": -0.0,
-          "notional": 0.22,
-          "lev": 5.0
-        },
-        {
-          "coin": "ENA",
-          "side": "SHORT",
-          "upnl": 0.02,
-          "notional": 0.5,
-          "lev": 10.0
-        },
-        {
-          "coin": "TNSR",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.28,
-          "lev": 3.0
-        },
-        {
-          "coin": "SAGA",
-          "side": "SHORT",
-          "upnl": -1.34,
-          "notional": 40.38,
-          "lev": 3.0
-        },
-        {
-          "coin": "HBAR",
-          "side": "SHORT",
-          "upnl": 4.02,
-          "notional": 40.13,
-          "lev": 5.0
-        },
-        {
-          "coin": "POPCAT",
-          "side": "SHORT",
-          "upnl": -0.18,
-          "notional": 7.17,
-          "lev": 3.0
-        },
-        {
-          "coin": "EIGEN",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "REZ",
-          "side": "LONG",
-          "upnl": 189.91,
-          "notional": 10556.03,
-          "lev": 3.0
-        },
-        {
-          "coin": "NOT",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.06,
-          "lev": 3.0
-        },
-        {
-          "coin": "TURBO",
-          "side": "LONG",
-          "upnl": -0.27,
-          "notional": 47.71,
-          "lev": 3.0
-        },
-        {
-          "coin": "BRETT",
-          "side": "LONG",
-          "upnl": 0.27,
-          "notional": 7.33,
-          "lev": 3.0
-        },
-        {
-          "coin": "IO",
-          "side": "LONG",
-          "upnl": 0.01,
-          "notional": 15.57,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZK",
-          "side": "SHORT",
-          "upnl": -1.59,
-          "notional": 32.01,
-          "lev": 5.0
-        },
-        {
-          "coin": "MEW",
-          "side": "SHORT",
-          "upnl": 0.58,
-          "notional": 6.3,
-          "lev": 3.0
-        },
-        {
-          "coin": "CELO",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.08,
-          "lev": 3.0
-        },
-        {
-          "coin": "HMSTR",
-          "side": "SHORT",
-          "upnl": 13.22,
-          "notional": 299.31,
-          "lev": 3.0
-        },
-        {
-          "coin": "SCR",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.08,
-          "lev": 3.0
-        },
-        {
-          "coin": "GOAT",
-          "side": "SHORT",
-          "upnl": 0.01,
-          "notional": 0.05,
-          "lev": 3.0
-        },
-        {
-          "coin": "GRASS",
-          "side": "LONG",
-          "upnl": -0.77,
-          "notional": 40.86,
-          "lev": 3.0
-        },
-        {
-          "coin": "PNUT",
-          "side": "LONG",
-          "upnl": 3.12,
-          "notional": 22.45,
-          "lev": 3.0
-        },
-        {
-          "coin": "CHILLGUY",
-          "side": "SHORT",
-          "upnl": 0.09,
-          "notional": 9.9,
-          "lev": 3.0
-        },
-        {
-          "coin": "SAND",
-          "side": "LONG",
-          "upnl": -0.21,
-          "notional": 11.98,
-          "lev": 5.0
-        },
-        {
-          "coin": "ALGO",
-          "side": "SHORT",
-          "upnl": -1.14,
-          "notional": 2.92,
-          "lev": 5.0
-        },
-        {
-          "coin": "HYPE",
-          "side": "SHORT",
-          "upnl": -11.9,
-          "notional": 38.01,
-          "lev": 10.0
-        },
-        {
-          "coin": "MOVE",
-          "side": "LONG",
-          "upnl": -184.64,
-          "notional": 5715.3,
-          "lev": 3.0
-        },
-        {
-          "coin": "PENGU",
-          "side": "LONG",
-          "upnl": -1.79,
-          "notional": 43.1,
-          "lev": 5.0
-        },
-        {
-          "coin": "USUAL",
-          "side": "SHORT",
-          "upnl": -1.09,
-          "notional": 21.27,
-          "lev": 3.0
-        },
-        {
-          "coin": "FARTCOIN",
-          "side": "SHORT",
-          "upnl": -0.01,
-          "notional": 0.05,
-          "lev": 10.0
-        },
-        {
-          "coin": "AIXBT",
-          "side": "SHORT",
-          "upnl": 2.2,
-          "notional": 25.13,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZEREBRO",
-          "side": "LONG",
-          "upnl": 0.0,
-          "notional": 0.04,
-          "lev": 3.0
-        },
-        {
-          "coin": "GRIFFAIN",
-          "side": "LONG",
-          "upnl": -76.05,
-          "notional": 2318.5,
-          "lev": 3.0
-        },
-        {
-          "coin": "SPX",
-          "side": "SHORT",
-          "upnl": -7.54,
-          "notional": 27.17,
-          "lev": 5.0
-        },
-        {
-          "coin": "S",
-          "side": "LONG",
-          "upnl": 0.26,
-          "notional": 16.44,
-          "lev": 5.0
-        },
-        {
-          "coin": "MORPHO",
-          "side": "SHORT",
-          "upnl": -0.37,
-          "notional": 14.04,
-          "lev": 5.0
-        },
-        {
-          "coin": "MELANIA",
-          "side": "LONG",
-          "upnl": -1.27,
-          "notional": 50.13,
-          "lev": 3.0
-        },
-        {
-          "coin": "ANIME",
-          "side": "LONG",
-          "upnl": 0.46,
-          "notional": 46.04,
-          "lev": 3.0
-        },
-        {
-          "coin": "VINE",
-          "side": "SHORT",
-          "upnl": 20.84,
-          "notional": 668.34,
-          "lev": 3.0
-        },
-        {
-          "coin": "VVV",
-          "side": "SHORT",
-          "upnl": -0.01,
-          "notional": 0.08,
-          "lev": 3.0
-        },
-        {
-          "coin": "BERA",
-          "side": "LONG",
-          "upnl": -0.12,
-          "notional": 18.52,
-          "lev": 5.0
-        },
-        {
-          "coin": "TST",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.1,
-          "lev": 3.0
-        },
-        {
-          "coin": "LAYER",
-          "side": "SHORT",
-          "upnl": -0.79,
-          "notional": 16.63,
-          "lev": 3.0
-        },
-        {
-          "coin": "IP",
-          "side": "SHORT",
-          "upnl": -0.0,
-          "notional": 0.1,
-          "lev": 3.0
-        },
-        {
-          "coin": "KAITO",
-          "side": "LONG",
-          "upnl": 0.04,
-          "notional": 0.39,
-          "lev": 5.0
-        },
-        {
-          "coin": "NIL",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 23.78,
-          "lev": 3.0
-        },
-        {
-          "coin": "PAXG",
-          "side": "SHORT",
-          "upnl": 0.48,
-          "notional": 5.25,
-          "lev": 10.0
-        },
-        {
-          "coin": "PROMPT",
-          "side": "SHORT",
-          "upnl": 308.79,
-          "notional": 12078.78,
-          "lev": 3.0
-        },
-        {
-          "coin": "BABY",
-          "side": "LONG",
-          "upnl": -4.78,
-          "notional": 324.49,
-          "lev": 3.0
-        },
-        {
-          "coin": "WCT",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.12,
-          "lev": 3.0
-        },
-        {
-          "coin": "HYPER",
-          "side": "LONG",
-          "upnl": 32.46,
-          "notional": 656.16,
-          "lev": 3.0
-        },
-        {
-          "coin": "INIT",
-          "side": "SHORT",
-          "upnl": 0.01,
-          "notional": 0.33,
-          "lev": 3.0
-        },
-        {
-          "coin": "DOOD",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.26,
-          "lev": 3.0
-        },
-        {
-          "coin": "NXPC",
-          "side": "SHORT",
-          "upnl": 0.46,
-          "notional": 41.04,
-          "lev": 3.0
-        },
-        {
-          "coin": "SOPH",
-          "side": "LONG",
-          "upnl": -0.01,
-          "notional": 0.16,
-          "lev": 3.0
-        },
-        {
-          "coin": "RESOLV",
-          "side": "LONG",
-          "upnl": -0.37,
-          "notional": 35.23,
-          "lev": 3.0
-        },
-        {
-          "coin": "SYRUP",
-          "side": "SHORT",
-          "upnl": 1.13,
-          "notional": 41.93,
-          "lev": 3.0
-        },
-        {
-          "coin": "PUMP",
-          "side": "SHORT",
-          "upnl": -0.0,
-          "notional": 0.16,
-          "lev": 10.0
-        },
-        {
-          "coin": "PROVE",
-          "side": "LONG",
-          "upnl": 0.7,
-          "notional": 273.74,
-          "lev": 3.0
-        },
-        {
-          "coin": "XPL",
-          "side": "LONG",
-          "upnl": 0.01,
-          "notional": 0.13,
-          "lev": 10.0
-        },
-        {
-          "coin": "WLFI",
-          "side": "LONG",
-          "upnl": -2.44,
-          "notional": 28.65,
-          "lev": 5.0
-        },
-        {
-          "coin": "LINEA",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.01,
-          "lev": 3.0
-        },
-        {
-          "coin": "SKY",
-          "side": "LONG",
-          "upnl": -0.62,
-          "notional": 13.31,
-          "lev": 3.0
-        },
-        {
-          "coin": "AVNT",
-          "side": "LONG",
-          "upnl": -1.42,
-          "notional": 21.09,
-          "lev": 5.0
-        },
-        {
-          "coin": "HEMI",
-          "side": "SHORT",
-          "upnl": 497.87,
-          "notional": 6852.36,
-          "lev": 3.0
-        },
-        {
-          "coin": "2Z",
-          "side": "LONG",
-          "upnl": 0.4,
-          "notional": 73.28,
-          "lev": 3.0
-        },
-        {
-          "coin": "MON",
-          "side": "LONG",
-          "upnl": 0.01,
-          "notional": 0.06,
-          "lev": 5.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T09:03:36.644053+00:00"
+      "prev_positions_ts": "2026-04-15T02:04:09.859302+00:00"
     }
   },
   "0x4fb3e7ae8f0e9ab1adc998a337fc099b84cb93fb": {
@@ -128194,58 +126772,58 @@
   },
   "0x67f7aa8fb95c47e6ea9c517b623e0701cbf9d9ba": {
     "first_discovered_at": "2026-04-13T02:02:54.022383+00:00",
-    "fetched_at": "2026-04-15T04:16:46.150154+00:00",
+    "fetched_at": "2026-04-15T13:43:00.177100+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0x67f7aa8fb95c47e6ea9c517b623e0701cbf9d9ba",
-      "label": "0x67f7...d9ba",
-      "total_equity": 17570.395772,
-      "margin_pct": 32.60724600256318,
-      "realized": 930.2740379999998,
-      "total_upnl": -3.517479,
-      "total_pnl": 930.2740379999998,
-      "win_rate": 61.1,
-      "avg_win": 4.0,
-      "avg_loss": 3.78,
-      "profit_factor": 1.06,
+      "label": "0x67f7aa8fb95c47e6ea9c517b623e0701cbf9d9ba",
+      "total_equity": 17619.807747,
+      "margin_pct": 19.711445299914487,
+      "realized": 292.9749210000001,
+      "total_upnl": -14.172604,
+      "total_pnl": 292.9749210000001,
+      "win_rate": 61.3,
+      "avg_win": 2.04,
+      "avg_loss": 2.5,
+      "profit_factor": 0.82,
       "sharpe": 0,
-      "mdd_pct": 9.9,
-      "consistency": 50.0,
-      "durability": 25.6,
-      "long_pct": 0.0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 48.1,
+      "long_pct": 100.0,
       "war_components": {
-        "Profit": 16.5,
-        "ROI": 12.9,
-        "Big Bet": 8.1,
+        "Profit": 15.0,
+        "ROI": 10.3,
+        "Big Bet": 8.7,
         "Sharpe": 6.0,
-        "Win Rate": 9.4
+        "Win Rate": 9.5
       },
-      "follow_score": 47.3,
-      "big_bet_count": 458,
-      "big_bet_rate": 61.8,
-      "big_bet_pnl": 2224.53,
-      "closed_count": 952,
+      "follow_score": 60.0,
+      "big_bet_count": 365,
+      "big_bet_rate": 64.4,
+      "big_bet_pnl": 1206.85,
+      "closed_count": 1039,
       "total_days": 2,
       "data_days": 2,
       "first_date": "2026-04-14",
       "last_date": "2026-04-15",
       "days_since_last": 0,
-      "roi_pct": 5.3,
+      "roi_pct": 1.7,
       "top_coins": [
         {
           "coin": "ETH",
-          "pnl": 930.27,
+          "pnl": 292.97,
           "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 66.0,
-        "roi": 51.5,
-        "big_bet": 53.7,
+        "profit_amt": 59.9,
+        "roi": 41.4,
+        "big_bet": 58.3,
         "sharpe": 30,
-        "win_rate": 63.0
+        "win_rate": 63.3
       },
-      "war_score": 52.9,
+      "war_score": 49.5,
       "trader_type": "🎲 Bet Maker",
       "character": "Loves to bet big",
       "is_hf": true,
@@ -128254,18 +126832,33 @@
       "cumulative": [
         {
           "date": "2026-04-14",
-          "daily": 1032.64,
-          "cum": 1032.64
+          "daily": 143.1,
+          "cum": 143.1
         },
         {
           "date": "2026-04-15",
-          "daily": -102.37,
-          "cum": 930.27
+          "daily": 149.87,
+          "cum": 292.97
         }
       ],
-      "source": "active",
+      "source": "0x67f7aa8fb95c47e6ea9c517b623e0701cbf9d9ba",
       "error": null,
       "positions": [
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": -14.17,
+          "notional": 10433.49,
+          "lev": 3.0
+        }
+      ],
+      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
+      "type_reasons": [
+        "365 big bets > 10",
+        "Big Bet Rate 64% > 50%"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "ETH",
           "side": "SHORT",
@@ -128274,22 +126867,7 @@
           "lev": 3.0
         }
       ],
-      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
-      "type_reasons": [
-        "458 big bets > 10",
-        "Big Bet Rate 62% > 50%"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "ETH",
-          "side": "SHORT",
-          "upnl": -3.5,
-          "notional": 14342.57,
-          "lev": 3.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T12:02:28.085956+00:00"
+      "prev_positions_ts": "2026-04-15T04:16:46.150154+00:00"
     }
   },
   "0x9e21ef588a535dcb53c02945401697fa76bb3a76": {
@@ -137522,58 +136100,58 @@
   },
   "0xe90bf24e807df04f1513d50002d78bfc22ee84d9": {
     "first_discovered_at": "2026-04-14T00:31:37.121227+00:00",
-    "fetched_at": "2026-04-15T05:02:08.148761+00:00",
+    "fetched_at": "2026-04-15T13:43:11.755874+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0xe90bf24e807df04f1513d50002d78bfc22ee84d9",
-      "label": "0xe90b...84d9",
-      "total_equity": 18191.92062,
-      "margin_pct": 46.99140282418404,
-      "realized": 194.08063900000005,
-      "total_upnl": -72.262806,
-      "total_pnl": 194.08063900000005,
-      "win_rate": 58.1,
-      "avg_win": 3.26,
-      "avg_loss": 4.03,
-      "profit_factor": 0.81,
+      "label": "0xe90bf24e807df04f1513d50002d78bfc22ee84d9",
+      "total_equity": 18614.579553,
+      "margin_pct": 13.30853943247267,
+      "realized": 370.79335299999906,
+      "total_upnl": -1.97838,
+      "total_pnl": 370.79335299999906,
+      "win_rate": 61.4,
+      "avg_win": 1.83,
+      "avg_loss": 1.96,
+      "profit_factor": 0.93,
       "sharpe": 0,
-      "mdd_pct": 39.9,
-      "consistency": 50.0,
-      "durability": 25.6,
-      "long_pct": 0.0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 48.1,
+      "long_pct": 100.0,
       "war_components": {
-        "Profit": 14.4,
-        "ROI": 9.6,
-        "Big Bet": 5.6,
+        "Profit": 15.3,
+        "ROI": 10.7,
+        "Big Bet": 7.8,
         "Sharpe": 6.0,
-        "Win Rate": 8.7
+        "Win Rate": 9.5
       },
-      "follow_score": 36.5,
-      "big_bet_count": 317,
-      "big_bet_rate": 54.6,
-      "big_bet_pnl": 1690.1,
-      "closed_count": 945,
+      "follow_score": 60.0,
+      "big_bet_count": 273,
+      "big_bet_rate": 60.8,
+      "big_bet_pnl": 1014.56,
+      "closed_count": 1010,
       "total_days": 2,
       "data_days": 2,
       "first_date": "2026-04-14",
       "last_date": "2026-04-15",
       "days_since_last": 0,
-      "roi_pct": 1.1,
+      "roi_pct": 2.0,
       "top_coins": [
         {
           "coin": "ETH",
-          "pnl": 194.08,
+          "pnl": 370.79,
           "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 57.7,
-        "roi": 38.5,
-        "big_bet": 37.2,
+        "profit_amt": 61.1,
+        "roi": 42.8,
+        "big_bet": 51.8,
         "sharpe": 30,
-        "win_rate": 58.2
+        "win_rate": 63.4
       },
-      "war_score": 44.3,
+      "war_score": 49.3,
       "trader_type": "🎲 Bet Maker",
       "character": "Loves to bet big",
       "is_hf": true,
@@ -137582,18 +136160,33 @@
       "cumulative": [
         {
           "date": "2026-04-14",
-          "daily": 323.04,
-          "cum": 323.04
+          "daily": 198.52,
+          "cum": 198.52
         },
         {
           "date": "2026-04-15",
-          "daily": -128.96,
-          "cum": 194.08
+          "daily": 172.27,
+          "cum": 370.79
         }
       ],
-      "source": "active",
+      "source": "0xe90bf24e807df04f1513d50002d78bfc22ee84d9",
       "error": null,
       "positions": [
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": -1.98,
+          "notional": 7433.94,
+          "lev": 3.0
+        }
+      ],
+      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
+      "type_reasons": [
+        "273 big bets > 10",
+        "Big Bet Rate 61% > 50%"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "ETH",
           "side": "SHORT",
@@ -137602,22 +136195,7 @@
           "lev": 3.0
         }
       ],
-      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
-      "type_reasons": [
-        "317 big bets > 10",
-        "Big Bet Rate 55% > 50%"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "ETH",
-          "side": "SHORT",
-          "upnl": 1.29,
-          "notional": 2173.95,
-          "lev": 3.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T11:06:34.318238+00:00"
+      "prev_positions_ts": "2026-04-15T05:02:08.148761+00:00"
     }
   },
   "0x8def9f50456c6c4e37fa5d3d57f108ed23992dae": {
@@ -140809,108 +139387,1049 @@
   },
   "0xacf38fc1301382b2d462bf4855abe80552923a7e": {
     "first_discovered_at": "2026-04-14T06:00:46.994270+00:00",
-    "fetched_at": "2026-04-15T05:02:45.514294+00:00",
+    "fetched_at": "2026-04-15T13:43:00.173089+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0xacf38fc1301382b2d462bf4855abe80552923a7e",
-      "label": "0xacf3...3a7e",
-      "total_equity": 251376.521689,
-      "margin_pct": 15.244200046643714,
-      "realized": 6980.007345000007,
-      "total_upnl": 5835.618232000001,
-      "total_pnl": 6980.007345000007,
-      "win_rate": 62.7,
-      "avg_win": 13.08,
-      "avg_loss": 3.46,
-      "profit_factor": 3.78,
-      "sharpe": 28.69,
+      "label": "0xacf38fc1301382b2d462bf4855abe80552923a7e",
+      "total_equity": 252517.868467,
+      "margin_pct": 15.309038299528538,
+      "realized": 3934.9737790000017,
+      "total_upnl": 6696.699920000002,
+      "total_pnl": 3934.9737790000017,
+      "win_rate": 69.1,
+      "avg_win": 7.47,
+      "avg_loss": 1.59,
+      "profit_factor": 4.7,
+      "sharpe": 26.2,
       "mdd_pct": 0.0,
       "consistency": 100.0,
-      "durability": 51.3,
-      "long_pct": 47.3,
+      "durability": 49.7,
+      "long_pct": 48.0,
       "war_components": {
-        "Profit": 19.1,
-        "ROI": 11.4,
-        "Big Bet": 15.0,
+        "Profit": 18.4,
+        "ROI": 10.2,
+        "Big Bet": 1.5,
         "Sharpe": 20.0,
-        "Win Rate": 9.8
+        "Win Rate": 11.0
       },
-      "follow_score": 80.0,
-      "big_bet_count": 1,
-      "big_bet_rate": 100.0,
-      "big_bet_pnl": 725.58,
-      "closed_count": 1009,
-      "total_days": 4,
-      "data_days": 4,
-      "first_date": "2026-04-12",
+      "follow_score": 100.0,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 842,
+      "total_days": 3,
+      "data_days": 3,
+      "first_date": "2026-04-13",
       "last_date": "2026-04-15",
       "days_since_last": 0,
-      "roi_pct": 2.8,
+      "roi_pct": 1.6,
       "top_coins": [
         {
           "coin": "HYPE",
-          "pnl": 4518.27,
+          "pnl": 2864.67,
           "side": "L"
         },
         {
-          "coin": "BTC",
-          "pnl": 941.45,
-          "side": "S"
-        },
-        {
           "coin": "PAXG",
-          "pnl": 493.17,
+          "pnl": 465.97,
           "side": "L"
         },
         {
           "coin": "ETH",
-          "pnl": 436.6,
+          "pnl": 370.02,
           "side": "L"
         },
         {
           "coin": "LDO",
-          "pnl": 109.21,
+          "pnl": 168.04,
           "side": "L"
+        },
+        {
+          "coin": "BTC",
+          "pnl": 46.75,
+          "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 76.6,
-        "roi": 45.5,
-        "big_bet": 100.0,
+        "profit_amt": 73.6,
+        "roi": 41.0,
+        "big_bet": 10,
         "sharpe": 100.0,
-        "win_rate": 65.3
+        "win_rate": 73.3
       },
-      "war_score": 75.3,
-      "trader_type": "📦 Consistent",
-      "character": "Quietly stacking wins",
+      "war_score": 61.1,
+      "trader_type": "🧊 Ice Quant",
+      "character": "Cold, emotionless algo",
       "is_hf": false,
       "spot_holdings": [],
       "is_vault": false,
       "cumulative": [
         {
-          "date": "2026-04-12",
-          "daily": 782.27,
-          "cum": 782.27
-        },
-        {
           "date": "2026-04-13",
-          "daily": 3116.64,
-          "cum": 3898.91
+          "daily": 553.45,
+          "cum": 553.45
         },
         {
           "date": "2026-04-14",
           "daily": 2660.94,
-          "cum": 6559.85
+          "cum": 3214.39
         },
         {
           "date": "2026-04-15",
-          "daily": 420.16,
-          "cum": 6980.01
+          "daily": 720.59,
+          "cum": 3934.97
         }
       ],
-      "source": "active",
+      "source": "0xacf38fc1301382b2d462bf4855abe80552923a7e",
       "error": null,
       "positions": [
+        {
+          "coin": "BTC",
+          "side": "SHORT",
+          "upnl": 208.81,
+          "notional": 49288.75,
+          "lev": 40.0
+        },
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": 695.68,
+          "notional": 19103.16,
+          "lev": 25.0
+        },
+        {
+          "coin": "ATOM",
+          "side": "SHORT",
+          "upnl": 138.95,
+          "notional": 3353.88,
+          "lev": 5.0
+        },
+        {
+          "coin": "DYDX",
+          "side": "SHORT",
+          "upnl": 1.22,
+          "notional": 177.21,
+          "lev": 5.0
+        },
+        {
+          "coin": "SOL",
+          "side": "LONG",
+          "upnl": -90.73,
+          "notional": 2869.16,
+          "lev": 20.0
+        },
+        {
+          "coin": "AVAX",
+          "side": "SHORT",
+          "upnl": 1.16,
+          "notional": 1359.89,
+          "lev": 10.0
+        },
+        {
+          "coin": "BNB",
+          "side": "LONG",
+          "upnl": 151.17,
+          "notional": 7651.48,
+          "lev": 10.0
+        },
+        {
+          "coin": "APE",
+          "side": "SHORT",
+          "upnl": -12.64,
+          "notional": 762.03,
+          "lev": 5.0
+        },
+        {
+          "coin": "OP",
+          "side": "SHORT",
+          "upnl": 91.37,
+          "notional": 2573.22,
+          "lev": 5.0
+        },
+        {
+          "coin": "LTC",
+          "side": "SHORT",
+          "upnl": -19.99,
+          "notional": 1175.62,
+          "lev": 10.0
+        },
+        {
+          "coin": "DOGE",
+          "side": "LONG",
+          "upnl": -1.79,
+          "notional": 1629.74,
+          "lev": 10.0
+        },
+        {
+          "coin": "INJ",
+          "side": "LONG",
+          "upnl": 11.55,
+          "notional": 369.63,
+          "lev": 5.0
+        },
+        {
+          "coin": "SUI",
+          "side": "SHORT",
+          "upnl": -10.64,
+          "notional": 2167.23,
+          "lev": 10.0
+        },
+        {
+          "coin": "kPEPE",
+          "side": "LONG",
+          "upnl": 1.79,
+          "notional": 109.3,
+          "lev": 10.0
+        },
+        {
+          "coin": "CRV",
+          "side": "LONG",
+          "upnl": 12.06,
+          "notional": 719.78,
+          "lev": 10.0
+        },
+        {
+          "coin": "LDO",
+          "side": "LONG",
+          "upnl": 539.13,
+          "notional": 4112.31,
+          "lev": 5.0
+        },
+        {
+          "coin": "LINK",
+          "side": "LONG",
+          "upnl": -10.06,
+          "notional": 683.53,
+          "lev": 10.0
+        },
+        {
+          "coin": "STX",
+          "side": "SHORT",
+          "upnl": -16.25,
+          "notional": 1273.38,
+          "lev": 5.0
+        },
+        {
+          "coin": "CFX",
+          "side": "SHORT",
+          "upnl": -25.14,
+          "notional": 444.62,
+          "lev": 5.0
+        },
+        {
+          "coin": "GMX",
+          "side": "SHORT",
+          "upnl": 1.37,
+          "notional": 158.98,
+          "lev": 3.0
+        },
+        {
+          "coin": "SNX",
+          "side": "SHORT",
+          "upnl": 0.27,
+          "notional": 164.07,
+          "lev": 3.0
+        },
+        {
+          "coin": "XRP",
+          "side": "SHORT",
+          "upnl": 0.31,
+          "notional": 91.66,
+          "lev": 20.0
+        },
+        {
+          "coin": "BCH",
+          "side": "LONG",
+          "upnl": -101.4,
+          "notional": 1517.63,
+          "lev": 10.0
+        },
+        {
+          "coin": "APT",
+          "side": "SHORT",
+          "upnl": 141.02,
+          "notional": 1848.17,
+          "lev": 10.0
+        },
+        {
+          "coin": "AAVE",
+          "side": "LONG",
+          "upnl": 74.44,
+          "notional": 6231.27,
+          "lev": 10.0
+        },
+        {
+          "coin": "COMP",
+          "side": "LONG",
+          "upnl": 4.1,
+          "notional": 38.09,
+          "lev": 5.0
+        },
+        {
+          "coin": "WLD",
+          "side": "SHORT",
+          "upnl": -83.23,
+          "notional": 2007.98,
+          "lev": 10.0
+        },
+        {
+          "coin": "YGG",
+          "side": "SHORT",
+          "upnl": -2.61,
+          "notional": 74.39,
+          "lev": 3.0
+        },
+        {
+          "coin": "TRX",
+          "side": "LONG",
+          "upnl": 25.75,
+          "notional": 653.88,
+          "lev": 10.0
+        },
+        {
+          "coin": "kSHIB",
+          "side": "SHORT",
+          "upnl": -0.57,
+          "notional": 105.92,
+          "lev": 10.0
+        },
+        {
+          "coin": "UNI",
+          "side": "LONG",
+          "upnl": -221.45,
+          "notional": 3451.18,
+          "lev": 10.0
+        },
+        {
+          "coin": "SEI",
+          "side": "SHORT",
+          "upnl": 173.26,
+          "notional": 1784.5,
+          "lev": 5.0
+        },
+        {
+          "coin": "RUNE",
+          "side": "SHORT",
+          "upnl": -3.88,
+          "notional": 866.78,
+          "lev": 5.0
+        },
+        {
+          "coin": "ZRO",
+          "side": "SHORT",
+          "upnl": -370.76,
+          "notional": 3714.86,
+          "lev": 5.0
+        },
+        {
+          "coin": "DOT",
+          "side": "LONG",
+          "upnl": -97.14,
+          "notional": 2933.22,
+          "lev": 10.0
+        },
+        {
+          "coin": "BANANA",
+          "side": "SHORT",
+          "upnl": -3.95,
+          "notional": 73.36,
+          "lev": 3.0
+        },
+        {
+          "coin": "FTT",
+          "side": "SHORT",
+          "upnl": 1.42,
+          "notional": 185.87,
+          "lev": 3.0
+        },
+        {
+          "coin": "BIGTIME",
+          "side": "SHORT",
+          "upnl": -3.12,
+          "notional": 126.24,
+          "lev": 3.0
+        },
+        {
+          "coin": "BLUR",
+          "side": "SHORT",
+          "upnl": 153.21,
+          "notional": 2227.11,
+          "lev": 3.0
+        },
+        {
+          "coin": "TIA",
+          "side": "SHORT",
+          "upnl": -43.66,
+          "notional": 3318.49,
+          "lev": 5.0
+        },
+        {
+          "coin": "ADA",
+          "side": "LONG",
+          "upnl": -9.72,
+          "notional": 198.05,
+          "lev": 10.0
+        },
+        {
+          "coin": "TON",
+          "side": "LONG",
+          "upnl": -71.59,
+          "notional": 1297.61,
+          "lev": 10.0
+        },
+        {
+          "coin": "MINA",
+          "side": "SHORT",
+          "upnl": -1.76,
+          "notional": 147.69,
+          "lev": 3.0
+        },
+        {
+          "coin": "GAS",
+          "side": "SHORT",
+          "upnl": 10.39,
+          "notional": 453.29,
+          "lev": 3.0
+        },
+        {
+          "coin": "PENDLE",
+          "side": "LONG",
+          "upnl": -495.01,
+          "notional": 5256.08,
+          "lev": 5.0
+        },
+        {
+          "coin": "NEAR",
+          "side": "SHORT",
+          "upnl": -88.73,
+          "notional": 3425.49,
+          "lev": 10.0
+        },
+        {
+          "coin": "MEME",
+          "side": "SHORT",
+          "upnl": 64.68,
+          "notional": 1685.82,
+          "lev": 3.0
+        },
+        {
+          "coin": "NEO",
+          "side": "SHORT",
+          "upnl": -7.08,
+          "notional": 483.6,
+          "lev": 5.0
+        },
+        {
+          "coin": "ZEN",
+          "side": "SHORT",
+          "upnl": 3.48,
+          "notional": 464.26,
+          "lev": 5.0
+        },
+        {
+          "coin": "FIL",
+          "side": "SHORT",
+          "upnl": -86.8,
+          "notional": 2800.25,
+          "lev": 5.0
+        },
+        {
+          "coin": "PYTH",
+          "side": "SHORT",
+          "upnl": 0.01,
+          "notional": 797.88,
+          "lev": 5.0
+        },
+        {
+          "coin": "SUSHI",
+          "side": "LONG",
+          "upnl": -0.02,
+          "notional": 10.99,
+          "lev": 3.0
+        },
+        {
+          "coin": "IMX",
+          "side": "SHORT",
+          "upnl": -49.68,
+          "notional": 1010.08,
+          "lev": 5.0
+        },
+        {
+          "coin": "kBONK",
+          "side": "SHORT",
+          "upnl": 9.07,
+          "notional": 1090.79,
+          "lev": 10.0
+        },
+        {
+          "coin": "GMT",
+          "side": "SHORT",
+          "upnl": -1.73,
+          "notional": 125.52,
+          "lev": 3.0
+        },
+        {
+          "coin": "SUPER",
+          "side": "SHORT",
+          "upnl": -0.29,
+          "notional": 6.98,
+          "lev": 3.0
+        },
+        {
+          "coin": "kLUNC",
+          "side": "SHORT",
+          "upnl": 0.0,
+          "notional": 0.04,
+          "lev": 3.0
+        },
+        {
+          "coin": "GALA",
+          "side": "SHORT",
+          "upnl": -14.81,
+          "notional": 499.99,
+          "lev": 3.0
+        },
+        {
+          "coin": "JTO",
+          "side": "SHORT",
+          "upnl": -104.91,
+          "notional": 2309.73,
+          "lev": 5.0
+        },
+        {
+          "coin": "ACE",
+          "side": "SHORT",
+          "upnl": 1.13,
+          "notional": 40.71,
+          "lev": 3.0
+        },
+        {
+          "coin": "WIF",
+          "side": "SHORT",
+          "upnl": 12.96,
+          "notional": 460.38,
+          "lev": 5.0
+        },
+        {
+          "coin": "CAKE",
+          "side": "LONG",
+          "upnl": 1.43,
+          "notional": 111.11,
+          "lev": 3.0
+        },
+        {
+          "coin": "PEOPLE",
+          "side": "SHORT",
+          "upnl": -2.29,
+          "notional": 75.9,
+          "lev": 3.0
+        },
+        {
+          "coin": "ENS",
+          "side": "SHORT",
+          "upnl": -5.93,
+          "notional": 361.39,
+          "lev": 5.0
+        },
+        {
+          "coin": "XAI",
+          "side": "SHORT",
+          "upnl": 238.5,
+          "notional": 2629.21,
+          "lev": 3.0
+        },
+        {
+          "coin": "MANTA",
+          "side": "SHORT",
+          "upnl": -2.54,
+          "notional": 130.91,
+          "lev": 3.0
+        },
+        {
+          "coin": "ONDO",
+          "side": "SHORT",
+          "upnl": 98.32,
+          "notional": 2023.63,
+          "lev": 10.0
+        },
+        {
+          "coin": "ALT",
+          "side": "SHORT",
+          "upnl": -5.77,
+          "notional": 1068.21,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZETA",
+          "side": "SHORT",
+          "upnl": 88.56,
+          "notional": 2400.44,
+          "lev": 3.0
+        },
+        {
+          "coin": "DYM",
+          "side": "SHORT",
+          "upnl": 237.94,
+          "notional": 826.32,
+          "lev": 3.0
+        },
+        {
+          "coin": "MAVIA",
+          "side": "SHORT",
+          "upnl": 20.33,
+          "notional": 1475.46,
+          "lev": 3.0
+        },
+        {
+          "coin": "W",
+          "side": "SHORT",
+          "upnl": 509.28,
+          "notional": 2010.33,
+          "lev": 5.0
+        },
+        {
+          "coin": "STRK",
+          "side": "SHORT",
+          "upnl": 47.27,
+          "notional": 1634.42,
+          "lev": 5.0
+        },
+        {
+          "coin": "TAO",
+          "side": "SHORT",
+          "upnl": 66.89,
+          "notional": 575.77,
+          "lev": 5.0
+        },
+        {
+          "coin": "AR",
+          "side": "SHORT",
+          "upnl": -1.18,
+          "notional": 12.18,
+          "lev": 5.0
+        },
+        {
+          "coin": "kFLOKI",
+          "side": "SHORT",
+          "upnl": 1.65,
+          "notional": 435.13,
+          "lev": 5.0
+        },
+        {
+          "coin": "ETHFI",
+          "side": "SHORT",
+          "upnl": 211.6,
+          "notional": 1997.79,
+          "lev": 5.0
+        },
+        {
+          "coin": "ENA",
+          "side": "LONG",
+          "upnl": 24.44,
+          "notional": 231.05,
+          "lev": 10.0
+        },
+        {
+          "coin": "TNSR",
+          "side": "LONG",
+          "upnl": -2.8,
+          "notional": 14.4,
+          "lev": 3.0
+        },
+        {
+          "coin": "SAGA",
+          "side": "SHORT",
+          "upnl": 86.02,
+          "notional": 1178.91,
+          "lev": 3.0
+        },
+        {
+          "coin": "MERL",
+          "side": "SHORT",
+          "upnl": 615.08,
+          "notional": 1315.38,
+          "lev": 3.0
+        },
+        {
+          "coin": "HBAR",
+          "side": "SHORT",
+          "upnl": 5.94,
+          "notional": 486.0,
+          "lev": 5.0
+        },
+        {
+          "coin": "EIGEN",
+          "side": "SHORT",
+          "upnl": 14.3,
+          "notional": 394.84,
+          "lev": 5.0
+        },
+        {
+          "coin": "TURBO",
+          "side": "LONG",
+          "upnl": -0.43,
+          "notional": 9.24,
+          "lev": 3.0
+        },
+        {
+          "coin": "IO",
+          "side": "SHORT",
+          "upnl": 39.84,
+          "notional": 877.96,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZK",
+          "side": "SHORT",
+          "upnl": 5.58,
+          "notional": 438.21,
+          "lev": 5.0
+        },
+        {
+          "coin": "BLAST",
+          "side": "SHORT",
+          "upnl": -21.39,
+          "notional": 2918.17,
+          "lev": 3.0
+        },
+        {
+          "coin": "RENDER",
+          "side": "SHORT",
+          "upnl": -28.19,
+          "notional": 487.53,
+          "lev": 5.0
+        },
+        {
+          "coin": "POL",
+          "side": "LONG",
+          "upnl": -506.45,
+          "notional": 4878.43,
+          "lev": 5.0
+        },
+        {
+          "coin": "CELO",
+          "side": "LONG",
+          "upnl": 0.21,
+          "notional": 17.41,
+          "lev": 3.0
+        },
+        {
+          "coin": "HMSTR",
+          "side": "SHORT",
+          "upnl": -1.74,
+          "notional": 30.27,
+          "lev": 3.0
+        },
+        {
+          "coin": "GOAT",
+          "side": "SHORT",
+          "upnl": 5.89,
+          "notional": 33.9,
+          "lev": 3.0
+        },
+        {
+          "coin": "PURR",
+          "side": "LONG",
+          "upnl": 35.0,
+          "notional": 3090.91,
+          "lev": 3.0
+        },
+        {
+          "coin": "PNUT",
+          "side": "SHORT",
+          "upnl": -6.06,
+          "notional": 90.11,
+          "lev": 3.0
+        },
+        {
+          "coin": "XLM",
+          "side": "LONG",
+          "upnl": -159.56,
+          "notional": 2825.53,
+          "lev": 5.0
+        },
+        {
+          "coin": "SAND",
+          "side": "SHORT",
+          "upnl": -13.65,
+          "notional": 783.75,
+          "lev": 5.0
+        },
+        {
+          "coin": "IOTA",
+          "side": "SHORT",
+          "upnl": 54.85,
+          "notional": 1208.93,
+          "lev": 3.0
+        },
+        {
+          "coin": "ALGO",
+          "side": "LONG",
+          "upnl": 65.54,
+          "notional": 1516.35,
+          "lev": 5.0
+        },
+        {
+          "coin": "HYPE",
+          "side": "LONG",
+          "upnl": 2963.41,
+          "notional": 53553.14,
+          "lev": 10.0
+        },
+        {
+          "coin": "ME",
+          "side": "LONG",
+          "upnl": -0.0,
+          "notional": 0.02,
+          "lev": 3.0
+        },
+        {
+          "coin": "VIRTUAL",
+          "side": "SHORT",
+          "upnl": 23.51,
+          "notional": 517.13,
+          "lev": 5.0
+        },
+        {
+          "coin": "PENGU",
+          "side": "SHORT",
+          "upnl": 2.62,
+          "notional": 484.94,
+          "lev": 5.0
+        },
+        {
+          "coin": "FARTCOIN",
+          "side": "LONG",
+          "upnl": 7.48,
+          "notional": 629.38,
+          "lev": 10.0
+        },
+        {
+          "coin": "SPX",
+          "side": "LONG",
+          "upnl": 8.48,
+          "notional": 55.48,
+          "lev": 5.0
+        },
+        {
+          "coin": "S",
+          "side": "SHORT",
+          "upnl": 1.47,
+          "notional": 792.37,
+          "lev": 5.0
+        },
+        {
+          "coin": "MORPHO",
+          "side": "SHORT",
+          "upnl": -84.48,
+          "notional": 2139.84,
+          "lev": 5.0
+        },
+        {
+          "coin": "TRUMP",
+          "side": "SHORT",
+          "upnl": 176.01,
+          "notional": 1628.85,
+          "lev": 10.0
+        },
+        {
+          "coin": "MELANIA",
+          "side": "SHORT",
+          "upnl": 344.56,
+          "notional": 2445.08,
+          "lev": 3.0
+        },
+        {
+          "coin": "ANIME",
+          "side": "SHORT",
+          "upnl": 81.29,
+          "notional": 632.69,
+          "lev": 3.0
+        },
+        {
+          "coin": "VVV",
+          "side": "LONG",
+          "upnl": 9.67,
+          "notional": 115.52,
+          "lev": 3.0
+        },
+        {
+          "coin": "BERA",
+          "side": "SHORT",
+          "upnl": 286.52,
+          "notional": 2339.18,
+          "lev": 5.0
+        },
+        {
+          "coin": "LAYER",
+          "side": "SHORT",
+          "upnl": 146.62,
+          "notional": 1974.52,
+          "lev": 3.0
+        },
+        {
+          "coin": "IP",
+          "side": "SHORT",
+          "upnl": 202.29,
+          "notional": 1244.36,
+          "lev": 3.0
+        },
+        {
+          "coin": "KAITO",
+          "side": "SHORT",
+          "upnl": -41.91,
+          "notional": 489.78,
+          "lev": 5.0
+        },
+        {
+          "coin": "PAXG",
+          "side": "LONG",
+          "upnl": 141.85,
+          "notional": 2780.49,
+          "lev": 10.0
+        },
+        {
+          "coin": "BABY",
+          "side": "LONG",
+          "upnl": 3.46,
+          "notional": 34.24,
+          "lev": 3.0
+        },
+        {
+          "coin": "HYPER",
+          "side": "LONG",
+          "upnl": -0.28,
+          "notional": 10.87,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZORA",
+          "side": "SHORT",
+          "upnl": 58.95,
+          "notional": 983.03,
+          "lev": 3.0
+        },
+        {
+          "coin": "INIT",
+          "side": "SHORT",
+          "upnl": -3.23,
+          "notional": 157.5,
+          "lev": 3.0
+        },
+        {
+          "coin": "RESOLV",
+          "side": "SHORT",
+          "upnl": 88.61,
+          "notional": 388.35,
+          "lev": 3.0
+        },
+        {
+          "coin": "SYRUP",
+          "side": "SHORT",
+          "upnl": 4.87,
+          "notional": 445.42,
+          "lev": 3.0
+        },
+        {
+          "coin": "WLFI",
+          "side": "LONG",
+          "upnl": 7.78,
+          "notional": 1004.47,
+          "lev": 5.0
+        },
+        {
+          "coin": "ASTER",
+          "side": "SHORT",
+          "upnl": 4.75,
+          "notional": 684.78,
+          "lev": 5.0
+        },
+        {
+          "coin": "AVNT",
+          "side": "SHORT",
+          "upnl": 136.9,
+          "notional": 744.17,
+          "lev": 5.0
+        },
+        {
+          "coin": "STBL",
+          "side": "SHORT",
+          "upnl": -91.79,
+          "notional": 904.34,
+          "lev": 3.0
+        },
+        {
+          "coin": "0G",
+          "side": "LONG",
+          "upnl": -1.57,
+          "notional": 104.84,
+          "lev": 3.0
+        },
+        {
+          "coin": "APEX",
+          "side": "SHORT",
+          "upnl": -13.84,
+          "notional": 564.34,
+          "lev": 3.0
+        },
+        {
+          "coin": "ZEC",
+          "side": "LONG",
+          "upnl": 21.57,
+          "notional": 1276.09,
+          "lev": 10.0
+        },
+        {
+          "coin": "MON",
+          "side": "SHORT",
+          "upnl": -9.82,
+          "notional": 4847.87,
+          "lev": 5.0
+        },
+        {
+          "coin": "ICP",
+          "side": "SHORT",
+          "upnl": 24.75,
+          "notional": 760.14,
+          "lev": 5.0
+        },
+        {
+          "coin": "XMR",
+          "side": "LONG",
+          "upnl": -14.45,
+          "notional": 5727.01,
+          "lev": 5.0
+        },
+        {
+          "coin": "DASH",
+          "side": "LONG",
+          "upnl": 14.87,
+          "notional": 111.62,
+          "lev": 5.0
+        },
+        {
+          "coin": "SKR",
+          "side": "LONG",
+          "upnl": -0.7,
+          "notional": 29.86,
+          "lev": 3.0
+        },
+        {
+          "coin": "AZTEC",
+          "side": "LONG",
+          "upnl": 1.39,
+          "notional": 48.56,
+          "lev": 3.0
+        }
+      ],
+      "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
+      "type_reasons": [
+        "Sharpe* 26.20 > 8",
+        "Big Bet Rate 0% < 30%"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "BTC",
           "side": "SHORT",
@@ -141850,946 +141369,7 @@
           "lev": 3.0
         }
       ],
-      "ai_summary": "This wallet does not rely on a single dramatic edge to stay ahead. It shows up, executes with quiet discipline, and stacks positive outcomes across a wide range of conditions. The strength is not in the peak — it is in the floor. Note: the sample size is still light, so all signals should be read with some caution. Overall: a reliable performer that earns through repetition, not spectacle.",
-      "type_reasons": [
-        "Win Rate 63% > 55%",
-        "Profit Factor 3.8x > 1.2"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "BTC",
-          "side": "SHORT",
-          "upnl": -411.4,
-          "notional": 32979.13,
-          "lev": 40.0
-        },
-        {
-          "coin": "ETH",
-          "side": "LONG",
-          "upnl": 897.24,
-          "notional": 11549.99,
-          "lev": 25.0
-        },
-        {
-          "coin": "ATOM",
-          "side": "SHORT",
-          "upnl": 140.53,
-          "notional": 3185.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "DYDX",
-          "side": "SHORT",
-          "upnl": 4.28,
-          "notional": 243.06,
-          "lev": 5.0
-        },
-        {
-          "coin": "SOL",
-          "side": "LONG",
-          "upnl": -20.08,
-          "notional": 2976.25,
-          "lev": 20.0
-        },
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": 0.3,
-          "notional": 1363.06,
-          "lev": 10.0
-        },
-        {
-          "coin": "BNB",
-          "side": "LONG",
-          "upnl": 103.86,
-          "notional": 7869.34,
-          "lev": 10.0
-        },
-        {
-          "coin": "APE",
-          "side": "SHORT",
-          "upnl": 25.93,
-          "notional": 862.62,
-          "lev": 5.0
-        },
-        {
-          "coin": "OP",
-          "side": "SHORT",
-          "upnl": 145.19,
-          "notional": 2399.19,
-          "lev": 5.0
-        },
-        {
-          "coin": "LTC",
-          "side": "SHORT",
-          "upnl": -2.33,
-          "notional": 1200.45,
-          "lev": 10.0
-        },
-        {
-          "coin": "ARB",
-          "side": "LONG",
-          "upnl": -2.04,
-          "notional": 203.13,
-          "lev": 10.0
-        },
-        {
-          "coin": "DOGE",
-          "side": "LONG",
-          "upnl": -9.06,
-          "notional": 1668.58,
-          "lev": 10.0
-        },
-        {
-          "coin": "INJ",
-          "side": "LONG",
-          "upnl": 6.77,
-          "notional": 565.61,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUI",
-          "side": "SHORT",
-          "upnl": -2.67,
-          "notional": 2181.36,
-          "lev": 10.0
-        },
-        {
-          "coin": "kPEPE",
-          "side": "LONG",
-          "upnl": 8.42,
-          "notional": 252.69,
-          "lev": 10.0
-        },
-        {
-          "coin": "CRV",
-          "side": "LONG",
-          "upnl": -9.62,
-          "notional": 791.03,
-          "lev": 10.0
-        },
-        {
-          "coin": "LDO",
-          "side": "LONG",
-          "upnl": 513.79,
-          "notional": 4158.72,
-          "lev": 5.0
-        },
-        {
-          "coin": "LINK",
-          "side": "LONG",
-          "upnl": -7.48,
-          "notional": 701.13,
-          "lev": 10.0
-        },
-        {
-          "coin": "STX",
-          "side": "SHORT",
-          "upnl": -10.93,
-          "notional": 1368.01,
-          "lev": 5.0
-        },
-        {
-          "coin": "CFX",
-          "side": "SHORT",
-          "upnl": -15.81,
-          "notional": 313.19,
-          "lev": 5.0
-        },
-        {
-          "coin": "GMX",
-          "side": "SHORT",
-          "upnl": 3.17,
-          "notional": 261.65,
-          "lev": 3.0
-        },
-        {
-          "coin": "SNX",
-          "side": "SHORT",
-          "upnl": 0.58,
-          "notional": 198.4,
-          "lev": 3.0
-        },
-        {
-          "coin": "XRP",
-          "side": "SHORT",
-          "upnl": 0.47,
-          "notional": 64.54,
-          "lev": 20.0
-        },
-        {
-          "coin": "BCH",
-          "side": "LONG",
-          "upnl": -89.36,
-          "notional": 1550.09,
-          "lev": 10.0
-        },
-        {
-          "coin": "APT",
-          "side": "SHORT",
-          "upnl": 164.34,
-          "notional": 1661.59,
-          "lev": 10.0
-        },
-        {
-          "coin": "AAVE",
-          "side": "LONG",
-          "upnl": -150.44,
-          "notional": 6553.59,
-          "lev": 10.0
-        },
-        {
-          "coin": "COMP",
-          "side": "LONG",
-          "upnl": 2.04,
-          "notional": 38.09,
-          "lev": 5.0
-        },
-        {
-          "coin": "WLD",
-          "side": "SHORT",
-          "upnl": -227.48,
-          "notional": 1899.72,
-          "lev": 10.0
-        },
-        {
-          "coin": "YGG",
-          "side": "SHORT",
-          "upnl": -1.0,
-          "notional": 97.72,
-          "lev": 3.0
-        },
-        {
-          "coin": "TRX",
-          "side": "LONG",
-          "upnl": 22.03,
-          "notional": 671.34,
-          "lev": 10.0
-        },
-        {
-          "coin": "kSHIB",
-          "side": "LONG",
-          "upnl": 1.09,
-          "notional": 83.39,
-          "lev": 10.0
-        },
-        {
-          "coin": "UNI",
-          "side": "LONG",
-          "upnl": -233.78,
-          "notional": 3476.07,
-          "lev": 10.0
-        },
-        {
-          "coin": "SEI",
-          "side": "SHORT",
-          "upnl": 135.63,
-          "notional": 1645.77,
-          "lev": 5.0
-        },
-        {
-          "coin": "RUNE",
-          "side": "SHORT",
-          "upnl": -5.33,
-          "notional": 816.23,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZRO",
-          "side": "SHORT",
-          "upnl": -502.92,
-          "notional": 3547.27,
-          "lev": 5.0
-        },
-        {
-          "coin": "DOT",
-          "side": "LONG",
-          "upnl": -53.95,
-          "notional": 2977.68,
-          "lev": 10.0
-        },
-        {
-          "coin": "BANANA",
-          "side": "SHORT",
-          "upnl": -5.07,
-          "notional": 88.57,
-          "lev": 3.0
-        },
-        {
-          "coin": "FTT",
-          "side": "SHORT",
-          "upnl": 0.12,
-          "notional": 230.91,
-          "lev": 3.0
-        },
-        {
-          "coin": "BIGTIME",
-          "side": "SHORT",
-          "upnl": 0.45,
-          "notional": 163.09,
-          "lev": 3.0
-        },
-        {
-          "coin": "BLUR",
-          "side": "SHORT",
-          "upnl": 81.65,
-          "notional": 2277.98,
-          "lev": 3.0
-        },
-        {
-          "coin": "TIA",
-          "side": "SHORT",
-          "upnl": 70.78,
-          "notional": 3079.12,
-          "lev": 5.0
-        },
-        {
-          "coin": "ADA",
-          "side": "LONG",
-          "upnl": -9.91,
-          "notional": 217.33,
-          "lev": 10.0
-        },
-        {
-          "coin": "TON",
-          "side": "LONG",
-          "upnl": -11.06,
-          "notional": 1338.46,
-          "lev": 10.0
-        },
-        {
-          "coin": "MINA",
-          "side": "SHORT",
-          "upnl": -4.27,
-          "notional": 186.06,
-          "lev": 3.0
-        },
-        {
-          "coin": "GAS",
-          "side": "SHORT",
-          "upnl": 5.37,
-          "notional": 293.1,
-          "lev": 3.0
-        },
-        {
-          "coin": "PENDLE",
-          "side": "LONG",
-          "upnl": -449.38,
-          "notional": 5222.49,
-          "lev": 5.0
-        },
-        {
-          "coin": "NEAR",
-          "side": "SHORT",
-          "upnl": -155.21,
-          "notional": 2939.37,
-          "lev": 10.0
-        },
-        {
-          "coin": "MEME",
-          "side": "SHORT",
-          "upnl": 70.12,
-          "notional": 1716.6,
-          "lev": 3.0
-        },
-        {
-          "coin": "NEO",
-          "side": "SHORT",
-          "upnl": -10.65,
-          "notional": 316.78,
-          "lev": 5.0
-        },
-        {
-          "coin": "ZEN",
-          "side": "SHORT",
-          "upnl": -0.71,
-          "notional": 289.54,
-          "lev": 5.0
-        },
-        {
-          "coin": "FIL",
-          "side": "SHORT",
-          "upnl": -56.7,
-          "notional": 2615.0,
-          "lev": 5.0
-        },
-        {
-          "coin": "PYTH",
-          "side": "SHORT",
-          "upnl": 0.3,
-          "notional": 797.88,
-          "lev": 5.0
-        },
-        {
-          "coin": "SUSHI",
-          "side": "LONG",
-          "upnl": -0.22,
-          "notional": 10.99,
-          "lev": 3.0
-        },
-        {
-          "coin": "IMX",
-          "side": "SHORT",
-          "upnl": -29.52,
-          "notional": 1020.71,
-          "lev": 5.0
-        },
-        {
-          "coin": "kBONK",
-          "side": "SHORT",
-          "upnl": 20.31,
-          "notional": 1007.19,
-          "lev": 10.0
-        },
-        {
-          "coin": "SUPER",
-          "side": "SHORT",
-          "upnl": -0.11,
-          "notional": 6.98,
-          "lev": 3.0
-        },
-        {
-          "coin": "kLUNC",
-          "side": "SHORT",
-          "upnl": 0.0,
-          "notional": 0.04,
-          "lev": 3.0
-        },
-        {
-          "coin": "GALA",
-          "side": "SHORT",
-          "upnl": -4.41,
-          "notional": 693.05,
-          "lev": 3.0
-        },
-        {
-          "coin": "JTO",
-          "side": "SHORT",
-          "upnl": -107.38,
-          "notional": 2141.41,
-          "lev": 5.0
-        },
-        {
-          "coin": "ACE",
-          "side": "SHORT",
-          "upnl": 1.96,
-          "notional": 40.71,
-          "lev": 3.0
-        },
-        {
-          "coin": "WIF",
-          "side": "SHORT",
-          "upnl": 14.53,
-          "notional": 296.35,
-          "lev": 5.0
-        },
-        {
-          "coin": "CAKE",
-          "side": "LONG",
-          "upnl": -1.96,
-          "notional": 113.08,
-          "lev": 3.0
-        },
-        {
-          "coin": "PEOPLE",
-          "side": "SHORT",
-          "upnl": 1.97,
-          "notional": 82.86,
-          "lev": 3.0
-        },
-        {
-          "coin": "ENS",
-          "side": "SHORT",
-          "upnl": -5.79,
-          "notional": 201.34,
-          "lev": 5.0
-        },
-        {
-          "coin": "XAI",
-          "side": "SHORT",
-          "upnl": 251.41,
-          "notional": 2631.83,
-          "lev": 3.0
-        },
-        {
-          "coin": "MANTA",
-          "side": "SHORT",
-          "upnl": -1.87,
-          "notional": 165.46,
-          "lev": 3.0
-        },
-        {
-          "coin": "ONDO",
-          "side": "SHORT",
-          "upnl": 96.88,
-          "notional": 1874.86,
-          "lev": 10.0
-        },
-        {
-          "coin": "ALT",
-          "side": "SHORT",
-          "upnl": -7.1,
-          "notional": 1314.93,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZETA",
-          "side": "SHORT",
-          "upnl": 85.08,
-          "notional": 2448.05,
-          "lev": 3.0
-        },
-        {
-          "coin": "DYM",
-          "side": "SHORT",
-          "upnl": 253.31,
-          "notional": 849.26,
-          "lev": 3.0
-        },
-        {
-          "coin": "MAVIA",
-          "side": "SHORT",
-          "upnl": 51.13,
-          "notional": 1475.46,
-          "lev": 3.0
-        },
-        {
-          "coin": "W",
-          "side": "SHORT",
-          "upnl": 525.75,
-          "notional": 2039.59,
-          "lev": 5.0
-        },
-        {
-          "coin": "STRK",
-          "side": "SHORT",
-          "upnl": 105.71,
-          "notional": 1468.02,
-          "lev": 5.0
-        },
-        {
-          "coin": "TAO",
-          "side": "SHORT",
-          "upnl": 56.83,
-          "notional": 415.67,
-          "lev": 5.0
-        },
-        {
-          "coin": "AR",
-          "side": "SHORT",
-          "upnl": -0.66,
-          "notional": 12.18,
-          "lev": 5.0
-        },
-        {
-          "coin": "kFLOKI",
-          "side": "SHORT",
-          "upnl": 0.88,
-          "notional": 264.16,
-          "lev": 5.0
-        },
-        {
-          "coin": "BOME",
-          "side": "SHORT",
-          "upnl": -8.29,
-          "notional": 85.66,
-          "lev": 3.0
-        },
-        {
-          "coin": "ETHFI",
-          "side": "SHORT",
-          "upnl": 212.78,
-          "notional": 1841.1,
-          "lev": 5.0
-        },
-        {
-          "coin": "ENA",
-          "side": "LONG",
-          "upnl": 29.51,
-          "notional": 229.49,
-          "lev": 10.0
-        },
-        {
-          "coin": "TNSR",
-          "side": "LONG",
-          "upnl": -2.72,
-          "notional": 14.4,
-          "lev": 3.0
-        },
-        {
-          "coin": "SAGA",
-          "side": "SHORT",
-          "upnl": 62.68,
-          "notional": 1235.51,
-          "lev": 3.0
-        },
-        {
-          "coin": "MERL",
-          "side": "SHORT",
-          "upnl": 686.23,
-          "notional": 1120.43,
-          "lev": 3.0
-        },
-        {
-          "coin": "HBAR",
-          "side": "SHORT",
-          "upnl": 6.89,
-          "notional": 313.45,
-          "lev": 5.0
-        },
-        {
-          "coin": "EIGEN",
-          "side": "SHORT",
-          "upnl": 25.68,
-          "notional": 290.43,
-          "lev": 5.0
-        },
-        {
-          "coin": "TURBO",
-          "side": "LONG",
-          "upnl": -0.69,
-          "notional": 9.24,
-          "lev": 3.0
-        },
-        {
-          "coin": "IO",
-          "side": "SHORT",
-          "upnl": 28.81,
-          "notional": 894.76,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZK",
-          "side": "SHORT",
-          "upnl": 0.17,
-          "notional": 257.52,
-          "lev": 5.0
-        },
-        {
-          "coin": "BLAST",
-          "side": "SHORT",
-          "upnl": 96.75,
-          "notional": 2847.49,
-          "lev": 3.0
-        },
-        {
-          "coin": "RENDER",
-          "side": "SHORT",
-          "upnl": -30.62,
-          "notional": 326.4,
-          "lev": 5.0
-        },
-        {
-          "coin": "POL",
-          "side": "LONG",
-          "upnl": -566.22,
-          "notional": 5117.88,
-          "lev": 5.0
-        },
-        {
-          "coin": "HMSTR",
-          "side": "SHORT",
-          "upnl": -2.1,
-          "notional": 41.67,
-          "lev": 3.0
-        },
-        {
-          "coin": "GOAT",
-          "side": "SHORT",
-          "upnl": 5.71,
-          "notional": 33.9,
-          "lev": 3.0
-        },
-        {
-          "coin": "PURR",
-          "side": "LONG",
-          "upnl": 87.4,
-          "notional": 2983.43,
-          "lev": 3.0
-        },
-        {
-          "coin": "PNUT",
-          "side": "SHORT",
-          "upnl": -3.63,
-          "notional": 126.13,
-          "lev": 3.0
-        },
-        {
-          "coin": "XLM",
-          "side": "LONG",
-          "upnl": -214.02,
-          "notional": 3030.49,
-          "lev": 5.0
-        },
-        {
-          "coin": "SAND",
-          "side": "SHORT",
-          "upnl": -3.24,
-          "notional": 127.63,
-          "lev": 5.0
-        },
-        {
-          "coin": "IOTA",
-          "side": "SHORT",
-          "upnl": 49.29,
-          "notional": 1110.07,
-          "lev": 3.0
-        },
-        {
-          "coin": "ALGO",
-          "side": "LONG",
-          "upnl": 79.87,
-          "notional": 1665.56,
-          "lev": 5.0
-        },
-        {
-          "coin": "HYPE",
-          "side": "LONG",
-          "upnl": 5428.72,
-          "notional": 55075.78,
-          "lev": 10.0
-        },
-        {
-          "coin": "ME",
-          "side": "LONG",
-          "upnl": -0.0,
-          "notional": 0.02,
-          "lev": 3.0
-        },
-        {
-          "coin": "VIRTUAL",
-          "side": "SHORT",
-          "upnl": 23.32,
-          "notional": 350.55,
-          "lev": 5.0
-        },
-        {
-          "coin": "PENGU",
-          "side": "SHORT",
-          "upnl": 7.67,
-          "notional": 320.92,
-          "lev": 5.0
-        },
-        {
-          "coin": "FARTCOIN",
-          "side": "LONG",
-          "upnl": 43.36,
-          "notional": 588.89,
-          "lev": 10.0
-        },
-        {
-          "coin": "SPX",
-          "side": "LONG",
-          "upnl": 7.49,
-          "notional": 55.48,
-          "lev": 5.0
-        },
-        {
-          "coin": "S",
-          "side": "SHORT",
-          "upnl": 8.1,
-          "notional": 749.69,
-          "lev": 5.0
-        },
-        {
-          "coin": "MORPHO",
-          "side": "SHORT",
-          "upnl": -139.85,
-          "notional": 1867.25,
-          "lev": 5.0
-        },
-        {
-          "coin": "TRUMP",
-          "side": "SHORT",
-          "upnl": 171.32,
-          "notional": 1459.14,
-          "lev": 10.0
-        },
-        {
-          "coin": "MELANIA",
-          "side": "SHORT",
-          "upnl": 342.06,
-          "notional": 2501.89,
-          "lev": 3.0
-        },
-        {
-          "coin": "ANIME",
-          "side": "SHORT",
-          "upnl": 81.52,
-          "notional": 632.69,
-          "lev": 3.0
-        },
-        {
-          "coin": "VVV",
-          "side": "LONG",
-          "upnl": 13.12,
-          "notional": 113.86,
-          "lev": 3.0
-        },
-        {
-          "coin": "BERA",
-          "side": "SHORT",
-          "upnl": 223.94,
-          "notional": 2646.77,
-          "lev": 5.0
-        },
-        {
-          "coin": "LAYER",
-          "side": "SHORT",
-          "upnl": 136.77,
-          "notional": 1993.79,
-          "lev": 3.0
-        },
-        {
-          "coin": "IP",
-          "side": "SHORT",
-          "upnl": 197.14,
-          "notional": 1255.49,
-          "lev": 3.0
-        },
-        {
-          "coin": "KAITO",
-          "side": "SHORT",
-          "upnl": -29.06,
-          "notional": 334.59,
-          "lev": 5.0
-        },
-        {
-          "coin": "PAXG",
-          "side": "LONG",
-          "upnl": 413.83,
-          "notional": 11277.71,
-          "lev": 10.0
-        },
-        {
-          "coin": "BABY",
-          "side": "LONG",
-          "upnl": 3.26,
-          "notional": 34.24,
-          "lev": 3.0
-        },
-        {
-          "coin": "HYPER",
-          "side": "LONG",
-          "upnl": -1.08,
-          "notional": 10.87,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZORA",
-          "side": "SHORT",
-          "upnl": 65.83,
-          "notional": 717.17,
-          "lev": 3.0
-        },
-        {
-          "coin": "INIT",
-          "side": "SHORT",
-          "upnl": 2.08,
-          "notional": 200.5,
-          "lev": 3.0
-        },
-        {
-          "coin": "RESOLV",
-          "side": "SHORT",
-          "upnl": 60.74,
-          "notional": 432.14,
-          "lev": 3.0
-        },
-        {
-          "coin": "SYRUP",
-          "side": "SHORT",
-          "upnl": 5.85,
-          "notional": 222.83,
-          "lev": 3.0
-        },
-        {
-          "coin": "WLFI",
-          "side": "LONG",
-          "upnl": 5.92,
-          "notional": 1173.8,
-          "lev": 5.0
-        },
-        {
-          "coin": "ASTER",
-          "side": "SHORT",
-          "upnl": -5.6,
-          "notional": 684.78,
-          "lev": 5.0
-        },
-        {
-          "coin": "AVNT",
-          "side": "SHORT",
-          "upnl": 126.55,
-          "notional": 744.17,
-          "lev": 5.0
-        },
-        {
-          "coin": "STBL",
-          "side": "SHORT",
-          "upnl": -63.38,
-          "notional": 940.92,
-          "lev": 3.0
-        },
-        {
-          "coin": "0G",
-          "side": "LONG",
-          "upnl": -1.67,
-          "notional": 105.62,
-          "lev": 3.0
-        },
-        {
-          "coin": "APEX",
-          "side": "SHORT",
-          "upnl": -19.73,
-          "notional": 710.81,
-          "lev": 3.0
-        },
-        {
-          "coin": "ZEC",
-          "side": "LONG",
-          "upnl": 5.04,
-          "notional": 126.06,
-          "lev": 10.0
-        },
-        {
-          "coin": "MON",
-          "side": "SHORT",
-          "upnl": -343.64,
-          "notional": 4837.62,
-          "lev": 5.0
-        },
-        {
-          "coin": "ICP",
-          "side": "SHORT",
-          "upnl": 18.33,
-          "notional": 760.14,
-          "lev": 5.0
-        },
-        {
-          "coin": "XMR",
-          "side": "LONG",
-          "upnl": -3.86,
-          "notional": 5662.23,
-          "lev": 5.0
-        },
-        {
-          "coin": "DASH",
-          "side": "LONG",
-          "upnl": 24.18,
-          "notional": 110.19,
-          "lev": 5.0
-        },
-        {
-          "coin": "SKR",
-          "side": "LONG",
-          "upnl": -0.12,
-          "notional": 29.86,
-          "lev": 3.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T06:00:46.994270+00:00"
+      "prev_positions_ts": "2026-04-15T05:02:45.514294+00:00"
     }
   },
   "0x14c583a37c854f888d83d4d0eeb3739b5557eccd": {
@@ -158035,118 +156615,141 @@
   },
   "0x881cd92459f09622680e711458b22c5335fba65b": {
     "first_discovered_at": "2026-04-14T12:00:52.468206+00:00",
-    "fetched_at": "2026-04-15T05:04:21.083078+00:00",
+    "fetched_at": "2026-04-15T13:43:06.306837+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0x881cd92459f09622680e711458b22c5335fba65b",
-      "label": "0x881c...a65b",
-      "total_equity": 722204.736954,
-      "margin_pct": 4.928841513298918,
-      "realized": 1370.668014000009,
-      "total_upnl": -3053.084812,
-      "total_pnl": 1370.668014000009,
-      "win_rate": 59.5,
-      "avg_win": 26.96,
-      "avg_loss": 35.82,
-      "profit_factor": 0.75,
-      "sharpe": 1.06,
-      "mdd_pct": 456.7,
-      "consistency": 37.5,
-      "durability": 30.2,
+      "label": "0x881cd92459f09622680e711458b22c5335fba65b",
+      "total_equity": 723560.58356,
+      "margin_pct": 4.729048199895837,
+      "realized": 313.4596510000107,
+      "total_upnl": -1750.230526,
+      "total_pnl": 313.4596510000107,
+      "win_rate": 60.3,
+      "avg_win": 23.65,
+      "avg_loss": 35.01,
+      "profit_factor": 0.68,
+      "sharpe": 0.26,
+      "mdd_pct": 96.2,
+      "consistency": 28.6,
+      "durability": 23.9,
       "long_pct": 0.0,
       "war_components": {
-        "Profit": 17.0,
-        "ROI": 8.0,
+        "Profit": 15.1,
+        "ROI": 7.6,
         "Big Bet": 1.5,
-        "Sharpe": 9.6,
-        "Win Rate": 9.1
+        "Sharpe": 7.1,
+        "Win Rate": 9.3
       },
-      "follow_score": 46.7,
+      "follow_score": 43.9,
       "big_bet_count": 0,
       "big_bet_rate": 0,
       "big_bet_pnl": 0,
-      "closed_count": 903,
-      "total_days": 8,
-      "data_days": 8,
-      "first_date": "2026-04-08",
+      "closed_count": 946,
+      "total_days": 7,
+      "data_days": 7,
+      "first_date": "2026-04-09",
       "last_date": "2026-04-15",
       "days_since_last": 0,
-      "roi_pct": 0.2,
+      "roi_pct": 0.0,
       "top_coins": [
         {
           "coin": "BCH",
-          "pnl": 4937.28,
+          "pnl": 4977.17,
           "side": "S"
         },
         {
           "coin": "kBONK",
-          "pnl": 3699.23,
+          "pnl": 2780.91,
           "side": "S"
         },
         {
           "coin": "AVAX",
-          "pnl": -7265.84,
+          "pnl": -7444.62,
           "side": "S"
         }
       ],
       "radar": {
-        "profit_amt": 68.0,
-        "roi": 32.0,
+        "profit_amt": 60.3,
+        "roi": 30.5,
         "big_bet": 10,
-        "sharpe": 47.9,
-        "win_rate": 60.5
+        "sharpe": 35.7,
+        "win_rate": 61.7
       },
-      "war_score": 45.2,
-      "trader_type": "🌊 Degen",
-      "character": "All in or liquidated",
+      "war_score": 40.6,
+      "trader_type": "🌀 Drifter",
+      "character": "Still finding a pattern",
       "is_hf": false,
       "spot_holdings": [],
       "is_vault": false,
       "cumulative": [
         {
-          "date": "2026-04-08",
-          "daily": 879.51,
-          "cum": 879.51
-        },
-        {
           "date": "2026-04-09",
-          "daily": -772.18,
-          "cum": 107.33
+          "daily": -996.8,
+          "cum": -996.8
         },
         {
           "date": "2026-04-10",
           "daily": -1153.68,
-          "cum": -1046.35
+          "cum": -2150.49
         },
         {
           "date": "2026-04-11",
           "daily": -2090.69,
-          "cum": -3137.05
+          "cum": -4241.18
         },
         {
           "date": "2026-04-12",
           "daily": 7874.07,
-          "cum": 4737.03
+          "cum": 3632.89
         },
         {
           "date": "2026-04-13",
           "daily": -2370.28,
-          "cum": 2366.74
+          "cum": 1262.61
         },
         {
           "date": "2026-04-14",
           "daily": -1126.09,
-          "cum": 1240.65
+          "cum": 136.52
         },
         {
           "date": "2026-04-15",
-          "daily": 130.02,
-          "cum": 1370.67
+          "daily": 176.94,
+          "cum": 313.46
         }
       ],
-      "source": "active",
+      "source": "0x881cd92459f09622680e711458b22c5335fba65b",
       "error": null,
       "positions": [
+        {
+          "coin": "AVAX",
+          "side": "SHORT",
+          "upnl": -593.06,
+          "notional": 154618.94,
+          "lev": 10.0
+        },
+        {
+          "coin": "BCH",
+          "side": "SHORT",
+          "upnl": 109.87,
+          "notional": 16461.82,
+          "lev": 10.0
+        },
+        {
+          "coin": "kBONK",
+          "side": "SHORT",
+          "upnl": -1267.04,
+          "notional": 169320.19,
+          "lev": 10.0
+        }
+      ],
+      "ai_summary": "This wallet does not yet show a stable rhythm. The results may include isolated wins, but the broader profile suggests shifting behavior rather than a repeatable process. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Note: the sample size is still light, so all signals should be read with some caution. Overall: still searching for a durable way to win.",
+      "type_reasons": [
+        "No dominant pattern — fallback classification"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "AVAX",
           "side": "SHORT",
@@ -158169,36 +156772,7 @@
           "lev": 10.0
         }
       ],
-      "ai_summary": "The aggression is clear, but the discipline is harder to trust. This wallet may still catch spectacular upside, though the drawdown behavior suggests that the line between conviction and overexposure can get thin very quickly. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Note: the sample size is still light, so all signals should be read with some caution. Overall: exciting when right, fragile when pressed.",
-      "type_reasons": [
-        "PnL Drawdown 457% > 100%",
-        "0 large positions taken"
-      ],
-      "confidence": "Early Read",
-      "prev_positions": [
-        {
-          "coin": "AVAX",
-          "side": "SHORT",
-          "upnl": -1065.35,
-          "notional": 49651.5,
-          "lev": 10.0
-        },
-        {
-          "coin": "BCH",
-          "side": "LONG",
-          "upnl": 117.66,
-          "notional": 30806.26,
-          "lev": 10.0
-        },
-        {
-          "coin": "kBONK",
-          "side": "SHORT",
-          "upnl": -1863.38,
-          "notional": 174829.54,
-          "lev": 10.0
-        }
-      ],
-      "prev_positions_ts": "2026-04-14T12:00:52.468206+00:00"
+      "prev_positions_ts": "2026-04-15T05:04:21.083078+00:00"
     }
   },
   "0x295f6f481a82b63963cd5c0f00813fb51111ac62": {
@@ -202927,6 +201501,714 @@
         "0 large positions taken"
       ],
       "confidence": "Early Read"
+    }
+  },
+  "0xc9ac7d67d204257cb1063c710630c676e05fb378": {
+    "first_discovered_at": "2026-04-15T13:42:44.241188+00:00",
+    "fetched_at": "2026-04-15T13:42:44.241188+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0xc9ac7d67d204257cb1063c710630c676e05fb378",
+      "label": "0xc9ac7d67d204257cb1063c710630c676e05fb378",
+      "total_equity": 29221.91822422,
+      "margin_pct": 0,
+      "realized": 29276.471542219988,
+      "total_upnl": 0,
+      "total_pnl": 29276.471542219988,
+      "win_rate": 73.7,
+      "avg_win": 360.6,
+      "avg_loss": 591.45,
+      "profit_factor": 0.61,
+      "sharpe": 1.47,
+      "mdd_pct": 221.2,
+      "consistency": 68.9,
+      "durability": 86.0,
+      "long_pct": 50,
+      "war_components": {
+        "Profit": 21.0,
+        "ROI": 21.0,
+        "Big Bet": 8.4,
+        "Sharpe": 10.5,
+        "Win Rate": 11.7
+      },
+      "follow_score": 34.8,
+      "big_bet_count": 100,
+      "big_bet_rate": 63.0,
+      "big_bet_pnl": 43462.24,
+      "closed_count": 266,
+      "total_days": 122,
+      "data_days": 652,
+      "first_date": "2024-07-03",
+      "last_date": "2026-04-15",
+      "days_since_last": 0,
+      "roi_pct": 100.2,
+      "top_coins": [
+        {
+          "coin": "HYPE",
+          "pnl": 11077.68,
+          "side": "L"
+        },
+        {
+          "coin": "ETH",
+          "pnl": 6582.95,
+          "side": "S"
+        },
+        {
+          "coin": "XRP",
+          "pnl": 5470.54,
+          "side": "S"
+        },
+        {
+          "coin": "SEI",
+          "pnl": 4616.19,
+          "side": "S"
+        },
+        {
+          "coin": "SUI",
+          "pnl": 2125.47,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 84.1,
+        "roi": 83.9,
+        "big_bet": 55.9,
+        "sharpe": 52.3,
+        "win_rate": 78.2
+      },
+      "war_score": 72.6,
+      "trader_type": "🌊 Degen",
+      "character": "All in or liquidated",
+      "is_hf": false,
+      "spot_holdings": [
+        {
+          "coin": "USDC",
+          "amount": 29221.918224,
+          "usd": 0
+        }
+      ],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2024-07-03",
+          "daily": 0.0,
+          "cum": 0.0
+        },
+        {
+          "date": "2024-07-05",
+          "daily": 117.7,
+          "cum": 117.7
+        },
+        {
+          "date": "2024-07-06",
+          "daily": -13.46,
+          "cum": 104.24
+        },
+        {
+          "date": "2024-07-08",
+          "daily": 70.64,
+          "cum": 174.88
+        },
+        {
+          "date": "2024-07-15",
+          "daily": 19.15,
+          "cum": 194.03
+        },
+        {
+          "date": "2024-07-17",
+          "daily": -255.82,
+          "cum": -61.79
+        },
+        {
+          "date": "2024-07-19",
+          "daily": 59.25,
+          "cum": -2.54
+        },
+        {
+          "date": "2024-07-25",
+          "daily": -29.86,
+          "cum": -32.4
+        },
+        {
+          "date": "2024-07-27",
+          "daily": 18.48,
+          "cum": -13.92
+        },
+        {
+          "date": "2024-08-07",
+          "daily": 142.66,
+          "cum": 128.75
+        },
+        {
+          "date": "2024-08-30",
+          "daily": -296.52,
+          "cum": -167.77
+        },
+        {
+          "date": "2024-09-02",
+          "daily": -34.05,
+          "cum": -201.82
+        },
+        {
+          "date": "2025-01-07",
+          "daily": -4.81,
+          "cum": -206.63
+        },
+        {
+          "date": "2025-01-08",
+          "daily": -28.52,
+          "cum": -235.16
+        },
+        {
+          "date": "2025-05-05",
+          "daily": 11.23,
+          "cum": -223.93
+        },
+        {
+          "date": "2025-05-06",
+          "daily": 135.95,
+          "cum": -87.98
+        },
+        {
+          "date": "2025-05-07",
+          "daily": 696.07,
+          "cum": 608.09
+        },
+        {
+          "date": "2025-05-09",
+          "daily": 3987.38,
+          "cum": 4595.47
+        },
+        {
+          "date": "2025-05-11",
+          "daily": 439.18,
+          "cum": 5034.64
+        },
+        {
+          "date": "2025-05-12",
+          "daily": 8.06,
+          "cum": 5042.71
+        },
+        {
+          "date": "2025-05-18",
+          "daily": 296.68,
+          "cum": 5339.39
+        },
+        {
+          "date": "2025-05-21",
+          "daily": 53.34,
+          "cum": 5392.73
+        },
+        {
+          "date": "2025-05-22",
+          "daily": 2908.94,
+          "cum": 8301.67
+        },
+        {
+          "date": "2025-05-25",
+          "daily": 19.84,
+          "cum": 8321.51
+        },
+        {
+          "date": "2025-05-26",
+          "daily": 25.44,
+          "cum": 8346.95
+        },
+        {
+          "date": "2025-05-29",
+          "daily": -63.09,
+          "cum": 8283.86
+        },
+        {
+          "date": "2025-05-30",
+          "daily": 118.58,
+          "cum": 8402.44
+        },
+        {
+          "date": "2025-05-31",
+          "daily": 2252.44,
+          "cum": 10654.88
+        },
+        {
+          "date": "2025-06-03",
+          "daily": 504.03,
+          "cum": 11158.91
+        },
+        {
+          "date": "2025-06-05",
+          "daily": 272.94,
+          "cum": 11431.85
+        },
+        {
+          "date": "2025-06-09",
+          "daily": 78.7,
+          "cum": 11510.55
+        },
+        {
+          "date": "2025-06-10",
+          "daily": -71.6,
+          "cum": 11438.95
+        },
+        {
+          "date": "2025-06-17",
+          "daily": -15.45,
+          "cum": 11423.5
+        },
+        {
+          "date": "2025-06-18",
+          "daily": 1.82,
+          "cum": 11425.32
+        },
+        {
+          "date": "2025-06-22",
+          "daily": 6182.94,
+          "cum": 17608.26
+        },
+        {
+          "date": "2025-06-25",
+          "daily": -1744.77,
+          "cum": 15863.49
+        },
+        {
+          "date": "2025-07-07",
+          "daily": 1.5,
+          "cum": 15864.99
+        },
+        {
+          "date": "2025-07-13",
+          "daily": 2779.37,
+          "cum": 18644.36
+        },
+        {
+          "date": "2025-07-15",
+          "daily": 58.4,
+          "cum": 18702.76
+        },
+        {
+          "date": "2025-07-18",
+          "daily": 299.76,
+          "cum": 19002.52
+        },
+        {
+          "date": "2025-07-19",
+          "daily": 32.46,
+          "cum": 19034.99
+        },
+        {
+          "date": "2025-07-21",
+          "daily": 53.73,
+          "cum": 19088.72
+        },
+        {
+          "date": "2025-07-22",
+          "daily": -11.01,
+          "cum": 19077.71
+        },
+        {
+          "date": "2025-07-25",
+          "daily": 277.02,
+          "cum": 19354.74
+        },
+        {
+          "date": "2025-07-27",
+          "daily": 176.46,
+          "cum": 19531.2
+        },
+        {
+          "date": "2025-08-02",
+          "daily": 268.2,
+          "cum": 19799.4
+        },
+        {
+          "date": "2025-08-04",
+          "daily": 428.61,
+          "cum": 20228.01
+        },
+        {
+          "date": "2025-08-05",
+          "daily": 121.2,
+          "cum": 20349.21
+        },
+        {
+          "date": "2025-08-14",
+          "daily": 285.42,
+          "cum": 20634.63
+        },
+        {
+          "date": "2025-08-20",
+          "daily": 18.67,
+          "cum": 20653.31
+        },
+        {
+          "date": "2025-08-22",
+          "daily": -101.15,
+          "cum": 20552.15
+        },
+        {
+          "date": "2025-08-23",
+          "daily": 25.05,
+          "cum": 20577.2
+        },
+        {
+          "date": "2025-08-24",
+          "daily": 12.74,
+          "cum": 20589.94
+        },
+        {
+          "date": "2025-09-08",
+          "daily": 258.53,
+          "cum": 20848.47
+        },
+        {
+          "date": "2025-09-12",
+          "daily": 1505.56,
+          "cum": 22354.03
+        },
+        {
+          "date": "2025-09-15",
+          "daily": -331.05,
+          "cum": 22022.98
+        },
+        {
+          "date": "2025-09-16",
+          "daily": 80.28,
+          "cum": 22103.26
+        },
+        {
+          "date": "2025-10-07",
+          "daily": -208.69,
+          "cum": 21894.56
+        },
+        {
+          "date": "2025-10-10",
+          "daily": 8383.0,
+          "cum": 30277.56
+        },
+        {
+          "date": "2025-10-11",
+          "daily": 355.66,
+          "cum": 30633.23
+        },
+        {
+          "date": "2025-10-15",
+          "daily": 34.01,
+          "cum": 30667.24
+        },
+        {
+          "date": "2025-10-18",
+          "daily": 76.96,
+          "cum": 30744.2
+        },
+        {
+          "date": "2025-10-20",
+          "daily": -40.57,
+          "cum": 30703.63
+        },
+        {
+          "date": "2025-10-26",
+          "daily": 465.8,
+          "cum": 31169.43
+        },
+        {
+          "date": "2025-11-04",
+          "daily": 784.01,
+          "cum": 31953.44
+        },
+        {
+          "date": "2025-11-10",
+          "daily": 28.72,
+          "cum": 31982.16
+        },
+        {
+          "date": "2025-11-11",
+          "daily": 128.98,
+          "cum": 32111.14
+        },
+        {
+          "date": "2025-11-12",
+          "daily": 495.1,
+          "cum": 32606.24
+        },
+        {
+          "date": "2025-11-13",
+          "daily": 3.45,
+          "cum": 32609.69
+        },
+        {
+          "date": "2025-11-16",
+          "daily": 107.75,
+          "cum": 32717.44
+        },
+        {
+          "date": "2025-11-17",
+          "daily": 3224.82,
+          "cum": 35942.26
+        },
+        {
+          "date": "2025-11-18",
+          "daily": -186.07,
+          "cum": 35756.19
+        },
+        {
+          "date": "2025-11-19",
+          "daily": 26.04,
+          "cum": 35782.23
+        },
+        {
+          "date": "2025-11-22",
+          "daily": 45.57,
+          "cum": 35827.8
+        },
+        {
+          "date": "2025-11-28",
+          "daily": 872.21,
+          "cum": 36700.01
+        },
+        {
+          "date": "2025-12-07",
+          "daily": -538.97,
+          "cum": 36161.04
+        },
+        {
+          "date": "2025-12-18",
+          "daily": 145.18,
+          "cum": 36306.22
+        },
+        {
+          "date": "2025-12-22",
+          "daily": 454.83,
+          "cum": 36761.05
+        },
+        {
+          "date": "2026-01-01",
+          "daily": 148.79,
+          "cum": 36909.85
+        },
+        {
+          "date": "2026-01-06",
+          "daily": 880.0,
+          "cum": 37789.85
+        },
+        {
+          "date": "2026-01-07",
+          "daily": -94.71,
+          "cum": 37695.14
+        },
+        {
+          "date": "2026-01-09",
+          "daily": -0.02,
+          "cum": 37695.12
+        },
+        {
+          "date": "2026-01-15",
+          "daily": -1538.14,
+          "cum": 36156.97
+        },
+        {
+          "date": "2026-01-16",
+          "daily": -25.37,
+          "cum": 36131.61
+        },
+        {
+          "date": "2026-01-17",
+          "daily": 326.99,
+          "cum": 36458.6
+        },
+        {
+          "date": "2026-01-18",
+          "daily": 718.35,
+          "cum": 37176.95
+        },
+        {
+          "date": "2026-01-19",
+          "daily": 407.32,
+          "cum": 37584.26
+        },
+        {
+          "date": "2026-01-20",
+          "daily": 1010.28,
+          "cum": 38594.55
+        },
+        {
+          "date": "2026-01-21",
+          "daily": 578.52,
+          "cum": 39173.07
+        },
+        {
+          "date": "2026-01-23",
+          "daily": 115.01,
+          "cum": 39288.08
+        },
+        {
+          "date": "2026-01-24",
+          "daily": 147.79,
+          "cum": 39435.87
+        },
+        {
+          "date": "2026-01-25",
+          "daily": 8.84,
+          "cum": 39444.71
+        },
+        {
+          "date": "2026-01-27",
+          "daily": -112.0,
+          "cum": 39332.71
+        },
+        {
+          "date": "2026-01-28",
+          "daily": -1474.75,
+          "cum": 37857.96
+        },
+        {
+          "date": "2026-01-31",
+          "daily": 339.0,
+          "cum": 38196.96
+        },
+        {
+          "date": "2026-02-01",
+          "daily": 528.34,
+          "cum": 38725.3
+        },
+        {
+          "date": "2026-02-02",
+          "daily": 3796.9,
+          "cum": 42522.2
+        },
+        {
+          "date": "2026-02-04",
+          "daily": -42.5,
+          "cum": 42479.7
+        },
+        {
+          "date": "2026-02-05",
+          "daily": 650.8,
+          "cum": 43130.5
+        },
+        {
+          "date": "2026-02-06",
+          "daily": -21.2,
+          "cum": 43109.3
+        },
+        {
+          "date": "2026-02-10",
+          "daily": 132.3,
+          "cum": 43241.6
+        },
+        {
+          "date": "2026-02-12",
+          "daily": 417.52,
+          "cum": 43659.12
+        },
+        {
+          "date": "2026-02-13",
+          "daily": -21691.4,
+          "cum": 21967.72
+        },
+        {
+          "date": "2026-02-17",
+          "daily": 124.64,
+          "cum": 22092.36
+        },
+        {
+          "date": "2026-02-19",
+          "daily": 1139.11,
+          "cum": 23231.47
+        },
+        {
+          "date": "2026-02-25",
+          "daily": -146.4,
+          "cum": 23085.07
+        },
+        {
+          "date": "2026-02-26",
+          "daily": -17.52,
+          "cum": 23067.55
+        },
+        {
+          "date": "2026-03-02",
+          "daily": 5032.16,
+          "cum": 28099.71
+        },
+        {
+          "date": "2026-03-03",
+          "daily": 171.87,
+          "cum": 28271.58
+        },
+        {
+          "date": "2026-03-06",
+          "daily": 26.11,
+          "cum": 28297.69
+        },
+        {
+          "date": "2026-03-11",
+          "daily": -23.23,
+          "cum": 28274.46
+        },
+        {
+          "date": "2026-03-14",
+          "daily": -1678.44,
+          "cum": 26596.02
+        },
+        {
+          "date": "2026-03-16",
+          "daily": 12.0,
+          "cum": 26608.02
+        },
+        {
+          "date": "2026-03-17",
+          "daily": 2299.77,
+          "cum": 28907.79
+        },
+        {
+          "date": "2026-03-20",
+          "daily": 4.47,
+          "cum": 28912.26
+        },
+        {
+          "date": "2026-03-24",
+          "daily": -71.46,
+          "cum": 28840.8
+        },
+        {
+          "date": "2026-03-25",
+          "daily": -3077.98,
+          "cum": 25762.81
+        },
+        {
+          "date": "2026-03-31",
+          "daily": -2125.23,
+          "cum": 23637.58
+        },
+        {
+          "date": "2026-04-09",
+          "daily": -499.59,
+          "cum": 23137.99
+        },
+        {
+          "date": "2026-04-13",
+          "daily": -138.0,
+          "cum": 22999.99
+        },
+        {
+          "date": "2026-04-14",
+          "daily": -316.9,
+          "cum": 22683.09
+        },
+        {
+          "date": "2026-04-15",
+          "daily": -115.3,
+          "cum": 22567.79
+        }
+      ],
+      "source": "0xc9ac7d67d204257cb1063c710630c676e05fb378",
+      "error": null,
+      "positions": [],
+      "ai_summary": "This wallet lives close to the edge, but not blindly. The aggression is obvious, yet the numbers suggest it is being directed with real timing skill rather than random risk appetite. A rare combination for a high-speed, high-risk profile. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: controlled chaos with genuine trading edge.",
+      "type_reasons": [
+        "PnL Drawdown 221% > 100%",
+        "100 large positions taken"
+      ],
+      "confidence": "High Confidence"
     }
   }
 }
