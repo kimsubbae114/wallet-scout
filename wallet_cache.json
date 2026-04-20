@@ -82948,5 +82948,105 @@
       ],
       "confidence": "Early Read"
     }
+  },
+  "0xad8e1987833b692b59de004a25d0518af2ba94b6": {
+    "first_discovered_at": "2026-04-20T05:01:25.013328+00:00",
+    "fetched_at": "2026-04-20T05:01:25.013328+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0xad8e1987833b692b59de004a25d0518af2ba94b6",
+      "label": "0xad8e...94b6",
+      "total_equity": 110756.255349,
+      "margin_pct": 8.621952420573797,
+      "realized": 13816.845628999992,
+      "total_upnl": 3032.358233,
+      "total_pnl": 13816.845628999992,
+      "win_rate": 79.6,
+      "avg_win": 19.19,
+      "avg_loss": 2.51,
+      "profit_factor": 7.63,
+      "sharpe": 12.55,
+      "mdd_pct": 0.0,
+      "consistency": 75.0,
+      "durability": 40.0,
+      "long_pct": 0.0,
+      "war_components": {
+        "Profit": 20.1,
+        "ROI": 15.1,
+        "Big Bet": 1.5,
+        "Sharpe": 18.9,
+        "Win Rate": 12.6
+      },
+      "follow_score": 98.4,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 936,
+      "total_days": 4,
+      "data_days": 4,
+      "first_date": "2026-04-17",
+      "last_date": "2026-04-20",
+      "days_since_last": 0,
+      "roi_pct": 12.5,
+      "top_coins": [
+        {
+          "coin": "HYPE",
+          "pnl": 13816.85,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 80.2,
+        "roi": 60.4,
+        "big_bet": 10,
+        "sharpe": 94.4,
+        "win_rate": 83.9
+      },
+      "war_score": 68.2,
+      "trader_type": "🦅 Precision Hunter",
+      "character": "Never misses a shot",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-17",
+          "daily": -32.21,
+          "cum": -32.21
+        },
+        {
+          "date": "2026-04-18",
+          "daily": 65.03,
+          "cum": 32.81
+        },
+        {
+          "date": "2026-04-19",
+          "daily": 12517.09,
+          "cum": 12549.91
+        },
+        {
+          "date": "2026-04-20",
+          "daily": 1266.94,
+          "cum": 13816.85
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "HYPE",
+          "side": "SHORT",
+          "upnl": 3032.36,
+          "notional": 98525.79,
+          "lev": 10.0
+        }
+      ],
+      "ai_summary": "The read looks promising: this wallet appears selective, patient, and difficult to bait into weak trades. But the sample is still light, so the current profile says more about style than proof. Note: the sample size is still light, so all signals should be read with some caution. Overall: early signs of a clean operator, with more history needed before calling it proven.",
+      "type_reasons": [
+        "Win Rate 80% > 72%",
+        "Sharpe* 12.55 > 4"
+      ],
+      "confidence": "Early Read"
+    }
   }
 }
