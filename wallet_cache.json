@@ -80278,37 +80278,37 @@
   },
   "0x6f97d329b072e0f7b74575565d806a4351b8f824": {
     "first_discovered_at": "2026-04-24T06:00:47.020278+00:00",
-    "fetched_at": "2026-04-24T06:00:47.020278+00:00",
+    "fetched_at": "2026-04-24T12:00:47.983172+00:00",
     "schema_ver": "3",
     "stats": {
       "address": "0x6f97d329b072e0f7b74575565d806a4351b8f824",
       "label": "0x6f97...f824",
-      "total_equity": 1774307.35635756,
-      "margin_pct": 9.445508626757691,
-      "realized": 12468.054344999995,
-      "total_upnl": -52622.17737,
-      "total_pnl": 12468.054344999995,
-      "win_rate": 85.9,
-      "avg_win": 9.68,
+      "total_equity": 1788705.1117205601,
+      "margin_pct": 9.569453535931178,
+      "realized": 11924.589444999994,
+      "total_upnl": -38253.04325,
+      "total_pnl": 11924.589444999994,
+      "win_rate": 85.4,
+      "avg_win": 9.67,
       "avg_loss": 4.07,
       "profit_factor": 2.38,
-      "sharpe": 10.65,
-      "mdd_pct": 2.9,
+      "sharpe": 10.63,
+      "mdd_pct": 3.0,
       "consistency": 50.0,
       "durability": 30.4,
-      "long_pct": 80.1,
+      "long_pct": 80.4,
       "war_components": {
         "Profit": 19.9,
-        "ROI": 9.1,
+        "ROI": 9.0,
         "Big Bet": 1.5,
         "Sharpe": 18.1,
-        "Win Rate": 13.4
+        "Win Rate": 13.3
       },
-      "follow_score": 83.3,
+      "follow_score": 83.2,
       "big_bet_count": 0,
       "big_bet_rate": 0,
       "big_bet_pnl": 0,
-      "closed_count": 1611,
+      "closed_count": 1555,
       "total_days": 4,
       "data_days": 5,
       "first_date": "2026-04-20",
@@ -80318,7 +80318,7 @@
       "top_coins": [
         {
           "coin": "BTC",
-          "pnl": 12801.32,
+          "pnl": 12257.85,
           "side": "L"
         },
         {
@@ -80328,13 +80328,13 @@
         }
       ],
       "radar": {
-        "profit_amt": 79.6,
-        "roi": 36.2,
+        "profit_amt": 79.4,
+        "roi": 36.0,
         "big_bet": 10,
-        "sharpe": 90.7,
-        "win_rate": 89.3
+        "sharpe": 90.6,
+        "win_rate": 88.9
       },
-      "war_score": 62.0,
+      "war_score": 61.8,
       "trader_type": "🦅 Precision Hunter",
       "character": "Never misses a shot",
       "is_hf": true,
@@ -80343,28 +80343,50 @@
       "cumulative": [
         {
           "date": "2026-04-20",
-          "daily": 12801.32,
-          "cum": 12801.32
+          "daily": 12257.85,
+          "cum": 12257.85
         },
         {
           "date": "2026-04-22",
           "daily": 39.67,
-          "cum": 12840.99
+          "cum": 12297.52
         },
         {
           "date": "2026-04-23",
           "daily": -320.81,
-          "cum": 12520.17
+          "cum": 11976.71
         },
         {
           "date": "2026-04-24",
           "daily": -52.12,
-          "cum": 12468.05
+          "cum": 11924.59
         }
       ],
       "source": "active",
       "error": null,
       "positions": [
+        {
+          "coin": "BTC",
+          "side": "SHORT",
+          "upnl": -16950.6,
+          "notional": 682885.71,
+          "lev": 22.0
+        },
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": -21302.44,
+          "notional": 2808463.27,
+          "lev": 20.0
+        }
+      ],
+      "ai_summary": "The read looks promising: this wallet appears selective, patient, and difficult to bait into weak trades. But the sample is still light, so the current profile says more about style than proof. Note: the sample size is still light, so all signals should be read with some caution. Overall: early signs of a clean operator, with more history needed before calling it proven.",
+      "type_reasons": [
+        "Win Rate 85% > 72%",
+        "Sharpe* 10.63 > 4"
+      ],
+      "confidence": "Early Read",
+      "prev_positions": [
         {
           "coin": "BTC",
           "side": "SHORT",
@@ -80380,12 +80402,7 @@
           "lev": 20.0
         }
       ],
-      "ai_summary": "The read looks promising: this wallet appears selective, patient, and difficult to bait into weak trades. But the sample is still light, so the current profile says more about style than proof. Note: the sample size is still light, so all signals should be read with some caution. Overall: early signs of a clean operator, with more history needed before calling it proven.",
-      "type_reasons": [
-        "Win Rate 86% > 72%",
-        "Sharpe* 10.65 > 4"
-      ],
-      "confidence": "Early Read"
+      "prev_positions_ts": "2026-04-24T06:00:47.020278+00:00"
     }
   },
   "0x44f481f406d178c278346c5f94d8ac19438f7edd": {
@@ -81561,6 +81578,137 @@
       "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
       "type_reasons": [
         "Sharpe* 19.88 > 8",
+        "Big Bet Rate 0% < 30%"
+      ],
+      "confidence": "Early Read"
+    }
+  },
+  "0xa33a4a057334c7811ad5f45f3c4f0dfa3d081ff8": {
+    "first_discovered_at": "2026-04-24T12:01:30.538331+00:00",
+    "fetched_at": "2026-04-24T12:01:30.538331+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0xa33a4a057334c7811ad5f45f3c4f0dfa3d081ff8",
+      "label": "0xa33a...1ff8",
+      "total_equity": 408844.367671,
+      "margin_pct": 4.778527548830355,
+      "realized": 5144.282626999995,
+      "total_upnl": -953.3422679999999,
+      "total_pnl": 5144.282626999995,
+      "win_rate": 62.2,
+      "avg_win": 13.21,
+      "avg_loss": 8.37,
+      "profit_factor": 1.58,
+      "sharpe": 19.86,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 49.7,
+      "long_pct": 3.4,
+      "war_components": {
+        "Profit": 18.8,
+        "ROI": 9.9,
+        "Big Bet": 1.5,
+        "Sharpe": 20.0,
+        "Win Rate": 9.7
+      },
+      "follow_score": 85.8,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 1020,
+      "total_days": 3,
+      "data_days": 3,
+      "first_date": "2026-04-22",
+      "last_date": "2026-04-24",
+      "days_since_last": 0,
+      "roi_pct": 1.3,
+      "top_coins": [
+        {
+          "coin": "LINK",
+          "pnl": 3400.57,
+          "side": "S"
+        },
+        {
+          "coin": "ASTER",
+          "pnl": 2928.61,
+          "side": "S"
+        },
+        {
+          "coin": "NEAR",
+          "pnl": -570.93,
+          "side": "L"
+        },
+        {
+          "coin": "ADA",
+          "pnl": -613.96,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 75.0,
+        "roi": 39.5,
+        "big_bet": 10,
+        "sharpe": 100.0,
+        "win_rate": 64.5
+      },
+      "war_score": 59.9,
+      "trader_type": "🧊 Ice Quant",
+      "character": "Cold, emotionless algo",
+      "is_hf": true,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-22",
+          "daily": 61.05,
+          "cum": 61.05
+        },
+        {
+          "date": "2026-04-23",
+          "daily": 3966.06,
+          "cum": 4027.11
+        },
+        {
+          "date": "2026-04-24",
+          "daily": 1117.17,
+          "cum": 5144.28
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "LINK",
+          "side": "SHORT",
+          "upnl": -679.82,
+          "notional": 140113.93,
+          "lev": 10.0
+        },
+        {
+          "coin": "ADA",
+          "side": "SHORT",
+          "upnl": 4.44,
+          "notional": 3284.8,
+          "lev": 10.0
+        },
+        {
+          "coin": "NEAR",
+          "side": "SHORT",
+          "upnl": -286.01,
+          "notional": 38172.44,
+          "lev": 10.0
+        },
+        {
+          "coin": "ASTER",
+          "side": "LONG",
+          "upnl": 8.05,
+          "notional": 6409.31,
+          "lev": 5.0
+        }
+      ],
+      "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
+      "type_reasons": [
+        "Sharpe* 19.86 > 8",
         "Big Bet Rate 0% < 30%"
       ],
       "confidence": "Early Read"
