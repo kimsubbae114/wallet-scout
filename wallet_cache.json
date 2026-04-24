@@ -80333,5 +80333,309 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x6f97d329b072e0f7b74575565d806a4351b8f824": {
+    "first_discovered_at": "2026-04-24T06:00:47.020278+00:00",
+    "fetched_at": "2026-04-24T06:00:47.020278+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x6f97d329b072e0f7b74575565d806a4351b8f824",
+      "label": "0x6f97...f824",
+      "total_equity": 1774307.35635756,
+      "margin_pct": 9.445508626757691,
+      "realized": 12468.054344999995,
+      "total_upnl": -52622.17737,
+      "total_pnl": 12468.054344999995,
+      "win_rate": 85.9,
+      "avg_win": 9.68,
+      "avg_loss": 4.07,
+      "profit_factor": 2.38,
+      "sharpe": 10.65,
+      "mdd_pct": 2.9,
+      "consistency": 50.0,
+      "durability": 30.4,
+      "long_pct": 80.1,
+      "war_components": {
+        "Profit": 19.9,
+        "ROI": 9.1,
+        "Big Bet": 1.5,
+        "Sharpe": 18.1,
+        "Win Rate": 13.4
+      },
+      "follow_score": 83.3,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 1611,
+      "total_days": 4,
+      "data_days": 5,
+      "first_date": "2026-04-20",
+      "last_date": "2026-04-24",
+      "days_since_last": 0,
+      "roi_pct": 0.7,
+      "top_coins": [
+        {
+          "coin": "BTC",
+          "pnl": 12801.32,
+          "side": "L"
+        },
+        {
+          "coin": "ETH",
+          "pnl": -333.26,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 79.6,
+        "roi": 36.2,
+        "big_bet": 10,
+        "sharpe": 90.7,
+        "win_rate": 89.3
+      },
+      "war_score": 62.0,
+      "trader_type": "🦅 Precision Hunter",
+      "character": "Never misses a shot",
+      "is_hf": true,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-20",
+          "daily": 12801.32,
+          "cum": 12801.32
+        },
+        {
+          "date": "2026-04-22",
+          "daily": 39.67,
+          "cum": 12840.99
+        },
+        {
+          "date": "2026-04-23",
+          "daily": -320.81,
+          "cum": 12520.17
+        },
+        {
+          "date": "2026-04-24",
+          "daily": -52.12,
+          "cum": 12468.05
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "BTC",
+          "side": "SHORT",
+          "upnl": -14516.42,
+          "notional": 682885.71,
+          "lev": 22.0
+        },
+        {
+          "coin": "ETH",
+          "side": "LONG",
+          "upnl": -38105.76,
+          "notional": 2755944.42,
+          "lev": 20.0
+        }
+      ],
+      "ai_summary": "The read looks promising: this wallet appears selective, patient, and difficult to bait into weak trades. But the sample is still light, so the current profile says more about style than proof. Note: the sample size is still light, so all signals should be read with some caution. Overall: early signs of a clean operator, with more history needed before calling it proven.",
+      "type_reasons": [
+        "Win Rate 86% > 72%",
+        "Sharpe* 10.65 > 4"
+      ],
+      "confidence": "Early Read"
+    }
+  },
+  "0x44f481f406d178c278346c5f94d8ac19438f7edd": {
+    "first_discovered_at": "2026-04-24T06:02:01.917616+00:00",
+    "fetched_at": "2026-04-24T06:02:01.917616+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x44f481f406d178c278346c5f94d8ac19438f7edd",
+      "label": "0x44f4...7edd",
+      "total_equity": 187316.623462,
+      "margin_pct": 36.64018554948826,
+      "realized": 3510.271069000001,
+      "total_upnl": -577.00028,
+      "total_pnl": 3510.271069000001,
+      "win_rate": 56.8,
+      "avg_win": 38.69,
+      "avg_loss": 43.66,
+      "profit_factor": 0.89,
+      "sharpe": 7.72,
+      "mdd_pct": 32.1,
+      "consistency": 50.0,
+      "durability": 31.9,
+      "long_pct": 55.2,
+      "war_components": {
+        "Profit": 18.2,
+        "ROI": 10.6,
+        "Big Bet": 1.5,
+        "Sharpe": 16.7,
+        "Win Rate": 8.4
+      },
+      "follow_score": 41.8,
+      "big_bet_count": 23,
+      "big_bet_rate": 47.8,
+      "big_bet_pnl": 1938.57,
+      "closed_count": 1138,
+      "total_days": 6,
+      "data_days": 6,
+      "first_date": "2026-04-19",
+      "last_date": "2026-04-24",
+      "days_since_last": 0,
+      "roi_pct": 1.9,
+      "top_coins": [
+        {
+          "coin": "ENA",
+          "pnl": 1347.38,
+          "side": "L"
+        },
+        {
+          "coin": "BNB",
+          "pnl": 1044.53,
+          "side": "S"
+        },
+        {
+          "coin": "AAVE",
+          "pnl": 579.2,
+          "side": "S"
+        },
+        {
+          "coin": "AVAX",
+          "pnl": 555.61,
+          "side": "S"
+        },
+        {
+          "coin": "ADA",
+          "pnl": 518.14,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 73.0,
+        "roi": 42.3,
+        "big_bet": 10,
+        "sharpe": 83.5,
+        "win_rate": 55.8
+      },
+      "war_score": 55.4,
+      "trader_type": "🌀 Drifter",
+      "character": "Still finding a pattern",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-19",
+          "daily": 2818.13,
+          "cum": 2818.13
+        },
+        {
+          "date": "2026-04-20",
+          "daily": -655.32,
+          "cum": 2162.8
+        },
+        {
+          "date": "2026-04-21",
+          "daily": 1126.7,
+          "cum": 3289.5
+        },
+        {
+          "date": "2026-04-22",
+          "daily": 1883.47,
+          "cum": 5172.97
+        },
+        {
+          "date": "2026-04-23",
+          "daily": -1007.14,
+          "cum": 4165.83
+        },
+        {
+          "date": "2026-04-24",
+          "daily": -655.56,
+          "cum": 3510.27
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "AVAX",
+          "side": "SHORT",
+          "upnl": -14.71,
+          "notional": 2290.88,
+          "lev": 2.0
+        },
+        {
+          "coin": "BNB",
+          "side": "LONG",
+          "upnl": -59.0,
+          "notional": 27364.82,
+          "lev": 2.0
+        },
+        {
+          "coin": "ARB",
+          "side": "SHORT",
+          "upnl": -81.4,
+          "notional": 9082.84,
+          "lev": 2.0
+        },
+        {
+          "coin": "DOGE",
+          "side": "LONG",
+          "upnl": 14.53,
+          "notional": 30000.11,
+          "lev": 2.0
+        },
+        {
+          "coin": "CRV",
+          "side": "LONG",
+          "upnl": -354.08,
+          "notional": 11092.17,
+          "lev": 2.0
+        },
+        {
+          "coin": "BCH",
+          "side": "SHORT",
+          "upnl": 56.3,
+          "notional": 9373.15,
+          "lev": 2.0
+        },
+        {
+          "coin": "APT",
+          "side": "SHORT",
+          "upnl": 15.45,
+          "notional": 5009.1,
+          "lev": 2.0
+        },
+        {
+          "coin": "AAVE",
+          "side": "SHORT",
+          "upnl": -101.62,
+          "notional": 30029.04,
+          "lev": 2.0
+        },
+        {
+          "coin": "ADA",
+          "side": "SHORT",
+          "upnl": 21.12,
+          "notional": 5877.63,
+          "lev": 2.0
+        },
+        {
+          "coin": "ENA",
+          "side": "LONG",
+          "upnl": -73.59,
+          "notional": 7512.93,
+          "lev": 2.0
+        }
+      ],
+      "ai_summary": "This wallet does not yet show a strong, repeatable identity. Results may be coming from inconsistent execution, changing style, or a lack of clear edge — which makes performance harder to trust even when occasional wins look strong. Note: the sample size is still light, so all signals should be read with some caution. Overall: no stable rhythm, no clear edge — still searching.",
+      "type_reasons": [
+        "No dominant pattern — fallback classification"
+      ],
+      "confidence": "Early Read"
+    }
   }
 }
