@@ -81478,5 +81478,333 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x7d0c59691fec7f3fea385cdc3126c37a41d91b28": {
+    "first_discovered_at": "2026-04-27T06:01:52.541336+00:00",
+    "fetched_at": "2026-04-27T06:01:52.541336+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x7d0c59691fec7f3fea385cdc3126c37a41d91b28",
+      "label": "0x7d0c...1b28",
+      "total_equity": 1122205.012872,
+      "margin_pct": 29.892919082982473,
+      "realized": 3051.7007439999993,
+      "total_upnl": 24361.722679000002,
+      "total_pnl": 3051.7007439999993,
+      "win_rate": 62.7,
+      "avg_win": 16.39,
+      "avg_loss": 18.51,
+      "profit_factor": 0.89,
+      "sharpe": 17.51,
+      "mdd_pct": 16.5,
+      "consistency": 75.0,
+      "durability": 40.0,
+      "long_pct": 0.6,
+      "war_components": {
+        "Profit": 18.1,
+        "ROI": 8.2,
+        "Big Bet": 1.5,
+        "Sharpe": 20.0,
+        "Win Rate": 9.8
+      },
+      "follow_score": 71.9,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 906,
+      "total_days": 4,
+      "data_days": 4,
+      "first_date": "2026-04-24",
+      "last_date": "2026-04-27",
+      "days_since_last": 0,
+      "roi_pct": 0.3,
+      "top_coins": [
+        {
+          "coin": "TRX",
+          "pnl": 5795.56,
+          "side": "S"
+        },
+        {
+          "coin": "XLM",
+          "pnl": 740.11,
+          "side": "S"
+        },
+        {
+          "coin": "ADA",
+          "pnl": 499.78,
+          "side": "L"
+        },
+        {
+          "coin": "XRP",
+          "pnl": 26.41,
+          "side": "L"
+        },
+        {
+          "coin": "BCH",
+          "pnl": 17.6,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 72.2,
+        "roi": 32.8,
+        "big_bet": 10,
+        "sharpe": 100.0,
+        "win_rate": 65.3
+      },
+      "war_score": 57.6,
+      "trader_type": "🧊 Ice Quant",
+      "character": "Cold, emotionless algo",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-24",
+          "daily": 1490.9,
+          "cum": 1490.9
+        },
+        {
+          "date": "2026-04-25",
+          "daily": 1378.63,
+          "cum": 2869.52
+        },
+        {
+          "date": "2026-04-26",
+          "daily": 783.53,
+          "cum": 3653.05
+        },
+        {
+          "date": "2026-04-27",
+          "daily": -601.35,
+          "cum": 3051.7
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "AVAX",
+          "side": "SHORT",
+          "upnl": 15026.7,
+          "notional": 1928051.99,
+          "lev": 10.0
+        },
+        {
+          "coin": "BNB",
+          "side": "SHORT",
+          "upnl": 1746.23,
+          "notional": 288930.14,
+          "lev": 10.0
+        },
+        {
+          "coin": "DOGE",
+          "side": "SHORT",
+          "upnl": -1680.75,
+          "notional": 230517.77,
+          "lev": 10.0
+        },
+        {
+          "coin": "LINK",
+          "side": "SHORT",
+          "upnl": 459.62,
+          "notional": 228546.97,
+          "lev": 10.0
+        },
+        {
+          "coin": "XRP",
+          "side": "SHORT",
+          "upnl": 197.46,
+          "notional": 52243.87,
+          "lev": 10.0
+        },
+        {
+          "coin": "BCH",
+          "side": "SHORT",
+          "upnl": 697.63,
+          "notional": 33873.79,
+          "lev": 10.0
+        },
+        {
+          "coin": "TRX",
+          "side": "SHORT",
+          "upnl": 3175.99,
+          "notional": 257813.92,
+          "lev": 10.0
+        },
+        {
+          "coin": "ADA",
+          "side": "LONG",
+          "upnl": -103.37,
+          "notional": 19385.39,
+          "lev": 10.0
+        },
+        {
+          "coin": "XLM",
+          "side": "SHORT",
+          "upnl": 4839.97,
+          "notional": 161240.46,
+          "lev": 5.0
+        },
+        {
+          "coin": "HYPE",
+          "side": "SHORT",
+          "upnl": 2.24,
+          "notional": 15498.44,
+          "lev": 7.0
+        }
+      ],
+      "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
+      "type_reasons": [
+        "Sharpe* 17.51 > 8",
+        "Big Bet Rate 0% < 30%"
+      ],
+      "confidence": "Early Read"
+    }
+  },
+  "0x65c1ec85b539bf44041228df7502ac94f0bd8558": {
+    "first_discovered_at": "2026-04-27T06:02:08.425878+00:00",
+    "fetched_at": "2026-04-27T06:02:08.425878+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x65c1ec85b539bf44041228df7502ac94f0bd8558",
+      "label": "0x65c1...8558",
+      "total_equity": 54997.52502628,
+      "margin_pct": 0.14139547798191826,
+      "realized": 2947.1391929999972,
+      "total_upnl": 0.28,
+      "total_pnl": 2947.1391929999972,
+      "win_rate": 89.4,
+      "avg_win": 7.76,
+      "avg_loss": 14.36,
+      "profit_factor": 0.54,
+      "sharpe": 13.75,
+      "mdd_pct": 3.9,
+      "consistency": 90.9,
+      "durability": 74.5,
+      "long_pct": 100.0,
+      "war_components": {
+        "Profit": 18.0,
+        "ROI": 12.9,
+        "Big Bet": 12.8,
+        "Sharpe": 19.3,
+        "Win Rate": 13.8
+      },
+      "follow_score": 58.4,
+      "big_bet_count": 53,
+      "big_bet_rate": 84.9,
+      "big_bet_pnl": 2688.6,
+      "closed_count": 545,
+      "total_days": 11,
+      "data_days": 26,
+      "first_date": "2026-04-02",
+      "last_date": "2026-04-27",
+      "days_since_last": 0,
+      "roi_pct": 5.4,
+      "top_coins": [
+        {
+          "coin": "BTC",
+          "pnl": 1663.29,
+          "side": "L"
+        },
+        {
+          "coin": "SOL",
+          "pnl": 1506.24,
+          "side": "S"
+        },
+        {
+          "coin": "HYPE",
+          "pnl": 2.75,
+          "side": "S"
+        }
+      ],
+      "radar": {
+        "profit_amt": 72.0,
+        "roi": 51.6,
+        "big_bet": 85.2,
+        "sharpe": 96.5,
+        "win_rate": 92.1
+      },
+      "war_score": 76.8,
+      "trader_type": "🦁 Apex Predator",
+      "character": "Top of the food chain",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-02",
+          "daily": 1105.86,
+          "cum": 1105.86
+        },
+        {
+          "date": "2026-04-07",
+          "daily": 2.75,
+          "cum": 1108.61
+        },
+        {
+          "date": "2026-04-09",
+          "daily": 100.61,
+          "cum": 1209.22
+        },
+        {
+          "date": "2026-04-11",
+          "daily": 66.51,
+          "cum": 1275.73
+        },
+        {
+          "date": "2026-04-13",
+          "daily": 665.93,
+          "cum": 1941.66
+        },
+        {
+          "date": "2026-04-14",
+          "daily": 92.07,
+          "cum": 2033.73
+        },
+        {
+          "date": "2026-04-15",
+          "daily": -79.61,
+          "cum": 1954.12
+        },
+        {
+          "date": "2026-04-16",
+          "daily": 186.73,
+          "cum": 2140.84
+        },
+        {
+          "date": "2026-04-19",
+          "daily": 973.85,
+          "cum": 3114.69
+        },
+        {
+          "date": "2026-04-22",
+          "daily": 49.12,
+          "cum": 3163.81
+        },
+        {
+          "date": "2026-04-27",
+          "daily": 8.47,
+          "cum": 3172.28
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": 0.28,
+          "notional": 3110.28,
+          "lev": 40.0
+        }
+      ],
+      "ai_summary": "This wallet wins through authority, not hesitation. It tends to identify where its edge is strongest, then commit with enough conviction to shape outcomes rather than merely participate in them. Overall: a high-conviction operator built to lead, not follow.",
+      "type_reasons": [
+        "Big Bet Rate 85% > 60%",
+        "Win Rate 89% > 65%"
+      ],
+      "confidence": "Medium Confidence"
+    }
   }
 }
