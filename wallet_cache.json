@@ -80885,5 +80885,598 @@
       ],
       "confidence": "Early Read"
     }
+  },
+  "0x5efc5eaa41ebfefcc122e7600d3ac81549b6dd8d": {
+    "first_discovered_at": "2026-04-27T05:00:49.537974+00:00",
+    "fetched_at": "2026-04-27T05:00:49.537974+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x5efc5eaa41ebfefcc122e7600d3ac81549b6dd8d",
+      "label": "0x5efc...dd8d",
+      "total_equity": 111428.87246898,
+      "margin_pct": 100.47483380816715,
+      "realized": 46138.65307037016,
+      "total_upnl": -11.13383,
+      "total_pnl": 46138.65307037016,
+      "win_rate": 50.0,
+      "avg_win": 828.28,
+      "avg_loss": 609.61,
+      "profit_factor": 1.36,
+      "sharpe": 1.35,
+      "mdd_pct": 137.2,
+      "consistency": 65.4,
+      "durability": 71.3,
+      "long_pct": 100.0,
+      "war_components": {
+        "Profit": 21.6,
+        "ROI": 18.4,
+        "Big Bet": 8.8,
+        "Sharpe": 10.2,
+        "Win Rate": 4.5
+      },
+      "follow_score": 39.0,
+      "big_bet_count": 178,
+      "big_bet_rate": 64.6,
+      "big_bet_pnl": 172528.64,
+      "closed_count": 422,
+      "total_days": 26,
+      "data_days": 42,
+      "first_date": "2026-03-14",
+      "last_date": "2026-04-24",
+      "days_since_last": 3,
+      "roi_pct": 41.4,
+      "top_coins": [
+        {
+          "coin": "ETH",
+          "pnl": 33920.61,
+          "side": "L"
+        },
+        {
+          "coin": "SOL",
+          "pnl": 2129.63,
+          "side": "L"
+        },
+        {
+          "coin": "TAO",
+          "pnl": -104.12,
+          "side": "S"
+        },
+        {
+          "coin": "LINK",
+          "pnl": -206.81,
+          "side": "L"
+        },
+        {
+          "coin": "WIF",
+          "pnl": -958.17,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 86.5,
+        "roi": 73.8,
+        "big_bet": 58.6,
+        "sharpe": 51.1,
+        "win_rate": 30
+      },
+      "war_score": 63.5,
+      "trader_type": "🌊 Degen",
+      "character": "All in or liquidated",
+      "is_hf": false,
+      "spot_holdings": [
+        {
+          "coin": "USDC",
+          "amount": 110570.351039,
+          "usd": 0
+        },
+        {
+          "coin": "LATINA",
+          "amount": 23376.9251,
+          "usd": 0
+        },
+        {
+          "coin": "SENT",
+          "amount": 4000.0,
+          "usd": 0
+        },
+        {
+          "coin": "NEKO",
+          "amount": 3504.424779,
+          "usd": 0
+        },
+        {
+          "coin": "MUNCH",
+          "amount": 2775.62837,
+          "usd": 0
+        }
+      ],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-03-14",
+          "daily": 6600.0,
+          "cum": 6600.0
+        },
+        {
+          "date": "2026-03-15",
+          "daily": 19782.13,
+          "cum": 26382.13
+        },
+        {
+          "date": "2026-03-16",
+          "daily": 26139.7,
+          "cum": 52521.83
+        },
+        {
+          "date": "2026-03-17",
+          "daily": 1810.24,
+          "cum": 54332.07
+        },
+        {
+          "date": "2026-03-18",
+          "daily": -39588.02,
+          "cum": 14744.05
+        },
+        {
+          "date": "2026-03-19",
+          "daily": -389.72,
+          "cum": 14354.33
+        },
+        {
+          "date": "2026-03-20",
+          "daily": 2184.44,
+          "cum": 16538.77
+        },
+        {
+          "date": "2026-03-21",
+          "daily": 1230.38,
+          "cum": 17769.16
+        },
+        {
+          "date": "2026-03-22",
+          "daily": 1322.49,
+          "cum": 19091.64
+        },
+        {
+          "date": "2026-03-23",
+          "daily": -20684.26,
+          "cum": -1592.62
+        },
+        {
+          "date": "2026-03-24",
+          "daily": -5949.18,
+          "cum": -7541.8
+        },
+        {
+          "date": "2026-03-25",
+          "daily": 4761.12,
+          "cum": -2780.67
+        },
+        {
+          "date": "2026-03-27",
+          "daily": -16741.15,
+          "cum": -19521.83
+        },
+        {
+          "date": "2026-03-28",
+          "daily": 4509.67,
+          "cum": -15012.15
+        },
+        {
+          "date": "2026-03-29",
+          "daily": -5172.28,
+          "cum": -20184.43
+        },
+        {
+          "date": "2026-04-01",
+          "daily": 9070.53,
+          "cum": -11113.91
+        },
+        {
+          "date": "2026-04-02",
+          "daily": 4248.26,
+          "cum": -6865.64
+        },
+        {
+          "date": "2026-04-09",
+          "daily": -839.93,
+          "cum": -7705.57
+        },
+        {
+          "date": "2026-04-10",
+          "daily": 7497.71,
+          "cum": -207.86
+        },
+        {
+          "date": "2026-04-13",
+          "daily": 10467.8,
+          "cum": 10259.94
+        },
+        {
+          "date": "2026-04-14",
+          "daily": 19571.33,
+          "cum": 29831.27
+        },
+        {
+          "date": "2026-04-15",
+          "daily": 1233.04,
+          "cum": 31064.31
+        },
+        {
+          "date": "2026-04-16",
+          "daily": 5928.08,
+          "cum": 36992.4
+        },
+        {
+          "date": "2026-04-17",
+          "daily": 8610.24,
+          "cum": 45602.63
+        },
+        {
+          "date": "2026-04-22",
+          "daily": -20727.37,
+          "cum": 24875.27
+        },
+        {
+          "date": "2026-04-24",
+          "daily": -206.81,
+          "cum": 24668.45
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "LINK",
+          "side": "LONG",
+          "upnl": -11.13,
+          "notional": 8637.11,
+          "lev": 10.0
+        }
+      ],
+      "ai_summary": "The aggression is clear, but the discipline is harder to trust. This wallet may still catch spectacular upside, though the drawdown behavior suggests that the line between conviction and overexposure can get thin very quickly. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: exciting when right, fragile when pressed.",
+      "type_reasons": [
+        "PnL Drawdown 137% > 100%",
+        "178 large positions taken"
+      ],
+      "confidence": "Medium Confidence"
+    }
+  },
+  "0xcf3f419d08a5bdc2c6e5fbd9ad70904c5420f95f": {
+    "first_discovered_at": "2026-04-27T05:01:16.443431+00:00",
+    "fetched_at": "2026-04-27T05:01:16.443431+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0xcf3f419d08a5bdc2c6e5fbd9ad70904c5420f95f",
+      "label": "0xcf3f...f95f",
+      "total_equity": 858716.150489,
+      "margin_pct": 7.740602064491872,
+      "realized": 3887.487550000001,
+      "total_upnl": 1414.892333,
+      "total_pnl": 3887.487550000001,
+      "win_rate": 51.0,
+      "avg_win": 9.92,
+      "avg_loss": 2.73,
+      "profit_factor": 3.63,
+      "sharpe": 21.99,
+      "mdd_pct": 5.3,
+      "consistency": 75.0,
+      "durability": 40.0,
+      "long_pct": 65.1,
+      "war_components": {
+        "Profit": 18.4,
+        "ROI": 8.6,
+        "Big Bet": 1.5,
+        "Sharpe": 20.0,
+        "Win Rate": 6.0
+      },
+      "follow_score": 96.3,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 1046,
+      "total_days": 4,
+      "data_days": 4,
+      "first_date": "2026-04-24",
+      "last_date": "2026-04-27",
+      "days_since_last": 0,
+      "roi_pct": 0.5,
+      "top_coins": [
+        {
+          "coin": "PAXG",
+          "pnl": 1612.26,
+          "side": "L"
+        },
+        {
+          "coin": "DOGE",
+          "pnl": 1488.83,
+          "side": "L"
+        },
+        {
+          "coin": "XRP",
+          "pnl": 786.4,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 73.5,
+        "roi": 34.4,
+        "big_bet": 10,
+        "sharpe": 100.0,
+        "win_rate": 39.7
+      },
+      "war_score": 54.5,
+      "trader_type": "🧊 Ice Quant",
+      "character": "Cold, emotionless algo",
+      "is_hf": false,
+      "spot_holdings": [],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-24",
+          "daily": 2146.15,
+          "cum": 2146.15
+        },
+        {
+          "date": "2026-04-25",
+          "daily": -114.45,
+          "cum": 2031.7
+        },
+        {
+          "date": "2026-04-26",
+          "daily": 547.56,
+          "cum": 2579.26
+        },
+        {
+          "date": "2026-04-27",
+          "daily": 1308.22,
+          "cum": 3887.49
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "DOGE",
+          "side": "LONG",
+          "upnl": -505.0,
+          "notional": 132149.07,
+          "lev": 10.0
+        },
+        {
+          "coin": "XRP",
+          "side": "SHORT",
+          "upnl": 794.15,
+          "notional": 187881.12,
+          "lev": 20.0
+        },
+        {
+          "coin": "PAXG",
+          "side": "LONG",
+          "upnl": 1125.75,
+          "notional": 218628.86,
+          "lev": 5.0
+        }
+      ],
+      "ai_summary": "This wallet trades like emotion has been engineered out of the loop. Strong efficiency and stable execution suggest a process-led operator that wins through repeatability, not drama. The edge appears systematic, measured, and resilient across normal market noise. Note: the sample size is still light, so all signals should be read with some caution. Overall: a clean, process-first wallet with unusually strong discipline.",
+      "type_reasons": [
+        "Sharpe* 21.99 > 8",
+        "Big Bet Rate 0% < 30%"
+      ],
+      "confidence": "Early Read"
+    }
+  },
+  "0x4a61858959db514e6577d566f47157f2fba70611": {
+    "first_discovered_at": "2026-04-27T05:01:54.287730+00:00",
+    "fetched_at": "2026-04-27T05:01:54.287730+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x4a61858959db514e6577d566f47157f2fba70611",
+      "label": "0x4a61...0611",
+      "total_equity": 298378.97360510996,
+      "margin_pct": 66.56266118048131,
+      "realized": 15013.296493000027,
+      "total_upnl": 605.303444,
+      "total_pnl": 15013.296493000027,
+      "win_rate": 55.5,
+      "avg_win": 114.53,
+      "avg_loss": 97.99,
+      "profit_factor": 1.17,
+      "sharpe": 3.85,
+      "mdd_pct": 66.2,
+      "consistency": 52.6,
+      "durability": 53.6,
+      "long_pct": 0.0,
+      "war_components": {
+        "Profit": 20.1,
+        "ROI": 12.8,
+        "Big Bet": 1.5,
+        "Sharpe": 13.8,
+        "Win Rate": 8.0
+      },
+      "follow_score": 40.5,
+      "big_bet_count": 37,
+      "big_bet_rate": 37.8,
+      "big_bet_pnl": 20353.43,
+      "closed_count": 749,
+      "total_days": 19,
+      "data_days": 21,
+      "first_date": "2026-04-07",
+      "last_date": "2026-04-27",
+      "days_since_last": 0,
+      "roi_pct": 5.0,
+      "top_coins": [
+        {
+          "coin": "DOGE",
+          "pnl": 3318.25,
+          "side": "L"
+        },
+        {
+          "coin": "ETH",
+          "pnl": 2908.19,
+          "side": "S"
+        },
+        {
+          "coin": "BNB",
+          "pnl": 2547.64,
+          "side": "S"
+        },
+        {
+          "coin": "BTC",
+          "pnl": 2501.25,
+          "side": "S"
+        },
+        {
+          "coin": "SOL",
+          "pnl": 1835.11,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 80.6,
+        "roi": 51.0,
+        "big_bet": 10,
+        "sharpe": 69.0,
+        "win_rate": 53.3
+      },
+      "war_score": 56.2,
+      "trader_type": "⚙️ Grinder",
+      "character": "Shows up every day",
+      "is_hf": false,
+      "spot_holdings": [
+        {
+          "coin": "HYPE",
+          "amount": 1812.990228,
+          "usd": 0
+        },
+        {
+          "coin": "USDC",
+          "amount": 207351.378678,
+          "usd": 0
+        }
+      ],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-07",
+          "daily": -585.42,
+          "cum": -585.42
+        },
+        {
+          "date": "2026-04-08",
+          "daily": 4895.54,
+          "cum": 4310.12
+        },
+        {
+          "date": "2026-04-09",
+          "daily": 3529.99,
+          "cum": 7840.11
+        },
+        {
+          "date": "2026-04-10",
+          "daily": 412.29,
+          "cum": 8252.4
+        },
+        {
+          "date": "2026-04-11",
+          "daily": 727.4,
+          "cum": 8979.8
+        },
+        {
+          "date": "2026-04-12",
+          "daily": -239.2,
+          "cum": 8740.6
+        },
+        {
+          "date": "2026-04-13",
+          "daily": 3359.04,
+          "cum": 12099.64
+        },
+        {
+          "date": "2026-04-14",
+          "daily": 10724.19,
+          "cum": 22823.82
+        },
+        {
+          "date": "2026-04-15",
+          "daily": -2731.7,
+          "cum": 20092.12
+        },
+        {
+          "date": "2026-04-16",
+          "daily": -2008.91,
+          "cum": 18083.21
+        },
+        {
+          "date": "2026-04-17",
+          "daily": 1326.63,
+          "cum": 19409.84
+        },
+        {
+          "date": "2026-04-19",
+          "daily": -10455.7,
+          "cum": 8954.14
+        },
+        {
+          "date": "2026-04-20",
+          "daily": -1087.49,
+          "cum": 7866.66
+        },
+        {
+          "date": "2026-04-21",
+          "daily": -159.92,
+          "cum": 7706.74
+        },
+        {
+          "date": "2026-04-22",
+          "daily": 4877.98,
+          "cum": 12584.72
+        },
+        {
+          "date": "2026-04-23",
+          "daily": -1273.13,
+          "cum": 11311.59
+        },
+        {
+          "date": "2026-04-24",
+          "daily": 1161.19,
+          "cum": 12472.77
+        },
+        {
+          "date": "2026-04-26",
+          "daily": -23.38,
+          "cum": 12449.4
+        },
+        {
+          "date": "2026-04-27",
+          "daily": 3034.62,
+          "cum": 15484.02
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "ETH",
+          "side": "SHORT",
+          "upnl": 459.38,
+          "notional": 89999.87,
+          "lev": 3.0
+        },
+        {
+          "coin": "DOGE",
+          "side": "SHORT",
+          "upnl": 145.93,
+          "notional": 89999.93,
+          "lev": 3.0
+        }
+      ],
+      "ai_summary": "This wallet earns its results through volume and persistence. It does not rely on one outsized call or a high-conviction cluster of wins — it operates on a steady loop of modest gains that accumulate over time. The edge is not dramatic, but it is real and consistently applied. The main watchout is the drawdown profile — this wallet does not protect capital gently when things go wrong. Overall: patient, process-driven, and grinding out results one session at a time.",
+      "type_reasons": [
+        "Profitable with Win Rate 56% > 50%",
+        "Profit Factor 1.2x > 1.0"
+      ],
+      "confidence": "Medium Confidence"
+    }
   }
 }
