@@ -80771,5 +80771,96 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x66f463866512fc337c89bad2032acbe38ee38836": {
+    "first_discovered_at": "2026-04-29T06:01:46.881689+00:00",
+    "fetched_at": "2026-04-29T06:01:46.881689+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x66f463866512fc337c89bad2032acbe38ee38836",
+      "label": "0x66f4...8836",
+      "total_equity": 9040370.70681262,
+      "margin_pct": 100.0,
+      "realized": 714199.4006854104,
+      "total_upnl": 31362.40837,
+      "total_pnl": 714199.4006854104,
+      "win_rate": 46.2,
+      "avg_win": 3887.83,
+      "avg_loss": 404.77,
+      "profit_factor": 9.61,
+      "sharpe": 0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 46.6,
+      "long_pct": 100.0,
+      "war_components": {
+        "Profit": 25.0,
+        "ROI": 13.9,
+        "Big Bet": 1.5,
+        "Sharpe": 6.0,
+        "Win Rate": 4.2
+      },
+      "follow_score": 100.0,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 452,
+      "total_days": 1,
+      "data_days": 1,
+      "first_date": "2026-04-24",
+      "last_date": "2026-04-24",
+      "days_since_last": 5,
+      "roi_pct": 7.9,
+      "top_coins": [
+        {
+          "coin": "BTC",
+          "pnl": 620.75,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 100.0,
+        "roi": 55.5,
+        "big_bet": 10,
+        "sharpe": 30,
+        "win_rate": 27.7
+      },
+      "war_score": 50.6,
+      "trader_type": "💰 Value Hunter",
+      "character": "Wins on risk/reward ratio",
+      "is_hf": true,
+      "spot_holdings": [
+        {
+          "coin": "USDC",
+          "amount": 8031710.778729,
+          "usd": 0
+        }
+      ],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-04-24",
+          "daily": 620.75,
+          "cum": 620.75
+        }
+      ],
+      "source": "active",
+      "error": null,
+      "positions": [
+        {
+          "coin": "HYPE",
+          "side": "LONG",
+          "upnl": 31362.41,
+          "notional": 5011925.33,
+          "lev": 5.0
+        }
+      ],
+      "ai_summary": "Some outcomes may look better than the process behind them. The wallet can still post wins, but the underlying profile makes it hard to tell whether those gains came from real edge or favorable randomness. Note: the sample size is still light, so all signals should be read with some caution. Overall: better headline than foundation.",
+      "type_reasons": [
+        "Profit Factor 9.6x > 2.5",
+        "Big Bet Rate 0% < 20% (selective)"
+      ],
+      "confidence": "Early Read"
+    }
   }
 }
