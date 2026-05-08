@@ -254,7 +254,7 @@ class ArchiveManager:
         else:
             prev_entry = self.data[key]
             prev_stats = prev_entry.get("stats", {})
-            # prev_positions 갱신: 2시간 이상 지난 경우 현재→prev로 이동
+            # prev_positions 갱신: 24시간 이상 지난 경우 현재→prev로 이동
             prev_ts = prev_stats.get("prev_positions_ts")
             cur_positions = prev_stats.get("positions", [])
             should_rotate = True
@@ -263,14 +263,14 @@ class ArchiveManager:
                     t = datetime.fromisoformat(prev_ts)
                     if t.tzinfo is None:
                         t = t.replace(tzinfo=timezone.utc)
-                    should_rotate = (datetime.now(tz=timezone.utc) - t).total_seconds() >= 7200
+                    should_rotate = (datetime.now(tz=timezone.utc) - t).total_seconds() >= 86400
                 except Exception:
                     should_rotate = True
             if should_rotate and cur_positions:
                 stats["prev_positions"]    = cur_positions
                 stats["prev_positions_ts"] = prev_entry.get("fetched_at", now)
             else:
-                # 2시간 안 지났으면 기존 prev 유지
+                # 24시간 안 지났으면 기존 prev 유지
                 stats["prev_positions"]    = prev_stats.get("prev_positions", [])
                 stats["prev_positions_ts"] = prev_stats.get("prev_positions_ts", "")
             self.data[key]["fetched_at"]  = now
@@ -3221,6 +3221,8 @@ function buildPosChangeHTML(s){
     coin_consensus = coin_consensus[:5]
 
     # hot_moves
+    _now_ts = datetime.now(timezone.utc)
+    _now_iso = _now_ts.isoformat()
     hot_moves = []
     for _s in ranked:
         if not _s.get("positions") or not _s.get("prev_positions"): continue
@@ -3240,7 +3242,7 @@ function buildPosChangeHTML(s){
                     hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
                         "addr":_s["address"],"war":_s["war_score"],
                         "action":f"{_coin} {_dstr}","change":_sign,
-                        "time_ago":_sig_time_ago(_s.get("prev_positions_ts","")),
+                        "time_ago":_sig_time_ago(_now_iso),
                         "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                         "equity":round(_eq),
                         "_ts":_ts,"_size":abs(_diff)*_lev})
@@ -3249,7 +3251,7 @@ function buildPosChangeHTML(s){
                 hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
                     "addr":_s["address"],"war":_s["war_score"],
                     "action":f"{_coin} {_dstr}","change":"new",
-                    "time_ago":_sig_time_ago(_s.get("prev_positions_ts","")),
+                    "time_ago":_sig_time_ago(_now_iso),
                     "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                     "equity":round(_eq),
                     "_ts":_ts,"_size":_cur["notional"]*_lev})
