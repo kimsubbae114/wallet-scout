@@ -3233,6 +3233,13 @@ function buildPosChangeHTML(s){
         for _coin, _cur in _cur_map.items():
             if _cur["notional"] < 100_000: continue
             _lev = _cur["notional"] / _eq if _eq > 0 else 1
+            _age_h = max(0, (_now_ts.timestamp() - _ts) / 3600)
+            # 가중치: 최신성 40% > 규모 25% > 레버리지 20% > WAR 15%
+            _recency  = 4.0 / (1.0 + _age_h / 8) ** 2          # 8h 기준 급감
+            _size_s   = (_cur["notional"] / 1_000_000) ** 0.5   # sqrt 억제
+            _lev_s    = min(_lev, 20) / 20                       # 0~1 정규화
+            _war_s    = (_s.get("war_score", 0) or 0) / 100     # 0~1 정규화
+            _score = _recency * 4 + _size_s * 2.5 + _lev_s * 2 + _war_s * 1.5
             _prev = _prev_map.get(_coin)
             if _prev:
                 _diff = _cur["notional"] - _prev["notional"]
@@ -3245,7 +3252,7 @@ function buildPosChangeHTML(s){
                         "detected_at":_now_iso,
                         "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                         "equity":round(_eq),
-                        "_ts":_ts,"_size":abs(_diff)*_lev})
+                        "_score":_score})
             else:
                 _dstr = "Long" if _cur["side"]=="LONG" else "Short"
                 hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
@@ -3254,9 +3261,9 @@ function buildPosChangeHTML(s){
                     "detected_at":_now_iso,
                     "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                     "equity":round(_eq),
-                    "_ts":_ts,"_size":_cur["notional"]*_lev})
-    hot_moves.sort(key=lambda x: (x["_ts"], x["_size"]), reverse=True)
-    for _m in hot_moves: _m.pop("_ts", None); _m.pop("_size", None)
+                    "_score":_score})
+    hot_moves.sort(key=lambda x: x["_score"], reverse=True)
+    for _m in hot_moves: _m.pop("_score", None)
     hot_moves = hot_moves[:6]
 
     # sim_returns — 각 밴드: lo <= war_score < hi (80은 80+)
