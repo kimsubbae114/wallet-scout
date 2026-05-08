@@ -254,7 +254,7 @@ class ArchiveManager:
         else:
             prev_entry = self.data[key]
             prev_stats = prev_entry.get("stats", {})
-            # prev_positions 갱신: 24시간 이상 지난 경우만 현재→prev로 이동
+            # prev_positions 갱신: 2시간 이상 지난 경우 현재→prev로 이동
             prev_ts = prev_stats.get("prev_positions_ts")
             cur_positions = prev_stats.get("positions", [])
             should_rotate = True
@@ -263,14 +263,14 @@ class ArchiveManager:
                     t = datetime.fromisoformat(prev_ts)
                     if t.tzinfo is None:
                         t = t.replace(tzinfo=timezone.utc)
-                    should_rotate = (datetime.now(tz=timezone.utc) - t).total_seconds() >= 86400
+                    should_rotate = (datetime.now(tz=timezone.utc) - t).total_seconds() >= 7200
                 except Exception:
                     should_rotate = True
             if should_rotate and cur_positions:
                 stats["prev_positions"]    = cur_positions
                 stats["prev_positions_ts"] = prev_entry.get("fetched_at", now)
             else:
-                # 24시간 안 지났으면 기존 prev 유지
+                # 2시간 안 지났으면 기존 prev 유지
                 stats["prev_positions"]    = prev_stats.get("prev_positions", [])
                 stats["prev_positions_ts"] = prev_stats.get("prev_positions_ts", "")
             self.data[key]["fetched_at"]  = now
