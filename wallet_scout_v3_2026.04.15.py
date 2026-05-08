@@ -3242,7 +3242,7 @@ function buildPosChangeHTML(s){
                     hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
                         "addr":_s["address"],"war":_s["war_score"],
                         "action":f"{_coin} {_dstr}","change":_sign,
-                        "time_ago":_sig_time_ago(_now_iso),
+                        "detected_at":_now_iso,
                         "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                         "equity":round(_eq),
                         "_ts":_ts,"_size":abs(_diff)*_lev})
@@ -3251,7 +3251,7 @@ function buildPosChangeHTML(s){
                 hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
                     "addr":_s["address"],"war":_s["war_score"],
                     "action":f"{_coin} {_dstr}","change":"new",
-                    "time_ago":_sig_time_ago(_now_iso),
+                    "detected_at":_now_iso,
                     "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                     "equity":round(_eq),
                     "_ts":_ts,"_size":_cur["notional"]*_lev})
@@ -5261,6 +5261,14 @@ function renderSignal(){
     +'<div style="font-size:10px;color:#3a3a55;font-family:DM Mono,monospace;margin-bottom:14px">Positions over $100,000 with significant changes</div>';
   if(HM.length){
     h+='<div style="display:flex;flex-direction:column;gap:8px">';
+    function _hmTimeAgo(iso){
+      if(!iso) return '';
+      var d=(Date.now()-new Date(iso))/1000;
+      if(d<60) return 'just now';
+      if(d<3600) return Math.floor(d/60)+'m ago';
+      if(d<86400) return Math.floor(d/3600)+'h ago';
+      return Math.floor(d/86400)+'d ago';
+    }
     HM.forEach(function(m){
       var upnlColor=m.upnl>=0?'#00f5d4':'#f87171';
       var upnlSign=m.upnl>=0?'+':'';
@@ -5277,7 +5285,7 @@ function renderSignal(){
             +'<span style="background:#1a2a3a;color:#3a86ff;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;white-space:nowrap;font-family:DM Mono,monospace">WAR '+m.war.toFixed(0)+'</span>'
             +'<span style="font-weight:700;font-size:13px;color:#c8d0e7">'+m.name+'</span>'
           +'</div>'
-          +'<span style="font-size:9px;color:#4a4a6a;font-family:DM Mono,monospace">'+m.time_ago+'</span>'
+          +'<span style="font-size:9px;color:#4a4a6a;font-family:DM Mono,monospace">'+_hmTimeAgo(m.detected_at)+'</span>'
         +'</div>'
         +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
           +'<div style="display:flex;flex-direction:column;gap:6px">'
