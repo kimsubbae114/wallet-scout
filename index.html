@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko"><head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VY35WKN8Z"></script>
@@ -3134,11 +3134,12 @@ function openModal(addr) {
   let coinRows = '';
   (s.top_coins || []).forEach(t => {
     const c = typeof t === 'object' ? t : {coin:t[0], pnl:t[1], side:'?'};
-    const col = c.pnl >= 0 ? '#00f5d4' : '#f72585';
+    const pnlCol = c.pnl >= 0 ? '#00f5d4' : '#f72585';
+    const sideCol = c.side === 'L' ? '#3a86ff' : c.side === 'S' ? '#f72585' : '#888';
     const arr = c.side === 'L' ? '▲' : c.side === 'S' ? '▼' : '';
     coinRows += `<div class="modal-coin-row">
-      <span>${arr} ${c.coin}</span>
-      <span style="color:${col}">$${c.pnl>=0?'+':''}${c.pnl.toLocaleString()}</span>
+      <span style="color:${sideCol}">${arr} ${c.coin}</span>
+      <span style="color:${pnlCol}">$${c.pnl>=0?'+':''}${c.pnl.toLocaleString()}</span>
     </div>`;
   });
 
@@ -3250,8 +3251,8 @@ function openModal(addr) {
         <div class="modal-pnl-chart"><canvas id="modalPnlChart"></canvas></div>
       </div>
       <div class="modal-block">
-        <h4>🪙 Top Coins by PnL</h4>
-        ${coinRows}
+        <h4>💰 Realized PnL</h4>
+        <div style="max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a2a45 transparent">${coinRows}</div>
       </div>
     </div>
 
