@@ -3262,9 +3262,31 @@ function buildPosChangeHTML(s){
                     "notional":round(_cur["notional"]),"upnl":round(_cur.get("upnl",0),1),
                     "equity":round(_eq),
                     "_score":_score})
-    hot_moves.sort(key=lambda x: x["_score"], reverse=True)
+    # 지갑별 최고 점수 1개만 유지
+    _wallet_best = {}
+    for _m in hot_moves:
+        _a = _m["addr"]
+        if _a not in _wallet_best or _m["_score"] > _wallet_best[_a]["_score"]:
+            _wallet_best[_a] = _m
+    _deduped = list(_wallet_best.values())
+
+    # 카테고리별 1등 선발 후 남은 자리를 복합점수 순으로 채움
+    _selected = []
+    _seen = set()
+    def _pick(key_fn):
+        _cands = [_m for _m in _deduped if _m["addr"] not in _seen]
+        if not _cands: return
+        _best = max(_cands, key=key_fn)
+        _selected.append(_best)
+        _seen.add(_best["addr"])
+    _pick(lambda m: m["notional"])                              # 포지션 규모
+    _pick(lambda m: m["notional"] / (m["equity"] or 1))        # 레버리지
+    _pick(lambda m: m["upnl"])                                  # unrealized PnL
+    _rest = sorted([m for m in _deduped if m["addr"] not in _seen],
+                   key=lambda m: m["_score"], reverse=True)
+    _selected.extend(_rest[:6 - len(_selected)])
+    hot_moves = _selected[:6]
     for _m in hot_moves: _m.pop("_score", None)
-    hot_moves = hot_moves[:6]
 
     # sim_returns — 각 밴드: lo <= war_score < hi (80은 80+)
     def _sig_ret(lo, hi=None, follow=False):
