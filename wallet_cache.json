@@ -124112,5 +124112,252 @@
       ],
       "confidence": "Medium Confidence"
     }
+  },
+  "0x8def9f50456c6c4e37fa5d3d57f108ed23992dae": {
+    "first_discovered_at": "2026-05-09T11:40:20.703646+00:00",
+    "fetched_at": "2026-05-09T11:50:47.889508+00:00",
+    "schema_ver": "3",
+    "stats": {
+      "address": "0x8def9f50456c6c4e37fa5d3d57f108ed23992dae",
+      "label": "loracle",
+      "total_equity": 44057905.5912158,
+      "margin_pct": 28.81417208165084,
+      "realized": 460105.3000719994,
+      "total_upnl": 4627995.4674430005,
+      "total_pnl": 36185317.82,
+      "win_rate": 100.0,
+      "avg_win": 198.92,
+      "avg_loss": 0,
+      "profit_factor": 99.0,
+      "sharpe": 1.0,
+      "mdd_pct": 0.0,
+      "consistency": 100.0,
+      "durability": 46.6,
+      "long_pct": 51.0,
+      "war_components": {
+        "Profit": 25.0,
+        "ROI": 14.9,
+        "Big Bet": 1.5,
+        "Sharpe": 9.4,
+        "Win Rate": 15.0
+      },
+      "follow_score": 100.0,
+      "big_bet_count": 0,
+      "big_bet_rate": 0,
+      "big_bet_pnl": 0,
+      "closed_count": 2313,
+      "total_days": 1,
+      "data_days": 1,
+      "first_date": "2026-05-09",
+      "last_date": "2026-05-09",
+      "days_since_last": 0,
+      "roi_pct": 82.13,
+      "top_coins": [
+        {
+          "coin": "ZEC",
+          "pnl": 348757.69,
+          "side": "L"
+        },
+        {
+          "coin": "TON",
+          "pnl": 70002.2,
+          "side": "L"
+        },
+        {
+          "coin": "BTC",
+          "pnl": 41345.41,
+          "side": "L"
+        }
+      ],
+      "radar": {
+        "profit_amt": 100.0,
+        "roi": 59.5,
+        "big_bet": 10,
+        "sharpe": 47.1,
+        "win_rate": 100.0
+      },
+      "war_score": 65.8,
+      "trader_type": "🎯 Steady Shot",
+      "character": "Consistently on target",
+      "is_hf": true,
+      "spot_holdings": [
+        {
+          "coin": "HYPE",
+          "amount": 95.821182,
+          "usd": 0
+        },
+        {
+          "coin": "LATINA",
+          "amount": 125000.0,
+          "usd": 0
+        },
+        {
+          "coin": "OMNIX",
+          "amount": 9251.0,
+          "usd": 0
+        },
+        {
+          "coin": "HFUN",
+          "amount": 6214.843491,
+          "usd": 0
+        },
+        {
+          "coin": "UPUMP",
+          "amount": 1266.183591,
+          "usd": 0
+        }
+      ],
+      "is_vault": false,
+      "cumulative": [
+        {
+          "date": "2026-05-09",
+          "daily": 5088100.77,
+          "cum": 5088100.77
+        }
+      ],
+      "source": "manual",
+      "error": null,
+      "positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": 417635.04,
+          "notional": 17355171.11,
+          "lev": 0.39
+        },
+        {
+          "coin": "TON",
+          "side": "LONG",
+          "upnl": 960221.15,
+          "notional": 6181941.47,
+          "lev": 0.14
+        },
+        {
+          "coin": "NEAR",
+          "side": "LONG",
+          "upnl": 191330.12,
+          "notional": 1824959.26,
+          "lev": 0.04
+        },
+        {
+          "coin": "HYPE",
+          "side": "SHORT",
+          "upnl": -2220479.9,
+          "notional": 37164108.08,
+          "lev": 0.84
+        },
+        {
+          "coin": "PAXG",
+          "side": "LONG",
+          "upnl": -212633.53,
+          "notional": 1974748.26,
+          "lev": 0.04
+        },
+        {
+          "coin": "XPL",
+          "side": "LONG",
+          "upnl": 5778.86,
+          "notional": 82574.75,
+          "lev": 0.0
+        },
+        {
+          "coin": "ZEC",
+          "side": "LONG",
+          "upnl": 5589542.87,
+          "notional": 10061637.99,
+          "lev": 0.23
+        },
+        {
+          "coin": "AZTEC",
+          "side": "LONG",
+          "upnl": 3972.54,
+          "notional": 182320.35,
+          "lev": 0.0
+        },
+        {
+          "coin": "CHIP",
+          "side": "LONG",
+          "upnl": -107371.68,
+          "notional": 1000054.79,
+          "lev": 0.02
+        }
+      ],
+      "ai_summary": "This wallet looks disciplined and reliable, though not especially explosive. It tends to avoid major mistakes, but may also lack the aggression needed to turn consistency into standout upside. Note: the sample size is still light, so all signals should be read with some caution. Overall: dependable, but not built to overwhelm.",
+      "type_reasons": [
+        "Win Rate 100% > 65%",
+        "Profit Factor 99.0x > 1.5"
+      ],
+      "confidence": "Early Read",
+      "cmm_pnl_day": 497348.18,
+      "cmm_pnl_week": 10599522.31,
+      "cmm_pnl_month": 10972818.35,
+      "cmm_source": true,
+      "prev_positions": [
+        {
+          "coin": "BTC",
+          "side": "LONG",
+          "upnl": 423393.9,
+          "notional": 17594485.18,
+          "lev": 0.4
+        },
+        {
+          "coin": "TON",
+          "side": "LONG",
+          "upnl": 959722.27,
+          "notional": 6240487.02,
+          "lev": 0.14
+        },
+        {
+          "coin": "NEAR",
+          "side": "LONG",
+          "upnl": 193490.12,
+          "notional": 1824959.26,
+          "lev": 0.04
+        },
+        {
+          "coin": "HYPE",
+          "side": "SHORT",
+          "upnl": -2207876.83,
+          "notional": 37164108.08,
+          "lev": 0.84
+        },
+        {
+          "coin": "PAXG",
+          "side": "LONG",
+          "upnl": -212483.67,
+          "notional": 1974748.26,
+          "lev": 0.04
+        },
+        {
+          "coin": "XPL",
+          "side": "LONG",
+          "upnl": 5967.9,
+          "notional": 82574.75,
+          "lev": 0.0
+        },
+        {
+          "coin": "ZEC",
+          "side": "LONG",
+          "upnl": 5627817.39,
+          "notional": 10146100.55,
+          "lev": 0.23
+        },
+        {
+          "coin": "AZTEC",
+          "side": "LONG",
+          "upnl": 5076.07,
+          "notional": 182320.35,
+          "lev": 0.0
+        },
+        {
+          "coin": "CHIP",
+          "side": "LONG",
+          "upnl": -108575.84,
+          "notional": 1000054.79,
+          "lev": 0.02
+        }
+      ],
+      "prev_positions_ts": "2026-05-09T11:40:20.703646+00:00"
+    }
   }
 }
