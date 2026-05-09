@@ -2991,10 +2991,25 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 <title>Wallet Scouting Report</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(function(){{
+  var THEMES={{
+    'slash-gold':  {{'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'5e616e','--accent':'#cc9166','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(0,0,0,0.96)'}},
+    'hyperliquid': {{'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.04)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(13,13,31,0.96)'}},
+    'ocean':       {{'--bg':'#030d18','--surface':'#071828','--surface2':'#0c2035','--border':'#14324d','--border2':'rgba(0,150,255,0.04)','--text':'#c8e0f0','--text-muted':'#4a7a9a','--dim':'#4a7a9a','--dim2':'#2d5a7a','--accent':'#00b4d8','--teal':'#00b4d8','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#7c3aed','--blue':'#0284c7','--green':'#00b4d8','--red':'#ef4444','--yellow':'#fbbf24','--header-bg':'rgba(3,13,24,0.96)'}},
+    'light':       {{'--bg':'#f5f6fa','--surface':'#ffffff','--surface2':'#eef0f5','--border':'#e2e4eb','--border2':'rgba(0,0,0,0.04)','--text':'#1a1b2e','--text-muted':'#6b7280','--dim':'#9ca3af','--dim2':'#b0b7c3','--accent':'#6366f1','--teal':'#0ea5e9','--pink':'#ec4899','--amber':'#f59e0b','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#10b981','--red':'#ef4444','--yellow':'#f59e0b','--header-bg':'rgba(245,246,250,0.96)'}}
+  }};
+  var saved = localStorage.getItem('ws_theme') || 'slash-gold';
+  var t = THEMES[saved] || THEMES['slash-gold'];
+  var r = document.documentElement;
+  for(var k in t) r.style.setProperty(k, t[k]);
+  r.setAttribute('data-theme', saved);
+}})();
+</script>
 <style>
-:root{{--bg:#000000;--surface:#030304;--surface2:#08080a;--border:#1c1d22;--border2:rgba(255,255,255,0.04);--text:#e2e3e9;--text-muted:#777a88;--dim:#777a88;--dim2:#5e616e;--teal:#06b6d4;--pink:#f472b6;--amber:#fbbf24;--purple:#8b5cf6;--blue:#3b82f6;--green:#06b6d4;--red:#f472b6;--yellow:#fbbf24;--accent:#cc9166;}}
+:root{{--bg:#000000;--surface:#030304;--surface2:#08080a;--border:#1c1d22;--border2:rgba(255,255,255,0.04);--text:#e2e3e9;--text-muted:#777a88;--dim:#777a88;--dim2:#5e616e;--teal:#06b6d4;--pink:#f472b6;--amber:#fbbf24;--purple:#8b5cf6;--blue:#3b82f6;--green:#06b6d4;--red:#f472b6;--yellow:#fbbf24;--accent:#cc9166;--header-bg:rgba(0,0,0,0.96);}}
 *{{margin:0;padding:0;box-sizing:border-box;}}body{{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}}
-.header{{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;background:rgba(13,13,31,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}}
+.header{{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;background:var(--header-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}}
 .header-left{{display:flex;align-items:center;gap:10px;}}
 .header-logo{{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}}
 .header-title{{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:0.5px;}}
@@ -3131,6 +3146,12 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
   .section{{padding:20px 32px;}}
   #signal-root{{max-width:960px;margin:0 auto;}}
 }}
+.theme-opt{{display:block;width:100%;background:transparent;border:none;border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:Inter,sans-serif;cursor:pointer;text-align:left;transition:background .15s;}}
+.theme-opt:hover{{background:var(--surface2);}}
+.theme-opt.active{{background:var(--surface2);color:var(--accent);font-weight:600;}}
+[data-theme="light"] .modal-overlay{{background:rgba(0,0,0,0.55);}}
+[data-theme="light"] .trader-card{{box-shadow:0 2px 12px rgba(0,0,0,0.08);}}
+[data-theme="light"] .tabs{{border-bottom:1px solid var(--border);}}
 
 </style></head><body>
 <div class="header">
@@ -3149,7 +3170,21 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         onkeydown="if(event.key==='Enter')headerLookup(this.value)">
     </div>
   </div>
-  <div class="header-meta">{header_meta}</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="header-meta" style="display:none" id="hdr-meta-desk">{header_meta}</div>
+    <div style="position:relative">
+      <button id="theme-btn" onclick="toggleThemePanel()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--dim);font-size:11px;font-family:Inter,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--accent')" onmouseout="this.style.borderColor='';this.style.color=''">
+        <span id="theme-icon">🎨</span><span id="theme-label">Style</span>
+      </button>
+      <div id="theme-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;min-width:160px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+        <div style="font-size:9px;font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;padding:4px 8px 8px">Theme</div>
+        <button onclick="applyTheme('slash-gold')" class="theme-opt" data-tid="slash-gold">🟡 Slash Gold</button>
+        <button onclick="applyTheme('hyperliquid')" class="theme-opt" data-tid="hyperliquid">🔵 Hyperliquid</button>
+        <button onclick="applyTheme('ocean')" class="theme-opt" data-tid="ocean">🌊 Ocean</button>
+        <button onclick="applyTheme('light')" class="theme-opt" data-tid="light">☀️ Light</button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="tabs">
   <div class="tab active" onclick="showTab('signal',event)">⚡ Signal</div>
@@ -7437,6 +7472,52 @@ function updateSimulator(){
     document.getElementById('bcard-all')&&(document.getElementById('bcard-all').style.border='2px solid '+BL);
   },100);
 }
+
+// ── Theme Switcher ───────────────────────────────────────────────────
+var THEMES = {
+  'slash-gold':  {'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'#5e616e','--accent':'#cc9166','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(0,0,0,0.96)'},
+  'hyperliquid': {'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.04)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(13,13,31,0.96)'},
+  'ocean':       {'--bg':'#030d18','--surface':'#071828','--surface2':'#0c2035','--border':'#14324d','--border2':'rgba(0,150,255,0.04)','--text':'#c8e0f0','--text-muted':'#4a7a9a','--dim':'#4a7a9a','--dim2':'#2d5a7a','--accent':'#00b4d8','--teal':'#00b4d8','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#7c3aed','--blue':'#0284c7','--green':'#00b4d8','--red':'#ef4444','--yellow':'#fbbf24','--header-bg':'rgba(3,13,24,0.96)'},
+  'light':       {'--bg':'#f5f6fa','--surface':'#ffffff','--surface2':'#eef0f5','--border':'#e2e4eb','--border2':'rgba(0,0,0,0.04)','--text':'#1a1b2e','--text-muted':'#6b7280','--dim':'#9ca3af','--dim2':'#b0b7c3','--accent':'#6366f1','--teal':'#0ea5e9','--pink':'#ec4899','--amber':'#f59e0b','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#10b981','--red':'#ef4444','--yellow':'#f59e0b','--header-bg':'rgba(245,246,250,0.96)'}
+};
+function applyTheme(tid) {
+  var t = THEMES[tid]; if(!t) return;
+  var r = document.documentElement;
+  for(var k in t) r.style.setProperty(k, t[k]);
+  r.setAttribute('data-theme', tid);
+  localStorage.setItem('ws_theme', tid);
+  // update button label
+  var labels = {'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light'};
+  var lbl = document.getElementById('theme-label');
+  if(lbl) lbl.textContent = labels[tid] || 'Style';
+  // update active state
+  document.querySelectorAll('.theme-opt').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-tid')===tid);
+  });
+  toggleThemePanel(false);
+}
+function toggleThemePanel(force) {
+  var p = document.getElementById('theme-panel');
+  if(!p) return;
+  var show = force !== undefined ? force : p.style.display==='none';
+  p.style.display = show ? 'block' : 'none';
+}
+// close panel when clicking outside
+document.addEventListener('click', function(e){
+  var p=document.getElementById('theme-panel');
+  var b=document.getElementById('theme-btn');
+  if(p && p.style.display!=='none' && !p.contains(e.target) && !b.contains(e.target)) p.style.display='none';
+});
+// init label & active on load
+(function(){
+  var saved = localStorage.getItem('ws_theme') || 'slash-gold';
+  var labels = {'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light'};
+  var lbl = document.getElementById('theme-label');
+  if(lbl) lbl.textContent = labels[saved] || 'Style';
+  document.querySelectorAll('.theme-opt').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-tid')===saved);
+  });
+})();
 """
     html = html.replace("%%SCRIPT%%", js_block)
     html = html.replace("%%MODAL%%", modal_block)
