@@ -6717,9 +6717,17 @@ function _computeSimReturn(group, period) {
   wallets.forEach(function(s) {
     var eq = s.total_equity || 0;
     if (eq <= 0) return;
+    var cum = s.cumulative || [];
+    var lastDate = cum.length ? (cum[cum.length - 1].date || '') : '';
+    var upnl = s.total_upnl || 0;
     var pnl = 0;
-    (s.cumulative || []).forEach(function(pt) {
-      if ((pt.date || '') >= cutoffStr) pnl += (pt.daily || 0);
+    cum.forEach(function(pt) {
+      if ((pt.date || '') >= cutoffStr) {
+        var daily = pt.daily || 0;
+        // 마지막 거래일에는 unrealized PnL(total_upnl)이 gap으로 끼어있어 제거
+        if (pt.date === lastDate) daily -= upnl;
+        pnl += daily;
+      }
     });
     totalPnl += pnl;
     totalEquity += eq;
