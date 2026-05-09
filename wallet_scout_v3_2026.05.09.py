@@ -2993,17 +2993,45 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){{
-  var THEMES={{
-    'slash-gold':  {{'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'5e616e','--accent':'#cc9166','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(0,0,0,0.96)'}},
-    'hyperliquid': {{'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.04)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(13,13,31,0.96)'}},
-    'ocean':       {{'--bg':'#030d18','--surface':'#071828','--surface2':'#0c2035','--border':'#14324d','--border2':'rgba(0,150,255,0.04)','--text':'#c8e0f0','--text-muted':'#4a7a9a','--dim':'#4a7a9a','--dim2':'#2d5a7a','--accent':'#00b4d8','--teal':'#00b4d8','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#7c3aed','--blue':'#0284c7','--green':'#00b4d8','--red':'#ef4444','--yellow':'#fbbf24','--header-bg':'rgba(3,13,24,0.96)'}},
-    'light':       {{'--bg':'#f5f6fa','--surface':'#ffffff','--surface2':'#eef0f5','--border':'#e2e4eb','--border2':'rgba(0,0,0,0.04)','--text':'#1a1b2e','--text-muted':'#6b7280','--dim':'#9ca3af','--dim2':'#b0b7c3','--accent':'#6366f1','--teal':'#0ea5e9','--pink':'#ec4899','--amber':'#f59e0b','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#10b981','--red':'#ef4444','--yellow':'#f59e0b','--header-bg':'rgba(245,246,250,0.96)'}}
+  var T={{
+    'slash-gold':  {{'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'#5e616e','--accent':'#cc9166','--teal':'#06b6d4','--header-bg':'rgba(0,0,0,0.96)'}},
+    'hyperliquid': {{'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.03)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--header-bg':'rgba(13,13,31,0.96)'}},
+    'ocean':       {{'--bg':'#030d18','--surface':'#071828','--surface2':'#0c2035','--border':'#14324d','--border2':'rgba(0,150,255,0.04)','--text':'#c8e0f0','--text-muted':'#4a7a9a','--dim':'#4a7a9a','--dim2':'#2d5a7a','--accent':'#00b4d8','--teal':'#00b4d8','--header-bg':'rgba(3,13,24,0.96)'}},
+    'light':       {{'--bg':'#f5f6fa','--surface':'#ffffff','--surface2':'#eef0f5','--border':'#e2e4eb','--border2':'rgba(0,0,0,0.04)','--text':'#1a1b2e','--text-muted':'#6b7280','--dim':'#9ca3af','--dim2':'#b0b7c3','--accent':'#6366f1','--teal':'#0ea5e9','--header-bg':'rgba(245,246,250,0.96)'}},
+    'aave':        {{'--bg':'#ffffff','--surface':'#f6f7f4','--surface2':'#ededea','--border':'#d0d0ce','--border2':'rgba(0,0,0,0.04)','--text':'#221d1d','--text-muted':'#636161','--dim':'#858387','--dim2':'#9c9a92','--accent':'#998eff','--teal':'#2a9d99','--header-bg':'rgba(255,255,255,0.96)'}},
+    'airbnb':      {{'--bg':'#f7f7f7','--surface':'#ffffff','--surface2':'#f0f0f0','--border':'#dddddd','--border2':'rgba(0,0,0,0.04)','--text':'#222222','--text-muted':'#6a6a6a','--dim':'#b0b0b0','--dim2':'#c1c1c1','--accent':'#ff385c','--teal':'#00a4ef','--header-bg':'rgba(255,255,255,0.96)'}},
+    'apple':       {{'--bg':'#f5f5f7','--surface':'#ffffff','--surface2':'#f0f0f2','--border':'#e8e8ed','--border2':'rgba(0,0,0,0.04)','--text':'#1d1d1f','--text-muted':'#707070','--dim':'#a1a1a6','--dim2':'#c7c7cc','--accent':'#0071e3','--teal':'#30b0c7','--header-bg':'rgba(245,245,247,0.96)'}},
+    'base':        {{'--bg':'#ffffff','--surface':'#f2f2f2','--surface2':'#e8e8e8','--border':'#717886','--border2':'rgba(0,0,0,0.06)','--text':'#000000','--text-muted':'#717886','--dim':'#999999','--dim2':'#b1b7c3','--accent':'#0000ff','--teal':'#098551','--header-bg':'rgba(255,255,255,0.96)'}},
+    'canva':       {{'--bg':'#0f1015','--surface':'#1a1b20','--surface2':'#25262c','--border':'#333338','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#a0a0a8','--dim':'#808080','--dim2':'#575a5f','--accent':'#8b3dff','--teal':'#00c4cc','--header-bg':'rgba(15,16,21,0.96)'}},
+    'claude':      {{'--bg':'#faf9f5','--surface':'#ffffff','--surface2':'#f5f4f0','--border':'#dedcd1','--border2':'rgba(0,0,0,0.04)','--text':'#141413','--text-muted':'#73726c','--dim':'#9c9a92','--dim2':'#c5c3b8','--accent':'#d97757','--teal':'#2a9d99','--header-bg':'rgba(250,249,245,0.96)'}},
+    'coinbase':    {{'--bg':'#ffffff','--surface':'#f7f8f9','--surface2':'#eef0f3','--border':'#dedfe2','--border2':'rgba(0,0,0,0.04)','--text':'#0a0b0d','--text-muted':'#5b616e','--dim':'#8a9099','--dim2':'#b0b5bf','--accent':'#0052ff','--teal':'#578bfa','--green':'#27ad75','--red':'#f0616d','--header-bg':'rgba(255,255,255,0.96)'}},
+    'discord':     {{'--bg':'#0e0f2d','--surface':'#2c2f33','--surface2':'#23272a','--border':'#202225','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#99aab5','--dim':'#72767d','--dim2':'#50555f','--accent':'#5865f2','--teal':'#00b0f4','--header-bg':'rgba(14,15,45,0.96)'}},
+    'duolingo':    {{'--bg':'#ffffff','--surface':'#f9f9f9','--surface2':'#f2f2f2','--border':'#e5e5e5','--border2':'rgba(0,0,0,0.04)','--text':'#3c3c3c','--text-muted':'#777777','--dim':'#afafaf','--dim2':'#c5c5c5','--accent':'#58cc02','--teal':'#1cb0f6','--header-bg':'rgba(255,255,255,0.96)'}},
+    'ferrari':     {{'--bg':'#000000','--surface':'#181818','--surface2':'#303030','--border':'#4a4a4a','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#8f8f8f','--dim':'#8f8f8f','--dim2':'#666666','--accent':'#ff0000','--teal':'#06b6d4','--header-bg':'rgba(0,0,0,0.96)'}},
+    'frictional':  {{'--bg':'#ffe9ce','--surface':'#ffffff','--surface2':'#fff5ea','--border':'#f0d5b8','--border2':'rgba(0,0,0,0.04)','--text':'#000000','--text-muted':'#666666','--dim':'#aaaaaa','--dim2':'#dddddd','--accent':'#8a53ff','--teal':'#3ccb09','--header-bg':'rgba(255,233,206,0.96)'}},
+    'github':      {{'--bg':'#0d1117','--surface':'#161b22','--surface2':'#21262d','--border':'#30363d','--border2':'rgba(255,255,255,0.04)','--text':'#f0f6fc','--text-muted':'#9198a1','--dim':'#8b949e','--dim2':'#7c8980','--accent':'#1f6feb','--teal':'#8dd6ff','--header-bg':'rgba(13,17,23,0.96)'}},
+    'instagram':   {{'--bg':'#ffffff','--surface':'#fafafa','--surface2':'#f5f5f5','--border':'#cccccc','--border2':'rgba(0,0,0,0.04)','--text':'#1c1e21','--text-muted':'#888888','--dim':'#a8a8a8','--dim2':'#cccccc','--accent':'#f689ff','--teal':'#385898','--header-bg':'rgba(255,255,255,0.96)'}},
+    'kraken':      {{'--bg':'#ffffff','--surface':'#f6f5f9','--surface2':'#ede9f7','--border':'#d4d4dc','--border2':'rgba(0,0,0,0.04)','--text':'#101114','--text-muted':'#686b82','--dim':'#a0a0b0','--dim2':'#c0c0d0','--accent':'#7132f5','--teal':'#00b4d8','--header-bg':'rgba(255,255,255,0.96)'}},
+    'lamborghini': {{'--bg':'#000000','--surface':'#181818','--surface2':'#303030','--border':'#404040','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#8f8f8f','--dim':'#8f8f8f','--dim2':'#666666','--accent':'#ffc000','--teal':'#06b6d4','--header-bg':'rgba(0,0,0,0.96)'}},
+    'midjourney':  {{'--bg':'#06051d','--surface':'#1d293d','--surface2':'#0f1c36','--border':'#314062','--border2':'rgba(99,179,237,0.06)','--text':'#cad5e2','--text-muted':'#8899aa','--dim':'#6677aa','--dim2':'#445577','--accent':'#63b3ed','--teal':'#00bc7d','--header-bg':'rgba(6,5,29,0.96)'}},
+    'navigate':    {{'--bg':'#141414','--surface':'#1e1e1e','--surface2':'#282828','--border':'#383838','--border2':'rgba(255,255,255,0.04)','--text':'#fdf9f0','--text-muted':'#a0a0a0','--dim':'#888888','--dim2':'#666666','--accent':'#c7ff69','--teal':'#7a78ff','--header-bg':'rgba(20,20,20,0.96)'}},
+    'netflix':     {{'--bg':'#000000','--surface':'#221f1f','--surface2':'#2d2d2d','--border':'#414141','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#808080','--dim':'#b3b3b3','--dim2':'#808080','--accent':'#e50914','--teal':'#06b6d4','--header-bg':'rgba(0,0,0,0.96)'}},
+    'notion':      {{'--bg':'#000000','--surface':'#02093a','--surface2':'#080f40','--border':'rgba(255,255,255,0.08)','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#c6c6c5','--dim':'#c6c6c5','--dim2':'#888888','--accent':'#455dd3','--teal':'#2a9d99','--header-bg':'rgba(0,0,0,0.96)'}},
+    'opensea':     {{'--bg':'#080809','--surface':'#141415','--surface2':'#1b1d1f','--border':'#26272d','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#acadae','--dim':'#acadae','--dim2':'#74757a','--accent':'#83c3ff','--teal':'#83c3ff','--header-bg':'rgba(8,8,9,0.96)'}},
+    'palette':     {{'--bg':'#f2f0e9','--surface':'#ffffff','--surface2':'#eee9e0','--border':'#d7d7c8','--border2':'rgba(0,0,0,0.04)','--text':'#141212','--text-muted':'#a1a0a0','--dim':'#b5b4b4','--dim2':'#cccccc','--accent':'#3051a8','--teal':'#2a9d99','--header-bg':'rgba(242,240,233,0.96)'}},
+    'phantom':     {{'--bg':'#fdfcfe','--surface':'#e2dffe','--surface2':'#f4f2f4','--border':'#e9e8ea','--border2':'rgba(0,0,0,0.04)','--text':'#3c315b','--text-muted':'#86848d','--dim':'#b8b6c0','--dim2':'#cccad4','--accent':'#ab9ff2','--teal':'#2ec08b','--header-bg':'rgba(253,252,254,0.96)'}},
+    'scale':       {{'--bg':'#000000','--surface':'#020202','--surface2':'#1a1a1a','--border':'#3d3d3d','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#a1a1a1','--dim':'#a1a1a1','--dim2':'#777777','--accent':'#bbdef2','--teal':'#bbdef2','--header-bg':'rgba(0,0,0,0.96)'}},
+    'slack':       {{'--bg':'#fefbff','--surface':'#ffffff','--surface2':'#f9f0ff','--border':'#edeaed','--border2':'rgba(0,0,0,0.04)','--text':'#1d1c1d','--text-muted':'#696969','--dim':'#808080','--dim2':'#a0a0a0','--accent':'#611f69','--teal':'#1264a3','--header-bg':'rgba(254,251,255,0.96)'}},
+    'suno':        {{'--bg':'#101012','--surface':'#17171a','--surface2':'#1f1f24','--border':'#3a3a40','--border2':'rgba(255,255,255,0.04)','--text':'#f7f4ef','--text-muted':'#a3a3a3','--dim':'#a3a3a3','--dim2':'#707070','--accent':'#fd429c','--teal':'#02d95c','--header-bg':'rgba(16,16,18,0.96)'}},
+    'spotify':     {{'--bg':'#121212','--surface':'#1f1f1f','--surface2':'#292929','--border':'#333333','--border2':'rgba(255,255,255,0.04)','--text':'#ffffff','--text-muted':'#b3b3b3','--dim':'#b3b3b3','--dim2':'#73777c','--accent':'#1ed760','--teal':'#1db954','--header-bg':'rgba(18,18,18,0.96)'}},
+    'tesla':       {{'--bg':'#ffffff','--surface':'#eeeeee','--surface2':'#e5e3df','--border':'#cccccc','--border2':'rgba(0,0,0,0.04)','--text':'#171a20','--text-muted':'#5c5e62','--dim':'#888888','--dim2':'#aaaaaa','--accent':'#3e6ae1','--teal':'#3e6ae1','--header-bg':'rgba(255,255,255,0.96)'}}
   }};
-  var saved = localStorage.getItem('ws_theme') || 'slash-gold';
-  var t = THEMES[saved] || THEMES['slash-gold'];
+  window._T = T;
+  var id = localStorage.getItem('ws_theme') || 'slash-gold';
+  var t = T[id] || T['slash-gold'];
   var r = document.documentElement;
   for(var k in t) r.style.setProperty(k, t[k]);
-  r.setAttribute('data-theme', saved);
+  r.setAttribute('data-theme', id);
 }})();
 </script>
 <style>
@@ -3176,12 +3204,41 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
       <button id="theme-btn" onclick="toggleThemePanel()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--dim);font-size:11px;font-family:Inter,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--accent')" onmouseout="this.style.borderColor='';this.style.color=''">
         <span id="theme-icon">🎨</span><span id="theme-label">Style</span>
       </button>
-      <div id="theme-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;min-width:160px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
-        <div style="font-size:9px;font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;padding:4px 8px 8px">Theme</div>
-        <button onclick="applyTheme('slash-gold')" class="theme-opt" data-tid="slash-gold">🟡 Slash Gold</button>
-        <button onclick="applyTheme('hyperliquid')" class="theme-opt" data-tid="hyperliquid">🔵 Hyperliquid</button>
-        <button onclick="applyTheme('ocean')" class="theme-opt" data-tid="ocean">🌊 Ocean</button>
-        <button onclick="applyTheme('light')" class="theme-opt" data-tid="light">☀️ Light</button>
+      <div id="theme-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;min-width:320px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+        <div style="font-size:9px;font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;padding:2px 4px 8px">Theme</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;max-height:340px;overflow-y:auto">
+          <button onclick="applyTheme('slash-gold')" class="theme-opt" data-tid="slash-gold">🟡 Slash Gold</button>
+          <button onclick="applyTheme('hyperliquid')" class="theme-opt" data-tid="hyperliquid">🔵 Hyperliquid</button>
+          <button onclick="applyTheme('ocean')" class="theme-opt" data-tid="ocean">🌊 Ocean</button>
+          <button onclick="applyTheme('light')" class="theme-opt" data-tid="light">☀️ Light</button>
+          <button onclick="applyTheme('github')" class="theme-opt" data-tid="github">🐙 GitHub</button>
+          <button onclick="applyTheme('spotify')" class="theme-opt" data-tid="spotify">🎵 Spotify</button>
+          <button onclick="applyTheme('netflix')" class="theme-opt" data-tid="netflix">🎬 Netflix</button>
+          <button onclick="applyTheme('discord')" class="theme-opt" data-tid="discord">🎮 Discord</button>
+          <button onclick="applyTheme('midjourney')" class="theme-opt" data-tid="midjourney">🖼️ Midjourney</button>
+          <button onclick="applyTheme('opensea')" class="theme-opt" data-tid="opensea">💠 OpenSea</button>
+          <button onclick="applyTheme('notion')" class="theme-opt" data-tid="notion">📝 Notion</button>
+          <button onclick="applyTheme('suno')" class="theme-opt" data-tid="suno">🎶 Suno</button>
+          <button onclick="applyTheme('navigate')" class="theme-opt" data-tid="navigate">🗺️ Navigate</button>
+          <button onclick="applyTheme('canva')" class="theme-opt" data-tid="canva">🎨 Canva</button>
+          <button onclick="applyTheme('ferrari')" class="theme-opt" data-tid="ferrari">🏎️ Ferrari</button>
+          <button onclick="applyTheme('lamborghini')" class="theme-opt" data-tid="lamborghini">🏆 Lamborghini</button>
+          <button onclick="applyTheme('scale')" class="theme-opt" data-tid="scale">📊 Scale</button>
+          <button onclick="applyTheme('apple')" class="theme-opt" data-tid="apple">🍎 Apple</button>
+          <button onclick="applyTheme('coinbase')" class="theme-opt" data-tid="coinbase">💎 Coinbase</button>
+          <button onclick="applyTheme('tesla')" class="theme-opt" data-tid="tesla">⚡ Tesla</button>
+          <button onclick="applyTheme('claude')" class="theme-opt" data-tid="claude">🤖 Claude</button>
+          <button onclick="applyTheme('airbnb')" class="theme-opt" data-tid="airbnb">🏠 Airbnb</button>
+          <button onclick="applyTheme('duolingo')" class="theme-opt" data-tid="duolingo">🦉 Duolingo</button>
+          <button onclick="applyTheme('kraken')" class="theme-opt" data-tid="kraken">🔮 Kraken</button>
+          <button onclick="applyTheme('slack')" class="theme-opt" data-tid="slack">💬 Slack</button>
+          <button onclick="applyTheme('phantom')" class="theme-opt" data-tid="phantom">👻 Phantom</button>
+          <button onclick="applyTheme('aave')" class="theme-opt" data-tid="aave">🟣 AAVE</button>
+          <button onclick="applyTheme('instagram')" class="theme-opt" data-tid="instagram">📸 Instagram</button>
+          <button onclick="applyTheme('frictional')" class="theme-opt" data-tid="frictional">🎪 Frictional</button>
+          <button onclick="applyTheme('palette')" class="theme-opt" data-tid="palette">🖌️ Palette</button>
+          <button onclick="applyTheme('base')" class="theme-opt" data-tid="base">🔷 Base</button>
+        </div>
       </div>
     </div>
   </div>
@@ -7473,50 +7530,140 @@ function updateSimulator(){
   },100);
 }
 
-// ── Theme Switcher ───────────────────────────────────────────────────
-var THEMES = {
-  'slash-gold':  {'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'#5e616e','--accent':'#cc9166','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(0,0,0,0.96)'},
-  'hyperliquid': {'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.04)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#06b6d4','--red':'#f472b6','--yellow':'#fbbf24','--header-bg':'rgba(13,13,31,0.96)'},
-  'ocean':       {'--bg':'#030d18','--surface':'#071828','--surface2':'#0c2035','--border':'#14324d','--border2':'rgba(0,150,255,0.04)','--text':'#c8e0f0','--text-muted':'#4a7a9a','--dim':'#4a7a9a','--dim2':'#2d5a7a','--accent':'#00b4d8','--teal':'#00b4d8','--pink':'#f472b6','--amber':'#fbbf24','--purple':'#7c3aed','--blue':'#0284c7','--green':'#00b4d8','--red':'#ef4444','--yellow':'#fbbf24','--header-bg':'rgba(3,13,24,0.96)'},
-  'light':       {'--bg':'#f5f6fa','--surface':'#ffffff','--surface2':'#eef0f5','--border':'#e2e4eb','--border2':'rgba(0,0,0,0.04)','--text':'#1a1b2e','--text-muted':'#6b7280','--dim':'#9ca3af','--dim2':'#b0b7c3','--accent':'#6366f1','--teal':'#0ea5e9','--pink':'#ec4899','--amber':'#f59e0b','--purple':'#8b5cf6','--blue':'#3b82f6','--green':'#10b981','--red':'#ef4444','--yellow':'#f59e0b','--header-bg':'rgba(245,246,250,0.96)'}
+// ── Comprehensive Theme System ───────────────────────────────────────
+var THEMES = window._T || {};
+
+// Base Slash Gold inline color map
+var _BASES = ['#000000','#030304','#08080a','#0f1015','#121317','#1a1a1f','#1c1d22',
+              '#e2e3e9','#cdcdcd','#acafb9','#777a88','#5e616e','#cc9166'];
+var _LR = {'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)',
+           'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)',
+           'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)',
+           'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)'};
+function _cmap(v,e){
+  var m={};
+  for(var i=0;i<_BASES.length;i++) if(v[i]&&v[i]!==_BASES[i]) m[_BASES[i]]=v[i];
+  if(e) Object.assign(m,e);
+  return Object.keys(m).length?m:null;
+}
+var THEME_CMAPS = {
+  'slash-gold':  null,
+  'hyperliquid': _cmap(['#0d0d1f','#12122a','#1a1a35','#12122a','#1a1a35','#1f203a','rgba(255,255,255,0.07)','#d0d8f0','#9ab8d8','#7888b8','#5060a0','#3a4880','#06b6d4']),
+  'ocean':       _cmap(['#030d18','#071828','#0c2035','#0c2035','#0c2035','#102848','#14324d','#c8e0f0','#9ec8e0','#70a8cc','#4a7a9a','#2d5a7a','#00b4d8']),
+  'light':       _cmap(['#f5f6fa','#ffffff','#eef0f5','#f2f4f8','#f8f9fc','#e4e6ec','#e2e4eb','#1a1b2e','#3d3e55','#5d5e70','#9ca3af','#b0b7c3','#6366f1'],_LR),
+  'aave':        _cmap(['#ffffff','#f6f7f4','#ededea','#f0f0ee','#f5f5f2','#e0e0de','#d0d0ce','#221d1d','#444040','#636161','#858387','#9c9a92','#998eff'],_LR),
+  'airbnb':      _cmap(['#f7f7f7','#ffffff','#f0f0f0','#f5f5f5','#fafafa','#e8e8e8','#dddddd','#222222','#444444','#6a6a6a','#b0b0b0','#c1c1c1','#ff385c'],_LR),
+  'apple':       _cmap(['#f5f5f7','#ffffff','#f0f0f2','#f5f5f7','#fafafa','#ebebed','#e8e8ed','#1d1d1f','#333333','#474747','#707070','#a1a1a6','#0071e3'],_LR),
+  'base':        _cmap(['#ffffff','#f2f2f2','#e8e8e8','#f0f0f0','#f5f5f5','#aaaaaa','#717886','#000000','#202020','#323232','#717886','#999999','#0000ff'],_LR),
+  'canva':       _cmap(['#0f1015','#1a1b20','#25262c','#1f2028','#202128','#30313a','#333338','#ffffff','#cccccc','#a0a0a8','#808080','#575a5f','#8b3dff']),
+  'claude':      _cmap(['#faf9f5','#ffffff','#f5f4f0','#f8f8f5','#fdfcf9','#e5e3d8','#dedcd1','#141413','#2a2929','#3d3d3a','#73726c','#9c9a92','#d97757'],_LR),
+  'coinbase':    _cmap(['#ffffff','#f7f8f9','#eef0f3','#f2f3f5','#f9fafb','#e0e1e4','#dedfe2','#0a0b0d','#202228','#404550','#5b616e','#8a9099','#0052ff'],_LR),
+  'discord':     _cmap(['#0e0f2d','#2c2f33','#23272a','#1e2228','#23272a','#2c2f35','#202225','#ffffff','#e0e0e0','#babcd9','#99aab5','#72767d','#5865f2']),
+  'duolingo':    _cmap(['#ffffff','#f9f9f9','#f2f2f2','#f5f5f5','#fafafa','#ebebeb','#e5e5e5','#3c3c3c','#4b4b4b','#666666','#afafaf','#c5c5c5','#58cc02'],_LR),
+  'ferrari':     _cmap(['#000000','#181818','#303030','#222222','#222222','#3a3a3a','#4a4a4a','#ffffff','#dddddd','#bbbbbb','#8f8f8f','#666666','#ff0000']),
+  'frictional':  _cmap(['#ffe9ce','#ffffff','#fff5ea','#fffaf4','#fff8f0','#eed8c0','#f0d5b8','#000000','#111111','#333333','#666666','#999999','#8a53ff'],_LR),
+  'github':      _cmap(['#0d1117','#161b22','#21262d','#1a1f26','#1c2128','#282e36','#30363d','#f0f6fc','#c9d1d9','#b1bac4','#9198a1','#7c8980','#1f6feb']),
+  'instagram':   _cmap(['#ffffff','#fafafa','#f5f5f5','#f8f8f8','#fafafa','#d5d5d5','#cccccc','#1c1e21','#333333','#555555','#888888','#aaaaaa','#f689ff'],_LR),
+  'kraken':      _cmap(['#ffffff','#f6f5f9','#ede9f7','#f0eef7','#fafafa','#dad4e4','#d4d4dc','#101114','#282832','#444455','#686b82','#9090a0','#7132f5'],_LR),
+  'lamborghini': _cmap(['#000000','#181818','#303030','#202020','#202020','#383838','#404040','#ffffff','#e0e0e0','#c0c0c0','#8f8f8f','#666666','#ffc000']),
+  'midjourney':  _cmap(['#06051d','#1d293d','#0f1c36','#122030','#152030','#263450','#314062','#cad5e2','#b0c5d8','#8899aa','#6677aa','#445577','#63b3ed']),
+  'navigate':    _cmap(['#141414','#1e1e1e','#282828','#232323','#1e1e1e','#303030','#383838','#fdf9f0','#cccccc','#aaaaaa','#888888','#666666','#c7ff69']),
+  'netflix':     _cmap(['#000000','#221f1f','#2d2d2d','#232323','#232323','#383838','#414141','#ffffff','#e0e0e0','#c0c0c0','#b3b3b3','#808080','#e50914']),
+  'notion':      _cmap(['#000000','#02093a','#080f40','#040e44','#060e44','#0a1550','rgba(255,255,255,0.08)','#ffffff','#eeeeee','#cccccc','#c6c6c5','#888888','#455dd3']),
+  'opensea':     _cmap(['#080809','#141415','#1b1d1f','#191b1d','#1b1d1f','#202225','#26272d','#ffffff','#e0e0e0','#c0c0c0','#acadae','#74757a','#83c3ff']),
+  'palette':     _cmap(['#f2f0e9','#ffffff','#eee9e0','#f5f4ef','#fafaf8','#ddddd0','#d7d7c8','#141212','#2a2828','#444040','#a1a0a0','#b5b4b4','#3051a8'],_LR),
+  'phantom':     _cmap(['#fdfcfe','#e2dffe','#f4f2f4','#f8f6ff','#f8f6ff','#eeecf5','#e9e8ea','#3c315b','#555070','#756a88','#86848d','#a5a3b0','#ab9ff2'],_LR),
+  'scale':       _cmap(['#000000','#020202','#1a1a1a','#111111','#111111','#2d2d2d','#3d3d3d','#ffffff','#e5e5e5','#cccccc','#a1a1a1','#777777','#bbdef2']),
+  'slack':       _cmap(['#fefbff','#ffffff','#f9f0ff','#fcfaff','#ffffff','#f0eaf2','#edeaed','#1d1c1d','#333333','#555555','#696969','#808080','#611f69'],_LR),
+  'suno':        _cmap(['#101012','#17171a','#1f1f24','#1a1a1e','#1c1c20','#303035','#3a3a40','#f7f4ef','#d5d2cd','#c2c2c1','#a3a3a3','#707070','#fd429c']),
+  'spotify':     _cmap(['#121212','#1f1f1f','#292929','#1c1c1c','#1e1e1e','#2a2a2a','#333333','#ffffff','#e0e0e0','#c5c5c5','#b3b3b3','#73777c','#1ed760']),
+  'tesla':       _cmap(['#ffffff','#eeeeee','#e5e3df','#f0f0f0','#f5f5f5','#d5d5d5','#cccccc','#171a20','#2a2d35','#393c41','#5c5e62','#888888','#3e6ae1'],_LR),
 };
+var _THEME_LABELS = {
+  'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light',
+  'github':'🐙 GitHub','spotify':'🎵 Spotify','netflix':'🎬 Netflix','discord':'🎮 Discord',
+  'midjourney':'🖼 Midjourney','opensea':'💠 OpenSea','notion':'📝 Notion','suno':'🎶 Suno',
+  'navigate':'🗺 Navigate','canva':'🎨 Canva','ferrari':'🏎 Ferrari','lamborghini':'🏆 Lamborghini',
+  'scale':'📊 Scale','apple':'🍎 Apple','coinbase':'💎 Coinbase','tesla':'⚡ Tesla',
+  'claude':'🤖 Claude','airbnb':'🏠 Airbnb','duolingo':'🦉 Duolingo','kraken':'🔮 Kraken',
+  'slack':'💬 Slack','phantom':'👻 Phantom','aave':'🟣 AAVE','instagram':'📸 Instagram',
+  'frictional':'🎪 Frictional','palette':'🖌 Palette','base':'🔷 Base'
+};
+var _baseStyleCache = new Map();
+var _activeThemeId = localStorage.getItem('ws_theme') || 'slash-gold';
+function _initBaseStyles() {
+  if(_baseStyleCache.size > 0) return;
+  document.querySelectorAll('[style]').forEach(function(el){
+    _baseStyleCache.set(el, el.getAttribute('style'));
+  });
+}
+function _applyToEl(el, cmap) {
+  var base = _baseStyleCache.get(el);
+  if(base === undefined){ base = el.getAttribute('style')||''; _baseStyleCache.set(el,base); }
+  if(!cmap){ el.setAttribute('style',base); return; }
+  var s = base;
+  for(var c in cmap) s = s.split(c).join(cmap[c]);
+  el.setAttribute('style',s);
+}
+function _applyColorMap(cmap) {
+  document.querySelectorAll('[style]').forEach(function(el){ _applyToEl(el,cmap); });
+}
+var _mo = new MutationObserver(function(muts){
+  var cmap = THEME_CMAPS[_activeThemeId]; if(!cmap) return;
+  muts.forEach(function(m){
+    m.addedNodes.forEach(function(node){
+      if(node.nodeType!==1) return;
+      var els=[];
+      if(node.getAttribute&&node.getAttribute('style')) els.push(node);
+      if(node.querySelectorAll) node.querySelectorAll('[style]').forEach(function(c){els.push(c);});
+      els.forEach(function(el){
+        var orig=el.getAttribute('style'); if(!orig) return;
+        if(!_baseStyleCache.has(el)) _baseStyleCache.set(el,orig);
+        _applyToEl(el,cmap);
+      });
+    });
+  });
+});
 function applyTheme(tid) {
   var t = THEMES[tid]; if(!t) return;
   var r = document.documentElement;
-  for(var k in t) r.style.setProperty(k, t[k]);
-  r.setAttribute('data-theme', tid);
-  localStorage.setItem('ws_theme', tid);
-  // update button label
-  var labels = {'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light'};
-  var lbl = document.getElementById('theme-label');
-  if(lbl) lbl.textContent = labels[tid] || 'Style';
-  // update active state
+  for(var k in t) r.style.setProperty(k,t[k]);
+  r.setAttribute('data-theme',tid);
+  localStorage.setItem('ws_theme',tid);
+  _activeThemeId = tid;
+  _initBaseStyles();
+  _applyColorMap(THEME_CMAPS[tid]);
+  _mo.disconnect();
+  _mo.observe(document.body,{childList:true,subtree:true});
+  var lbl=document.getElementById('theme-label');
+  if(lbl) lbl.textContent=_THEME_LABELS[tid]||'Style';
   document.querySelectorAll('.theme-opt').forEach(function(b){
-    b.classList.toggle('active', b.getAttribute('data-tid')===tid);
+    b.classList.toggle('active',b.getAttribute('data-tid')===tid);
   });
   toggleThemePanel(false);
 }
 function toggleThemePanel(force) {
-  var p = document.getElementById('theme-panel');
-  if(!p) return;
-  var show = force !== undefined ? force : p.style.display==='none';
-  p.style.display = show ? 'block' : 'none';
+  var p=document.getElementById('theme-panel'); if(!p) return;
+  var show=force!==undefined?force:p.style.display==='none';
+  p.style.display=show?'block':'none';
 }
-// close panel when clicking outside
-document.addEventListener('click', function(e){
+document.addEventListener('click',function(e){
   var p=document.getElementById('theme-panel');
   var b=document.getElementById('theme-btn');
-  if(p && p.style.display!=='none' && !p.contains(e.target) && !b.contains(e.target)) p.style.display='none';
+  if(p&&p.style.display!=='none'&&!p.contains(e.target)&&b&&!b.contains(e.target)) p.style.display='none';
 });
-// init label & active on load
 (function(){
-  var saved = localStorage.getItem('ws_theme') || 'slash-gold';
-  var labels = {'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light'};
-  var lbl = document.getElementById('theme-label');
-  if(lbl) lbl.textContent = labels[saved] || 'Style';
+  var saved=_activeThemeId;
+  var lbl=document.getElementById('theme-label');
+  if(lbl) lbl.textContent=_THEME_LABELS[saved]||'Style';
   document.querySelectorAll('.theme-opt').forEach(function(b){
-    b.classList.toggle('active', b.getAttribute('data-tid')===saved);
+    b.classList.toggle('active',b.getAttribute('data-tid')===saved);
   });
+  if(saved!=='slash-gold'){
+    _initBaseStyles();
+    _applyColorMap(THEME_CMAPS[saved]);
+    _mo.observe(document.body,{childList:true,subtree:true});
+  }
 })();
 """
     html = html.replace("%%SCRIPT%%", js_block)
