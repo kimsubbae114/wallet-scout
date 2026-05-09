@@ -3271,6 +3271,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     <div style="height:320px;position:relative"><canvas id="watchlistRadarChart"></canvas></div>
     <div id="watchlist-radar-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"></div>
   </div>
+  <div id="watchlist-signal-root" style="margin-top:16px"></div>
 </div>
 <div class="section" id="tab-guestbook"><div id="guestbook-root" style="max-width:700px;margin:0 auto;padding:20px 0"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -4550,6 +4551,7 @@ function renderWatchlist(){
   html += '</div>';
   root.innerHTML = html;
   renderWatchlistRadar();
+  renderWatchlistSignal();
 }
 
 function renderWatchlistRadar(){
@@ -4578,6 +4580,156 @@ function renderWatchlistRadar(){
       +'<span style="width:10px;height:10px;border-radius:50%;background:'+d.color+';flex-shrink:0"></span>'
       +_esc(d.label)+'</span>';
   }).join('');
+}
+
+function renderWatchlistSignal(){
+  var root = document.getElementById('watchlist-signal-root');
+  if(!root) return;
+  var wl = getWatchlist();
+  if(!wl.length){ root.innerHTML=''; return; }
+
+  var wlSet = {};
+  wl.forEach(function(a){ wlSet[a.toLowerCase()] = true; });
+  var wlStats = (window.ALL_STATS||[]).filter(function(s){ return wlSet[(s.address||'').toLowerCase()]; });
+  if(!wlStats.length){ root.innerHTML=''; return; }
+
+  // ── Smart Direction ──────────────────────────────────────────────
+  var longNtl=0, shortNtl=0;
+  wlStats.forEach(function(s){
+    (s.positions||[]).forEach(function(p){
+      if(p.side==='LONG') longNtl+=p.notional;
+      else shortNtl+=p.notional;
+    });
+  });
+  var totalNtl = longNtl + shortNtl;
+  var lp = totalNtl>0 ? longNtl/totalNtl*100 : 50;
+  var sp = totalNtl>0 ? shortNtl/totalNtl*100 : 50;
+  var isLong = lp >= sp;
+  var domColor = isLong ? '#06b6d4' : '#f472b6';
+  var domLabel = isLong ? 'LONG' : 'SHORT';
+  var domPct   = isLong ? lp : sp;
+  var r=58, sw=14, circ=+(2*Math.PI*r).toFixed(2);
+  var longPx=+(lp/100*circ-3).toFixed(2), shortPx=+(sp/100*circ-3).toFixed(2);
+  var svg='<svg viewBox="0 0 160 160" width="120" height="120" style="display:block;transform:rotate(-90deg)">'
+    +'<circle cx="80" cy="80" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="'+sw+'"/>'
+    +'<circle cx="80" cy="80" r="'+r+'" fill="none" stroke="#f472b6" stroke-width="'+sw+'" stroke-dasharray="'+shortPx+' '+circ+'" stroke-dashoffset="-'+(+(lp/100*circ)).toFixed(2)+'" stroke-linecap="round" opacity="0.75"/>'
+    +'<circle cx="80" cy="80" r="'+r+'" fill="none" stroke="#06b6d4" stroke-width="'+sw+'" stroke-dasharray="'+longPx+' '+circ+'" stroke-linecap="round"/>'
+    +'</svg>';
+  var donutHtml='<div style="position:relative;width:120px;height:120px;flex-shrink:0">'+svg
+    +'<div style="position:absolute;top:0;left:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">'
+    +'<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800;color:'+domColor+';line-height:1">'+domPct.toFixed(0)+'%</div>'
+    +'<div style="font-size:9px;font-weight:700;color:'+domColor+';letter-spacing:2px;margin-top:3px">'+domLabel+'</div>'
+    +'</div></div>';
+  var dirHTML='<div style="background:#12122a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:12px">'
+    +donutHtml
+    +'<div style="flex:1;min-width:120px">'
+    +'<div style="font-size:10px;color:#6b7280;margin-bottom:8px">Watchlist · '+wlStats.length+' wallets</div>'
+    +'<div style="display:flex;gap:20px">'
+    +'<div><div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:800;color:#06b6d4;line-height:1">'+lp.toFixed(0)+'%</div><div style="font-size:9px;color:#4a4a7a;margin-top:2px;letter-spacing:1px">LONG</div></div>'
+    +'<div><div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:800;color:#f472b6;line-height:1">'+sp.toFixed(0)+'%</div><div style="font-size:9px;color:#4a4a7a;margin-top:2px;letter-spacing:1px">SHORT</div></div>'
+    +'</div></div></div>';
+
+  // ── Top Coin Bet ──────────────────────────────────────────────────
+  var coinMap={};
+  wlStats.forEach(function(s){
+    var eq=s.total_equity||1;
+    (s.positions||[]).forEach(function(p){
+      if(!coinMap[p.coin]) coinMap[p.coin]={long:0,short:0,levSum:0,cnt:0};
+      if(p.side==='LONG') coinMap[p.coin].long+=p.notional;
+      else coinMap[p.coin].short+=p.notional;
+      coinMap[p.coin].levSum+=p.notional/eq;
+      coinMap[p.coin].cnt++;
+    });
+  });
+  var coinArr=Object.keys(coinMap).map(function(c){
+    var m=coinMap[c], tot=m.long+m.short;
+    return{coin:c,total:tot,long_pct:tot>0?m.long/tot*100:50,short_pct:tot>0?m.short/tot*100:50,avg_lev:m.cnt>0?m.levSum/m.cnt:0};
+  });
+  coinArr.sort(function(a,b){ return b.total-a.total; });
+  var topCoins=coinArr.slice(0,8);
+  var coinHTML='';
+  if(topCoins.length){
+    coinHTML='<div style="background:#12122a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden;margin-bottom:12px">'
+      +'<div style="display:grid;grid-template-columns:20px 64px 1fr 30px 30px 38px;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.04)">'
+      +'<span style="font-size:9px;color:#3a3a5c">#</span>'
+      +'<span style="font-size:9px;color:#3a3a5c;font-weight:600;text-transform:uppercase">Coin</span>'
+      +'<span style="font-size:9px;color:#3a3a5c">L/S Ratio</span>'
+      +'<span style="font-size:9px;color:#06b6d4;text-align:right">Long</span>'
+      +'<span style="font-size:9px;color:#f472b6;text-align:right">Short</span>'
+      +'<span style="font-size:9px;color:#3a3a5c;text-align:right">Lev</span>'
+      +'</div>';
+    topCoins.forEach(function(c,i){
+      var isL=c.long_pct>=c.short_pct;
+      var levStr=c.avg_lev>=1?'x'+(c.avg_lev).toFixed(1):'x'+(c.avg_lev).toFixed(2);
+      var rowBg=i%2===0?'transparent':'rgba(255,255,255,0.01)';
+      coinHTML+='<div style="display:grid;grid-template-columns:20px 64px 1fr 30px 30px 38px;align-items:center;gap:10px;padding:8px 14px;background:'+rowBg+';border-bottom:1px solid rgba(255,255,255,0.03)">'
+        +'<span style="font-size:10px;color:#3a3a5c">'+(i+1)+'</span>'
+        +'<span style="font-family:Space Grotesk,sans-serif;font-size:13px;font-weight:700;color:#d0d8f0">'+c.coin+'</span>'
+        +'<div style="display:flex;height:5px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,0.06)">'
+        +'<div style="width:'+c.long_pct.toFixed(1)+'%;height:100%;background:#06b6d4"></div>'
+        +'<div style="width:'+c.short_pct.toFixed(1)+'%;height:100%;background:#f472b6"></div>'
+        +'</div>'
+        +'<span style="font-size:11px;font-weight:700;color:#06b6d4;text-align:right">'+c.long_pct.toFixed(0)+'%</span>'
+        +'<span style="font-size:11px;font-weight:700;color:#f472b6;text-align:right">'+c.short_pct.toFixed(0)+'%</span>'
+        +'<span style="font-size:10px;color:#fbbf24;font-weight:600;text-align:right">'+levStr+'</span>'
+        +'</div>';
+    });
+    coinHTML+='</div>';
+  }
+
+  // ── Recent Moves (watchlist만) ────────────────────────────────────
+  var HM=window.HOT_MOVES||[];
+  var wlMoves=HM.filter(function(m){ return wlSet[(m.addr||'').toLowerCase()]; });
+  var movesHTML='';
+  if(wlMoves.length){
+    function _wlTimeAgo(iso){
+      if(!iso) return '';
+      var d=(Date.now()-new Date(iso))/1000;
+      if(d<60) return 'just now';
+      if(d<3600) return Math.floor(d/60)+'m ago';
+      if(d<86400) return Math.floor(d/3600)+'h ago';
+      return Math.floor(d/86400)+'d ago';
+    }
+    movesHTML='<div style="background:#12122a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden;margin-bottom:12px">';
+    wlMoves.forEach(function(m,i){
+      var isL=m.action.toLowerCase().indexOf('long')>=0;
+      var dc=isL?'#06b6d4':'#f472b6';
+      var uc=m.upnl>=0?'#06b6d4':'#f472b6';
+      var levX=m.equity>0?m.notional/m.equity:0;
+      var levLabel=levX>=1?'x'+(Math.round(levX*10)/10).toFixed(1):levX>0?'x'+(Math.round(levX*100)/100).toFixed(2):'—';
+      var ntl=m.notional>=1e6?(m.notional/1e6).toFixed(1)+'M':m.notional>=1e3?(m.notional/1e3).toFixed(0)+'K':m.notional.toFixed(0);
+      var upnlAbs=Math.abs(m.upnl);
+      var upnlStr=(m.upnl>=0?'+':'-')+(upnlAbs>=1e6?(upnlAbs/1e6).toFixed(1)+'M':upnlAbs>=1e3?(upnlAbs/1e3).toFixed(0)+'K':upnlAbs.toFixed(0));
+      var rowBg=i%2===0?'transparent':'rgba(255,255,255,0.01)';
+      movesHTML+='<div data-addr="'+m.addr+'" onclick="openModal(this.dataset.addr)" style="display:grid;grid-template-columns:1fr 64px 60px 48px 30px 36px;align-items:center;gap:8px;padding:9px 14px;background:'+rowBg+';border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer">'
+        +'<span style="font-family:Space Grotesk,sans-serif;font-size:12px;font-weight:700;color:#d0d8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc(m.name)+'</span>'
+        +'<span style="font-size:11px;font-weight:700;color:'+dc+';white-space:nowrap">'+(isL?'▲ ':'▼ ')+m.action.split(' ')[0]+'</span>'
+        +'<span style="font-size:11px;color:#d0d8f0;font-family:Space Grotesk,sans-serif;text-align:right">$'+ntl+'</span>'
+        +'<span style="font-size:10px;color:#fbbf24;font-weight:600;text-align:right">'+levLabel+'</span>'
+        +'<span style="font-size:11px;font-weight:600;color:'+uc+';text-align:right">'+upnlStr+'</span>'
+        +'<span style="font-size:9px;color:#3a3a5c;white-space:nowrap;text-align:right">'+_wlTimeAgo(m.detected_at)+'</span>'
+        +'</div>';
+    });
+    movesHTML+='</div>';
+  }
+
+  var noPos = (longNtl+shortNtl) === 0 && !topCoins.length;
+  if(noPos && !wlMoves.length){ root.innerHTML=''; return; }
+
+  var h = '<div style="border-top:0.5px solid #1e1e35;padding-top:20px;margin-top:8px">'
+    +'<div style="font-family:Space Grotesk,sans-serif;font-size:16px;font-weight:700;color:#f0f2ff;margin-bottom:16px">📡 Watchlist Signal</div>';
+
+  if(!noPos){
+    h+='<div style="font-size:11px;font-weight:600;color:#8892b0;margin-bottom:8px;letter-spacing:.5px">SMART DIRECTION</div>'+dirHTML;
+    if(coinHTML){
+      h+='<div style="font-size:11px;font-weight:600;color:#8892b0;margin-bottom:8px;letter-spacing:.5px">TOP COIN BET</div>'+coinHTML;
+    }
+  }
+  if(movesHTML){
+    h+='<div style="font-size:11px;font-weight:600;color:#8892b0;margin-bottom:8px;letter-spacing:.5px">RECENT MOVES</div>'+movesHTML;
+  }
+  h+='</div>';
+  root.innerHTML=h;
 }
 
 function removeFromWatchlist(addr){
