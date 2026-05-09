@@ -1965,6 +1965,21 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         stats["cmm_pnl_week"]  = round(_cmm_pnl_data.get("week", 0), 2)
                         stats["cmm_pnl_month"] = round(_cmm_pnl_data.get("month", 0), 2)
                         stats["cmm_source"]    = True
+                        # radar ROI 점수도 업데이트 (roi_pct가 바뀌었으므로 재계산)
+                        import math as _cm
+                        _roi_new = stats["roi_pct"]
+                        _n_closed = stats.get("closed_count", 0)
+                        if _n_closed < 3 or _roi_new <= 0:
+                            _new_roi_score = 10.0
+                        elif _roi_new == 0:
+                            _new_roi_score = 30.0
+                        else:
+                            _r = min(_roi_new, 400.0)
+                            _new_roi_score = round(min(30 + 70 * _cm.log1p(_r) / _cm.log1p(400), 100.0), 1)
+                        stats["radar"]["roi"] = _new_roi_score
+                        # WAR 컴포넌트·점수도 재계산
+                        stats["war_components"]["ROI"] = round(_new_roi_score * 0.25, 1)
+                        stats["war_score"] = round(sum(stats["war_components"].values()), 1)
                     equity = stats.get("total_equity", 0)
                     war = stats.get("war_score", 0)
                     # 디버그: WAR 계산 근거 로그
