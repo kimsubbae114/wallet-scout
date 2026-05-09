@@ -3334,8 +3334,8 @@ function openModal(addr) {
       const levSpan = p.lev > 1 ? `<span title="Leverage: position size relative to account equity" style="cursor:help"> ${p.lev}x</span>` : '';
       return `<div class="modal-pos-row">
         <span style="color:${sc2};min-width:90px">${ic} ${p.coin}${levSpan}</span>
-        <span style="color:#888;min-width:100px;text-align:right">$${p.notional.toLocaleString()}</span>
-        <span title="Unrealized PnL: current open position profit/loss" style="color:${uc};text-align:right;flex:1;cursor:help">uPnL $${p.upnl>=0?'+':''}${p.upnl.toLocaleString()}</span>
+        <span style="color:#888;min-width:100px;text-align:right">$${Math.round(p.notional).toLocaleString()}</span>
+        <span title="Unrealized PnL: current open position profit/loss" style="color:${uc};text-align:right;flex:1;cursor:help">uPnL $${p.upnl>=0?'+':''}${Math.round(p.upnl).toLocaleString()}</span>
       </div>`;
     }).join('');
     posHTML = `
@@ -3355,7 +3355,7 @@ function openModal(addr) {
     const arr = c.side === 'L' ? '▲' : c.side === 'S' ? '▼' : '';
     coinRows += `<div class="modal-coin-row">
       <span style="color:${sideCol}">${arr} ${c.coin}</span>
-      <span style="color:${pnlCol}">$${c.pnl>=0?'+':''}${c.pnl.toLocaleString()}</span>
+      <span style="color:${pnlCol}">$${c.pnl>=0?'+':''}${Math.round(c.pnl).toLocaleString()}</span>
     </div>`;
   });
 
