@@ -6747,16 +6747,19 @@ function updateSimulator(){
   var pctSign=pct>=0?'+':'';
   var groupLabel=group==='war80'?'WAR 80+':group==='war70'?'WAR 70~80':group==='war60'?'WAR 60~70':group==='war50'?'WAR 50~60':'Followable';
   var pnlStr=(r.pnl>=0?'+':'')+r.pnl.toLocaleString();
+  var showPnl = group !== 'follow';
   resDiv.innerHTML=
     '<div style="background:rgba(255,255,255,0.03);border:1px solid '+pctColor+';border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
       +'<div>'
         +'<div style="font-family:Inter,sans-serif;font-size:32px;font-weight:800;color:'+pctColor+';line-height:1">'+pctSign+pct.toFixed(2)+'%</div>'
         +'<div style="font-size:10px;color:#777a88;margin-top:4px">Realized PnL / balance · '+period+' · '+groupLabel+' ('+count+' wallets)</div>'
       +'</div>'
-      +'<div style="border-left:1px solid rgba(255,255,255,0.06);padding-left:20px">'
-        +'<div style="font-size:18px;font-weight:700;color:'+pctColor+'">$'+pnlStr+'</div>'
-        +'<div style="font-size:10px;color:#777a88;margin-top:4px">Total realized PnL</div>'
-      +'</div>'
+      +(showPnl
+        ? '<div style="border-left:1px solid rgba(255,255,255,0.06);padding-left:20px">'
+            +'<div style="font-size:18px;font-weight:700;color:'+pctColor+'">$'+pnlStr+'</div>'
+            +'<div style="font-size:10px;color:#777a88;margin-top:4px">Total realized PnL</div>'
+          +'</div>'
+        : '')
     +'</div>';
 }
 """
