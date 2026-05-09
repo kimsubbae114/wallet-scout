@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 # ─────────────────────────────────────────────────────
 # WALLET SCOUT v3  —  Hyperliquid Trader 아카이브
@@ -2393,7 +2393,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     cards_html = ""
     for rank, s in enumerate(ranked, 1):
         crown = "👑" if rank==1 else f"#{rank}"
-        pnl_color = "#cc9166" if s["total_pnl"] >= 0 else "#f72585"
+        pnl_color = "#00f5d4" if s["total_pnl"] >= 0 else "#f72585"
         sc = "#cc9166" if s["sharpe"]>1 else ("#ffbe0b" if s["sharpe"]>0 else "#f87171")
         dc = "#cc9166" if s["durability"]>=60 else ("#ffbe0b" if s["durability"]>=35 else "#f72585")
         war_bar = min(int(s["war_score"]), 100)
@@ -2481,7 +2481,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                 f'{i*_W/(len(_pts)-1):.1f},{_H - (_v-_min_v)/_rng*_H:.1f}'
                 for i, _v in enumerate(_vals)
             )
-            _col = '#cc9166' if _vals[-1] >= _vals[0] else '#f72585'
+            _col = '#00f5d4' if _vals[-1] >= _vals[0] else '#f72585'
             _fill_pts = f'0,{_H} ' + _coords + f' {_W},{_H}'
             sparkline_svg = (
                 f'<svg viewBox="0 0 {_W} {_H}" width="100%" height="36" preserveAspectRatio="none" style="display:block">'
@@ -2498,7 +2498,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 
         # 30D PnL
         _pnl_30d = (_pts[-1]['cum'] - _pts[0]['cum']) if len(_pts) >= 2 else 0
-        _pnl_30d_color = "#cc9166" if _pnl_30d >= 0 else "#f72585"
+        _pnl_30d_color = "#00f5d4" if _pnl_30d >= 0 else "#f72585"
         _pnl_30d_sign = "+" if _pnl_30d >= 0 else ""
         # Risk level from MDD
         _mdd = s.get("mdd_pct", 0)
@@ -2511,7 +2511,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         def _coin_tag(t):
             if isinstance(t, dict): c,p,sd = t["coin"],t["pnl"],t.get("side","")
             else: c,p,sd = t[0],t[1],""  # 구버전 캐시 호환
-            col = "#cc9166" if p>=0 else "#f72585"
+            col = "#00f5d4" if p>=0 else "#f72585"
             arrow = "▲" if sd=="L" else ("▼" if sd=="S" else "")
             return f'<span class="coin-tag" style="border-color:{col};color:{col}">{arrow}{c} ${p:+,.0f}</span>'
         top_coins = ''  # 실현손익 코인태그 제거
@@ -2556,7 +2556,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
             for p in filtered_pos:
                 sc2  = "#3a86ff" if p["side"]=="LONG" else "#f72585"
                 ic2  = "▲" if p["side"]=="LONG" else "▼"
-                uc2  = "#cc9166" if p["upnl"]>=0 else "#f87171"
+                uc2  = "#00f5d4" if p["upnl"]>=0 else "#f87171"
                 lev_ratio = p.get("lev", 0)
                 if lev_ratio >= 1:
                     lev2 = f' x{lev_ratio:.1f}'
@@ -2575,7 +2575,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         else:
             upnl_val = s.get('total_upnl', 0)
             if upnl_val != 0:
-                uc3 = '#cc9166' if upnl_val >= 0 else '#f87171'
+                uc3 = '#00f5d4' if upnl_val >= 0 else '#f87171'
                 positions_section = f'<div class="positions-block pos-empty">uPnL <span style="color:{uc3}">${upnl_val:+,.0f}</span> (refresh needed)</div>'
             else:
                 positions_section = '<div class="positions-block pos-empty">— No positions</div>'
@@ -3314,7 +3314,7 @@ function openModal(addr) {
   const _sortedByWar = ALL_STATS.slice().sort((a,b)=>(b.war_score||0)-(a.war_score||0));
   const _warRank = _sortedByWar.findIndex(x=>x.address===addr) + 1;
   const cc = s._color || '#cc9166';
-  const pnlColor = s.total_pnl >= 0 ? '#cc9166' : '#f72585';
+  const pnlColor = s.total_pnl >= 0 ? '#00f5d4' : '#f72585';
   const sc = s.sharpe > 1 ? '#cc9166' : s.sharpe > 0 ? '#ffbe0b' : '#f87171';
   const dc = s.durability >= 60 ? '#cc9166' : s.durability >= 35 ? '#ffbe0b' : '#f72585';
 
@@ -3329,7 +3329,7 @@ function openModal(addr) {
     const rows = sorted.map(p => {
       const sc2 = p.side==='LONG' ? '#3a86ff' : '#f72585';
       const ic  = p.side==='LONG' ? '▲' : '▼';
-      const uc  = p.upnl >= 0 ? '#cc9166' : '#f87171';
+      const uc  = p.upnl >= 0 ? '#00f5d4' : '#f87171';
       const levTxt = p.lev > 1 ? ` ${p.lev}x` : '';
       const levSpan = p.lev > 1 ? `<span title="Leverage: position size relative to account equity" style="cursor:help"> ${p.lev}x</span>` : '';
       return `<div class="modal-pos-row">
@@ -3350,7 +3350,7 @@ function openModal(addr) {
   let coinRows = '';
   (s.top_coins || []).forEach(t => {
     const c = typeof t === 'object' ? t : {coin:t[0], pnl:t[1], side:'?'};
-    const pnlCol = c.pnl >= 0 ? '#cc9166' : '#f72585';
+    const pnlCol = c.pnl >= 0 ? '#00f5d4' : '#f72585';
     const sideCol = c.side === 'L' ? '#3a86ff' : c.side === 'S' ? '#f72585' : '#888';
     const arr = c.side === 'L' ? '▲' : c.side === 'S' ? '▼' : '';
     coinRows += `<div class="modal-coin-row">
@@ -4262,7 +4262,7 @@ function renderSMM() {
 
 function _fmtPnl(v) {
   if (v == null) return '<span style="color:#444">—</span>';
-  var c = v >= 0 ? '#cc9166' : '#f87171';
+  var c = v >= 0 ? '#00f5d4' : '#f87171';
   return '<span style="color:' + c + ';font-weight:600">' + (v >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(v)).toLocaleString() + '</span>';
 }
 
@@ -4522,7 +4522,7 @@ function renderWatchlist(){
         + '</div>';
     } else {
       // 카드를 클릭하면 모달 열기
-      var pnlColor = s.total_pnl >= 0 ? '#cc9166' : '#f72585';
+      var pnlColor = s.total_pnl >= 0 ? '#00f5d4' : '#f72585';
       var cc = s._color || '#cc9166';
       var warColor = s.war_score >= 80 ? '#cc9166' : s.war_score >= 60 ? '#ffbe0b' : '#f72585';
       html += '<div data-wa="'+ addr +'" style="background:#030304;border-radius:10px;padding:16px;border:1px solid rgba(255,255,255,0.06);cursor:pointer" onclick="openModal(this.dataset.wa)">'
@@ -5919,7 +5919,7 @@ async function doLookup(){
       _lbls+'</svg>';
 
     // Trader Card 렌더링
-    var pnlColor = totalPnl>=0?'#cc9166':'#f72585';
+    var pnlColor = totalPnl>=0?'#00f5d4':'#f72585';
     var warColor = warEst>=70?'#cc9166':warEst>=50?'#ffbe0b':'#f72585';
     var stroke = Math.round(warEst/100*2*Math.PI*26);
     var dash = 2*Math.PI*26;
@@ -5947,7 +5947,7 @@ async function doLookup(){
       : filteredPos.map(function(p){
           var sc=p.side==='LONG'?'#3a86ff':'#f72585';
           var ic=p.side==='LONG'?'▲':'▼';
-          var uc=p.upnl>=0?'#cc9166':'#f87171';
+          var uc=p.upnl>=0?'#00f5d4':'#f87171';
           var lev=p.lev>1?' '+p.lev+'x':'';
           var upnlStr='uPnL '+(p.upnl>=0?'+':'-')+'$'+Math.round(Math.abs(p.upnl)).toLocaleString();
           return '<div style="display:grid;grid-template-columns:80px 1fr 1fr;align-items:center;font-size:10px;font-family:Inter,sans-serif;gap:4px;min-width:0;overflow:hidden">'
@@ -5991,7 +5991,7 @@ async function doLookup(){
     var warColor = warEst>=80?'#cc9166':warEst>=60?'#ffbe0b':'#f72585';
     var stroke   = Math.min(warEst/100*163.4,163.4).toFixed(1);
     var dash     = (163.4 - parseFloat(stroke)).toFixed(1);
-    var pnlColor = totalPnl>=0?'#cc9166':'#f72585';
+    var pnlColor = totalPnl>=0?'#00f5d4':'#f72585';
     // WAR 라벨: 캐시면 정식 점수, 아니면 추정값임을 표시
     var warLabel   = _isArchived ? 'WAR' : '~WAR';
     var warLabelColor = _isArchived ? warColor : '#555';
