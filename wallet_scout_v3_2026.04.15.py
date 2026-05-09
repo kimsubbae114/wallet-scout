@@ -3363,6 +3363,7 @@ function openModal(addr) {
   const links = [
     {name:'HypurrScan', url:`https://hypurrscan.io/address/${addrFull}`},
     {name:'HL Explorer', url:`https://app.hyperliquid.xyz/explorer/address/${addrFull}`},
+    {name:'CMM',         url:`https://app.coinmarketman.com/hypertracker/wallet/${addrFull}`},
     {name:'DeBank',      url:`https://debank.com/profile/${addrFull}`},
     {name:'Arkham',      url:`https://platform.arkhamintelligence.com/explorer/address/${addrFull}`},
     {name:'Search / 𝕏', url:`https://x.com/search?q=${addrFull}&src=typed_query`},
