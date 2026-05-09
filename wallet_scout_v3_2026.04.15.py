@@ -3180,6 +3180,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
       <select id="filter-source" onchange="applyCardFilters()" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#d0d8f0;font-family:Inter,sans-serif">
         <option value="">All Sources</option>
+        <option value="named">Named Only</option>
         <option value="vault">Vault</option>
         <option value="active">Active</option>
         <option value="manual">Manual</option>
@@ -5354,7 +5355,13 @@ function applyCardFilters(resetPage){
   var filtered = pairs.filter(function(p){
     var s = p.s;
     if(fType && s.trader_type !== fType)  return false;
-    if(fSrc  && s.source      !== fSrc)   return false;
+    if(fSrc === 'named') {
+      var addr = (s.address||'').toLowerCase();
+      var meta = (window.WALLET_META||{})[addr];
+      var hasMetaName = meta && meta.name && meta.name.trim() !== '';
+      var hasCustomLabel = s.label && !s.label.match(/^0x[0-9a-fA-F]/);
+      if(!hasMetaName && !hasCustomLabel) return false;
+    } else if(fSrc && s.source !== fSrc) return false;
     if(fConf && s.confidence  !== fConf)  return false;
     return true;
   });
