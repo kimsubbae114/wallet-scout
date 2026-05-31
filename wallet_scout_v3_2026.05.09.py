@@ -4631,8 +4631,8 @@ function buildPosChangeHTML(s){
         "_nk.forEach(function(k){if(typeof s[k]!=='number'||!isFinite(s[k]))s[k]=0;});});"
         "})();\n"
         f"window.WALLET_META={json.dumps(load_wallets_meta(), ensure_ascii=False)};\n"
-        "window.BTC_PRICES=[];\n"
-        "window.SMM_EVENTS=[];\n"
+        f"window.BTC_PRICES={_btc_prices_js};\n"
+        f"window.SMM_EVENTS={json.dumps([e for e in (smm_events or []) if (e.get('ntl') or 0) >= 100_000], ensure_ascii=False)};\n"
         f"const rd={radar_js};\n"
         f"const SENT={sent_js};\n"
         f"const HIST={hist_js};\n"
@@ -4643,61 +4643,6 @@ function buildPosChangeHTML(s){
         "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
     )
     js_block += """
-// ── Lazy-load: SMM / BTC / wallet cumulative ─────────────────────────────────
-// GitHub Pages를 data 소스로 사용 (Cloudflare/어느 URL에서든 동작)
-var _DATA=window.location.origin+window.location.pathname.replace(/\\/+$/,'').replace(/\\/[^/]*$/,'')+'/';
-if(_DATA.indexOf('github.io')<0&&_DATA.indexOf('workers.dev')<0)_DATA='';
-var _GH_DATA='https://kimsubbae114.github.io/wallet-scout/';
-var _BASE=_DATA||_GH_DATA;
-var _smmL=false,_btcL=false,_wdetCache={};
-var _smmCbs=[],_btcCbs=[];
-function _loadSMM(cb){
-  if(window.SMM_EVENTS&&window.SMM_EVENTS.length>0){return cb();}
-  if(_smmL){return cb();}
-  _smmCbs.push(cb);
-  if(_smmCbs.length>1)return;
-  fetch(_GH_DATA+'data/smm.json').then(function(r){return r.json();}).then(function(d){
-    window.SMM_EVENTS=d;_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];
-  }).catch(function(){_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];});
-}
-function _loadBTC(cb){
-  if(window.BTC_PRICES&&window.BTC_PRICES.length>0){return cb();}
-  if(_btcL){return cb();}
-  _btcCbs.push(cb);
-  if(_btcCbs.length>1)return;
-  fetch(_GH_DATA+'data/btc.json').then(function(r){return r.json();}).then(function(d){
-    window.BTC_PRICES=d;_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];
-  }).catch(function(){_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];});
-}
-function _applyWalletDetail(d){if(!d||!d.cumulative||!d.cumulative.length)return;setTimeout(function(){var ctx=document.getElementById('modalPnlChart');if(!ctx||!ctx._chart)return;ctx._chart.data.labels=d.cumulative.map(function(p){return p.date;});ctx._chart.data.datasets[0].data=d.cumulative.map(function(p){return p.cum;});ctx._chart.update();},150);}
-function _showSMMLoading(show){var el=document.getElementById('smm-status');if(!el)return;el.textContent=show?'Loading chart data...':'';el.style.display=show?'block':'none';}
-// renderSMM / openModal 는 나중에 정의되므로 load 이후에 override
-window.addEventListener('load',function(){
-  // 페이지 로드 즉시 백그라운드 prefetch
-  _loadSMM(function(){_loadBTC(function(){
-    // 이미 sentiment/signal 탭이 활성화돼 있으면 즉시 렌더
-    var act=document.querySelector('.section.active');
-    if(act&&(act.id==='sentiment'||act.id==='signal')&&typeof _rSMM_final==='function'){_rSMM_final();}
-  });});
-  if(typeof renderSMM==='function'){
-    var _rSMM_final=renderSMM;
-    window._rSMM_final=_rSMM_final;
-    renderSMM=function(){
-      _showSMMLoading(true);
-      _loadSMM(function(){_loadBTC(function(){_showSMMLoading(false);_rSMM_final();});});
-    };
-  }
-  if(typeof openModal==='function'){
-    var _oO=openModal;
-    openModal=function(addr){
-      _oO(addr);
-      var ak=addr.toLowerCase();
-      if(_wdetCache[ak]){_applyWalletDetail(_wdetCache[ak]);return;}
-      fetch(_GH_DATA+'data/wallet/'+ak+'.json').then(function(r){return r.json();}).then(function(d){_wdetCache[ak]=d;_applyWalletDetail(d);}).catch(function(){});
-    };
-  }
-});
-// ─────────────────────────────────────────────────────────────────────────────
 // ── Address display (matches Python short_addr: 0x + 4 hex + ... + last 4) ─
 function _shortAddr(addr) {
   if (!addr) return '';
