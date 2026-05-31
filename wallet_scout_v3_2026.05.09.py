@@ -4387,10 +4387,8 @@ function buildPosChangeHTML(s){
                 json.dump(_detail, _wf, ensure_ascii=False, separators=(",", ":"), default=str)
         except Exception:
             pass
-        # inline ALL_STATS에서 대용량 필드 제거
+        # inline ALL_STATS에서 대용량 필드만 제거 (cumulative만 - prev_positions는 24h Hot Wallets에 필요)
         _s["cumulative"] = []
-        _s.pop("prev_positions", None)
-        _s.pop("prev_positions_ts", None)
     # ─────────────────────────────────────────────────────────────────────────
     all_stats_js = json.dumps(ranked, ensure_ascii=False, default=str)
 
