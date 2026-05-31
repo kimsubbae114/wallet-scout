@@ -1,0 +1,21 @@
+# Cache / data files
+*.json
+*.log
+*.txt
+
+# Python
+*.py
+__pycache__/
+
+# HTML reports (index.html 만 배포)
+scouting_report_*.html
+pnl_chart_*.html
+
+# Dev files
+*.bat
+*.js
+*.md
+Design/
+old/
+worker/
+wallet_scout/

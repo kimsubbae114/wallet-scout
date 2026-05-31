@@ -1,0 +1,23 @@
+# 대용량 캐시 (절대 commit 금지)
+fills_cache.json
+
+# 로그
+run.log
+run_test.log
+refresh_loracle.log
+report_run.log
+git_push.log
+
+# 임시 리포트 (index.html만 commit)
+scouting_report_*.html
+pnl_chart_*.html
+
+# Python 캐시
+__pycache__/
+*.pyc
+
+# 개발용
+_test_js.js
+check_*.py
+test_api.py
+debug_*.py

@@ -1,9 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 # ─────────────────────────────────────────────────────
 # WALLET SCOUT v3  —  Hyperliquid Trader 아카이브
 # ─────────────────────────────────────────────────────
-VERSION = "4.3.2"
+VERSION = "4.3.15"
 SCHEMA_VERSION = "3"  # v3: durability removed from radar/classification  # Bump when WAR formulas change to force cache refresh
 
 def _he(s):
@@ -11,6 +11,19 @@ def _he(s):
     return str(s).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"','&quot;').replace("'","&#39;")
 
 CHANGELOG = [
+    ("4.3.15", "2026-05-10", "Signal Recent Smart Money Moves: 표시명 short_addr·메타와 통일"),
+    ("4.3.14", "2026-05-10", "CMM API 일일 100회 한도(cmm_api_quota.json, UTC) — 모든 CMM GET 전 할당"),
+    ("4.3.13", "2026-05-10", "discover/process: CMM 시딩·백필은 HL 기준 저장 대상(WAR/에쿼티) 통과 후에만 호출"),
+    ("4.3.12", "2026-05-10", "테마: Basic 패널 아이콘, Google Fonts 확장 + ui_tokens 테마별 폰트·타이포 스케일"),
+    ("4.3.11", "2026-05-10", "모달 Position Changes closed 행: Lev를 청산(변화) 노셔널÷equity로 표시"),
+    ("4.3.10", "2026-05-10", "24H Hot Wallets: close/reduce/flip 태그·화살표·규모·레버 표기 규칙 정리"),
+    ("4.3.9", "2026-05-10", "모달 Position Changes closed 행: uPnL 대신 fills 기반 PnL(또는 스냅샷 upnl 폴백)"),
+    ("4.3.8", "2026-05-10", "Top Traders 카드/모달/차트: 표시명 Python short_addr와 동일(0x+4hex…끝4), JS slice(0,8) 제거"),
+    ("4.3.7", "2026-05-10", "discover/lookup/CMM: 라벨 short_addr 0x+4hex…4hex 통일, vault는 stats-data 미제공 시 vaultDetails로 이름"),
+    ("4.3.6", "2026-05-10", "헤더+탭바 top-dock 단일 sticky로 묶어 스크롤 시 탭 글자 잘림 방지"),
+    ("4.3.5", "2026-05-10", "HL fills≥2000인데 CMM 리더보드 비어 있으면 CMM closed-trades+pnl 1회 백필(fills_cache 플래그)"),
+    ("4.3.4", "2026-05-10", "모달 Position Changes: FLIP=부호익스포저반전만, 레버 x→x, 숏축소·LONG라벨오류 시 이전 방향 유지"),
+    ("4.3.3", "2026-05-10", "CMM total_pnl 지갑: 카드 30D PnL이 fills 누적 부족으로 0일 때 CMM pnlMonth로 표시"),
     ("3.9.3", "2026-03-28", "UnboundLocalError 수정, $10k 미만 자동 제외"),
     ("3.9.2", "2026-03-28", "Portfolio 표시, Positions없을때 upnl안내, uPnL 레이블 확화"),
     ("3.9.1", "2026-03-28", "Positions: 실현/현재 구역 분리, 롱숏바+넷익스포저, 소액제외"),
@@ -29,7 +42,7 @@ CHANGELOG = [
     ("3.1.0", "2026-03-28", "배치 수집(5개/2s) + 429 자동재시도 3회"),
     ("3.0.0", "2026-03-28", "로그스케일 radar, run.log TeeConsole, --refresh-all"),
 ]
-import os, sys, json, asyncio, argparse, math, random
+import os, sys, json, asyncio, argparse, math, random, threading
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 from pathlib import Path
@@ -41,6 +54,12 @@ from rich.panel import Panel
 HL_API_URL   = "https://api.hyperliquid.xyz/info"
 CMM_API_BASE = "https://ht-api.coinmarketman.com"
 CMM_TOKEN_FILE = Path("cmm_token.txt")
+# CMM 외부 API: 하루(UTC)당 HTTP GET 횟수 상한 (closed-trades는 월·페이지마다 여러 GET)
+CMM_DAILY_API_LIMIT = 100
+CMM_QUOTA_STATE_FILE = Path("cmm_api_quota.json")
+_cmm_quota_lock = threading.Lock()
+# 최초 CMM 시딩 후 리더보드에 없었던 지갑: HL 병합 fills가 이 이상이면 CMM을 한 번 더 시도
+CMM_BACKFILL_MIN_HL_FILLS = 2000
 ARCHIVE_FILE = "wallet_cache.json"
 HIST_FILE    = "sentiment_history.json"
 WAR_HIST_FILE = "war_history.json"
@@ -50,6 +69,30 @@ BTC_PRICE_CACHE_FILE = Path("btc_price_cache.json")
 SMM_EVENTS_FILE      = Path("smart_money_events.json")
 FILLS_CACHE_FILE     = Path("fills_cache.json")
 CACHE_TTL    = timedelta(hours=6)
+
+
+def _load_design_ui_tokens():
+    """Design/ui_tokens.json: per-theme typography (--font-*, --text-*), spacing, radii.
+
+    Merged in the browser by wsApplyMergedTheme() with inline color maps so each theme
+    changes fonts and scale as well as palette (see Design/DESIGN_*.md)."""
+    p = Path(__file__).resolve().parent / "Design" / "ui_tokens.json"
+    if not p.is_file():
+        return {"defaults": {}, "themes": {}}
+    try:
+        with p.open(encoding="utf-8") as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {"defaults": {}, "themes": {}}
+    return {
+        "defaults": raw.get("defaults") or {},
+        "themes": raw.get("themes") or {},
+    }
+
+
+def _embed_ui_tokens_json_str() -> str:
+    s = json.dumps(_load_design_ui_tokens(), separators=(",", ":"), ensure_ascii=False)
+    return s.replace("</script>", "<\\/script>").replace("</Script>", "<\\/Script>")
 MIN_EQUITY   = 50_000
 _raw_console = Console()
 
@@ -60,8 +103,61 @@ def short_addr(addr: str) -> str:
         return f"0x{a[2:6]}...{a[-4:]}"
     return f"{a[:4]}...{a[-4:]}" if len(a) >= 8 else a
 
-def fmt_compact(v: float) -> str:
-    """숫자를 K/M 단위로 압축. 예: 1203698 → +$1.2M, -45000 → -$45K"""
+
+def trader_display_label(address: str, label: str = "", wallets_meta=None) -> str:
+    """카드/Signal HOT_MOVES 등: wallets_meta 이름 > 비-0x 라벨 > short_addr(주소)."""
+    wm = wallets_meta or {}
+    m = wm.get((address or "").lower(), {})
+    meta_name = (m.get("name") or "").strip()
+    if meta_name:
+        return meta_name
+    lab = (label or "").strip()
+    if lab and not lab.startswith("0x"):
+        return lab
+    return short_addr(address or "")
+
+
+def _pos_change_closed_pnl_map(
+    prev_positions: list,
+    prev_positions_ts: str,
+    fills: list,
+    new_positions: list,
+) -> dict:
+    """prev 스냅샷 이후 체결된 closedPnl 합(코인별). prev에만 있고 현재 포지션에 없는 코인 = 청산 추정."""
+    out: dict = {}
+    if not prev_positions or not prev_positions_ts or not fills:
+        return out
+    try:
+        ts = datetime.fromisoformat(prev_positions_ts.replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        since_ms = int(ts.timestamp() * 1000)
+    except Exception:
+        return out
+    cur_coins = {p.get("coin") for p in (new_positions or []) if p.get("coin")}
+    for pp in prev_positions:
+        c = pp.get("coin")
+        if not c or c in cur_coins:
+            continue
+        sm = 0.0
+        for f in fills:
+            if f.get("coin") != c:
+                continue
+            t = int(f.get("time", 0) or 0)
+            if t <= since_ms:
+                continue
+            sm += float(f.get("closedPnl", 0) or 0)
+        out[c] = round(sm, 2)
+    return out
+
+def fmt_compact(v) -> str:
+    """숫자를 K/M 단위로 압축. 예: 1203698 → +$1.2M, -45000 → -$45K. NaN/None → '-'"""
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return "-"
+    if not math.isfinite(v):
+        return "-"
     sign = "+" if v >= 0 else "-"
     av = abs(v)
     if av >= 1_000_000:
@@ -69,6 +165,14 @@ def fmt_compact(v: float) -> str:
     if av >= 1_000:
         return f"{sign}${av/1_000:.0f}K"
     return f"{sign}${av:.0f}"
+
+def _sf(v, d=0.0):
+    """API 값 → 안전한 float. None / 'NaN' / Inf 모두 d(기본 0.0) 반환."""
+    try:
+        r = float(v) if v is not None else d
+        return r if math.isfinite(r) else d
+    except (TypeError, ValueError):
+        return d
 _LOG_PATH    = Path("run.log")
 class TeeConsole:
     def __init__(self,c,log): self._c=c; self._log=log
@@ -175,7 +279,7 @@ class ExcludedManager:
         return {"total": len(self.data), "active_skip": active}
 
 # ══ FILLS CACHE (로컬 전용 – GitHub에 push 안 함) ═══════════════════════
-# 구조: { addr.lower(): {"fills": [...], "cmm_pnl": {...}, "cmm_seeded": bool} }
+# 구조: { addr.lower(): {"fills": [...], "cmm_pnl": {...}, "cmm_seeded": bool, "cmm_hi_fill_backfill_done": bool} }
 
 def _load_fills_cache() -> dict:
     try:
@@ -184,7 +288,7 @@ def _load_fills_cache() -> dict:
             # 구 형식(addr→list) → 신 형식(addr→dict) 마이그레이션
             for k, v in list(data.items()):
                 if isinstance(v, list):
-                    data[k] = {"fills": v, "cmm_seeded": False, "cmm_pnl": {}}
+                    data[k] = {"fills": v, "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False}
             return data
     except Exception:
         pass
@@ -398,6 +502,18 @@ class WalletDiscovery:
     def __init__(self):
         self.http = httpx.AsyncClient(timeout=30.0)
 
+    async def _vault_details_name(self, addr: str) -> str:
+        """stats-data에 vault 이름이 없을 때 vaultDetails API로 표시명 조회"""
+        try:
+            r = await self.http.post(HL_API_URL, json={"type": "vaultDetails", "vaultAddress": addr})
+            r.raise_for_status()
+            d = r.json()
+            if isinstance(d, dict) and d.get("name"):
+                return str(d["name"]).strip()
+        except Exception:
+            pass
+        return ""
+
     async def layer1_vaults(self, n=200):
         """stats-data.hyperliquid.xyz/Mainnet/vaults 로 TVL 상위 vault leader 수집
         (vaultSummaries API는 공식 문서에 있으나 항상 빈 배열 반환 — non-functional)
@@ -439,6 +555,8 @@ class WalletDiscovery:
                     continue
                 seen.add(addr.lower())
                 name = (s.get("name") or "").strip()
+                if not name:
+                    name = await self._vault_details_name(addr)
                 label = name if name else short_addr(addr)
                 results.append({"address": addr, "label": label, "source": "vault"})
                 if len(results) >= n:
@@ -467,10 +585,6 @@ class WalletDiscovery:
         return results
 
     async def layer2_active(self, n=200):
-        def _sa(a):
-            a = a.lower()
-            return f"0x{a[2:6]}...{a[-4:]}" if a.startswith("0x") else f"{a[:4]}...{a[-4:]}"
-
         all_coins = ["BTC", "ETH", "SOL", "HYPE", "DOGE", "XRP", "ARB", "AVAX", "LINK", "BNB",
                      "WIF", "PEPE", "SUI", "OP", "INJ", "TIA", "STRK", "JUP", "PYTH", "W",
                      "ATOM", "NEAR", "APT", "SEI", "FTM", "MATIC", "LTC", "BCH", "ETC", "FIL",
@@ -491,11 +605,11 @@ class WalletDiscovery:
                     if isinstance(users, list):
                         for u in users:
                             if u and u not in results_set:
-                                results_set[u] = {"address": u, "label": _sa(u), "source": "active"}
+                                results_set[u] = {"address": u, "label": short_addr(u), "source": "active"}
                     else:
                         user = t.get("user", "")
                         if user and user not in results_set:
-                            results_set[user] = {"address": user, "label": _sa(user), "source": "active"}
+                            results_set[user] = {"address": user, "label": short_addr(user), "source": "active"}
                 if len(results_set) >= n * 2:
                     break
             all_found = list(results_set.values())
@@ -536,7 +650,7 @@ class WalletDiscovery:
                     if isinstance(users, list):
                         for u in users:
                             if u and u.lower() != addr.lower() and u not in results_set:
-                                results_set[u] = {"address": u, "label": u[:8] + "...", "source": "network"}
+                                results_set[u] = {"address": u, "label": short_addr(u), "source": "network"}
                 if len(results_set) >= n * 2:
                     break
 
@@ -562,19 +676,25 @@ class WalletDiscovery:
         results = []
         try:
             limit = 100 if n >= 100 else 50 if n >= 50 else 25
-            r = await self.http.get(
+            r = await _cmm_http_get(
+                self.http,
                 f"{CMM_API_BASE}/api/external/leaderboards/perp-pnl",
                 headers={"Authorization": f"Bearer {token}"},
                 params={"limit": limit, "offset": 0, "order": "desc", "orderBy": "pnlDay"},
-                timeout=15
+                timeout=15,
             )
+            if r is None:
+                console.print(
+                    f"  [yellow]⚠ CMM 일일 API 한도 {CMM_DAILY_API_LIMIT}회 도달(UTC) — 리더보드 후보 스킵[/yellow]"
+                )
+                return []
             r.raise_for_status()
             data = r.json()
             items = data if isinstance(data, list) else data.get("data", data.get("traders", data.get("items", data.get("results", []))))
             for item in items:
                 addr = item.get("address", "")
                 if addr and addr.startswith("0x") and len(addr) >= 40:
-                    results.append({"address": addr, "label": addr[:8] + "...", "source": "cmm"})
+                    results.append({"address": addr, "label": short_addr(addr), "source": "cmm"})
             console.print(f"  [dim]CMM (today's top perp PnL): {len(results)}개[/dim]")
         except Exception as e:
             console.print(f"  [yellow]⚠ CMM 실패: {e}[/yellow]")
@@ -729,18 +849,76 @@ class HyperliquidAPI:
 
 # ══ CMM PnL HELPER ══════════════════════════════════════════════════════
 
+def _cmm_quota_try_acquire(n: int = 1) -> bool:
+    """UTC 자정 기준 일일 한도 내에서 n회 슬롯 확보. 성공 시 cmm_api_quota.json 갱신."""
+    if n < 1:
+        return True
+    with _cmm_quota_lock:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        try:
+            d = (
+                json.loads(CMM_QUOTA_STATE_FILE.read_text(encoding="utf-8"))
+                if CMM_QUOTA_STATE_FILE.exists()
+                else {}
+            )
+        except Exception:
+            d = {}
+        uday = str(d.get("date", ""))
+        used = int(d.get("used", 0) or 0)
+        if uday != today:
+            used = 0
+        if used + n > CMM_DAILY_API_LIMIT:
+            return False
+        d = {"date": today, "used": used + n}
+        try:
+            CMM_QUOTA_STATE_FILE.write_text(
+                json.dumps(d, separators=(",", ":"), ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            return False
+        return True
+
+
+def cmm_quota_remaining() -> int:
+    """오늘(UTC) 남은 CMM GET 횟수."""
+    with _cmm_quota_lock:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        try:
+            d = (
+                json.loads(CMM_QUOTA_STATE_FILE.read_text(encoding="utf-8"))
+                if CMM_QUOTA_STATE_FILE.exists()
+                else {}
+            )
+        except Exception:
+            d = {}
+        if str(d.get("date", "")) != today:
+            return CMM_DAILY_API_LIMIT
+        return max(0, CMM_DAILY_API_LIMIT - int(d.get("used", 0) or 0))
+
+
+async def _cmm_http_get(http: "httpx.AsyncClient", url: str, **kwargs):
+    """CMM 호스트로 향하는 GET 1회 — 일일 한도 소진 시 None."""
+    if not _cmm_quota_try_acquire(1):
+        return None
+    return await http.get(url, **kwargs)
+
+
 async def fetch_cmm_pnl(http: "httpx.AsyncClient", addr: str) -> dict:
     """CMM perp-pnl 리더보드에서 특정 지갑의 PnL 조회 (day/week/month/alltime)."""
     try:
         if not CMM_TOKEN_FILE.exists():
             return {}
         token = CMM_TOKEN_FILE.read_text(encoding="utf-8").strip()
-        r = await http.get(
+        r = await _cmm_http_get(
+            http,
             f"{CMM_API_BASE}/api/external/leaderboards/perp-pnl",
             headers={"Authorization": f"Bearer {token}"},
             params={"address": addr, "limit": 25},
             timeout=10,
         )
+        if r is None:
+            return {}
         r.raise_for_status()
         items = r.json().get("data", [])
         for item in items:
@@ -781,12 +959,15 @@ async def fetch_cmm_trades_all(http: "httpx.AsyncClient", addr: str) -> list:
             if cursor:
                 params["nextCursor"] = cursor
             try:
-                r = await http.get(
+                r = await _cmm_http_get(
+                    http,
                     f"{CMM_API_BASE}/api/external/closed-trades",
                     headers=headers,
                     params=params,
                     timeout=10,
                 )
+                if r is None:
+                    return result
                 r.raise_for_status()
                 d      = r.json()
                 trades = d.get("trades", [])
@@ -799,6 +980,14 @@ async def fetch_cmm_trades_all(http: "httpx.AsyncClient", addr: str) -> list:
                 break
         start = end
     return result
+
+
+def _cmm_pnl_effectively_empty(d) -> bool:
+    """CMM 리더보드 응답이 없거나 day/week/month/alltime이 전부 비어 있으면 True."""
+    if not d:
+        return True
+    return not any(d.get(k) for k in ("day", "week", "month", "alltime"))
+
 
 # ══ SMART MONEY MAP DATA COLLECTION ════════════════════════════════════
 
@@ -1053,12 +1242,12 @@ def compute_stats(raw, address, label="", src="manual"):
         label = vault_name
     elif vault_name:
         label = vault_name
-    ms           = ch.get("marginSummary", {})
+    ms           = ch.get("marginSummary") or {}   # None-safe
     # vault는 marginSummary.accountValue 대신 vaultEquity 사용
-    vault_equity = float(ch.get("vaultEquity", 0) or 0)
-    account_value = float(ms.get("accountValue", 0) or 0)
+    vault_equity = _sf(ch.get("vaultEquity"))
+    account_value = _sf(ms.get("accountValue"))
     total_equity = vault_equity if vault_equity > 0 else account_value
-    margin_used  = float(ms.get("totalMarginUsed", 0))
+    margin_used  = _sf(ms.get("totalMarginUsed"))
     margin_pct   = (margin_used / total_equity * 100) if total_equity > 0 else 0
     # vaultEquity>0은 LP 예치자도 해당되어 오탐 발생 → isVault 명시 필드만 신뢰
     # vault 주소 판단은 process_addresses의 _vault_leaders 기준으로 처리
@@ -1070,7 +1259,7 @@ def compute_stats(raw, address, label="", src="manual"):
     spot_holdings = []
     for bal in spot.get("balances", []):
         coin  = bal.get("coin", "")
-        hold  = float(bal.get("total", 0))
+        hold  = _sf(bal.get("total"))
         if hold <= 0:
             continue
         spot_holdings.append({"coin": coin, "amount": round(hold, 6), "usd": 0})
@@ -1099,20 +1288,20 @@ def compute_stats(raw, address, label="", src="manual"):
     for bal in spot_raw.get("balances", []):
         coin = bal.get("coin","")
         if coin in ("USDC","USDT"):
-            total_equity += float(bal.get("total",0))
+            total_equity += _sf(bal.get("total"))
 
     positions = []
     for ap in ch.get("assetPositions", []):
         pos = ap.get("position", {})
-        szi = float(pos.get("szi", 0))
+        szi = _sf(pos.get("szi"))
         if szi == 0: continue
         coin    = pos.get("coin", "?")
-        epx     = float(pos.get("entryPx", 0) or 0)
-        upnl    = float(pos.get("unrealizedPnl", 0) or 0)
+        epx     = _sf(pos.get("entryPx"))
+        upnl    = _sf(pos.get("unrealizedPnl"))
         lev     = pos.get("leverage", {})
-        lev_val = float(lev.get("value", 1) if isinstance(lev, dict) else 1)
+        lev_val = _sf(lev.get("value", 1) if isinstance(lev, dict) else 1, d=1.0)
         ntl     = abs(szi) * epx if epx > 0 else 0
-        cum_fund= float(pos.get("cumFunding", {}).get("sinceOpen", 0) or 0)
+        cum_fund= _sf((pos.get("cumFunding") or {}).get("sinceOpen"))
         positions.append({"coin": coin, "side": "LONG" if szi>0 else "SHORT",
                           "notional": ntl, "set_lev": lev_val, "upnl": upnl, "cum_funding": cum_fund})
 
@@ -1122,14 +1311,14 @@ def compute_stats(raw, address, label="", src="manual"):
     long_pct  = (long_ntl/total_ntl*100) if total_ntl>0 else 50
     total_upnl= sum(p["upnl"] for p in positions)
 
-    closed = [f for f in fills if float(f.get("closedPnl",0) or 0)!=0]
-    wins   = [f for f in closed if float(f.get("closedPnl",0))>0]
-    losses = [f for f in closed if float(f.get("closedPnl",0))<0]
-    realized     = sum(float(f.get("closedPnl",0)) for f in closed)
+    closed = [f for f in fills if _sf(f.get("closedPnl")) != 0]
+    wins   = [f for f in closed if _sf(f.get("closedPnl")) > 0]
+    losses = [f for f in closed if _sf(f.get("closedPnl")) < 0]
+    realized     = sum(_sf(f.get("closedPnl")) for f in closed)
     total_pnl    = realized + total_upnl
     win_rate     = (len(wins)/len(closed)*100) if closed else 0
-    avg_win      = (sum(float(f["closedPnl"]) for f in wins)/len(wins)) if wins else 0
-    avg_loss     = abs(sum(float(f["closedPnl"]) for f in losses)/len(losses)) if losses else 0
+    avg_win      = (sum(_sf(f["closedPnl"]) for f in wins)/len(wins)) if wins else 0
+    avg_loss     = abs(sum(_sf(f["closedPnl"]) for f in losses)/len(losses)) if losses else 0
     # profit_factor: no losses → very high (capped at 99), normal → avg_win/avg_loss
     profit_factor = round(avg_win / avg_loss, 2) if avg_loss > 0 else (99.0 if avg_win > 0 else 1.0)
 
@@ -1137,7 +1326,7 @@ def compute_stats(raw, address, label="", src="manual"):
     pnl_by_coin = defaultdict(float)
     coin_side   = defaultdict(lambda: {"B":0,"A":0})  # 롱/숏 거래 수 집계
     for f in closed:
-        cpnl = float(f.get("closedPnl",0))
+        cpnl = _sf(f.get("closedPnl"))
         coin = f.get("coin","?")
         # @숫자(지정가 식별자), 콜론 포함(내부ID) 등 이상한 coin 필터링
         if not coin or coin.startswith("@") or ":" in coin or len(coin) > 12:
@@ -1189,7 +1378,7 @@ def compute_stats(raw, address, label="", src="manual"):
 
     big_bets=[]
     for f in closed:
-        sz=abs(float(f.get("sz",0) or 0)); px=float(f.get("px",0) or 0); ntl2=sz*px; cpnl2=float(f.get("closedPnl",0))
+        sz=abs(_sf(f.get("sz"))); px=_sf(f.get("px")); ntl2=sz*px; cpnl2=_sf(f.get("closedPnl"))
         if total_equity>0 and ntl2>total_equity*0.20: big_bets.append({"ntl":ntl2,"pnl":cpnl2})
     big_bet_wins=[b for b in big_bets if b["pnl"]>0]
     big_bet_rate=(len(big_bet_wins)/len(big_bets)*100) if big_bets else 0
@@ -1210,6 +1399,11 @@ def compute_stats(raw, address, label="", src="manual"):
         data_days=0; first_date_str="-"; last_date_str="-"; days_since_last=9999; durability=0.0
 
     roi_pct=(total_pnl/total_equity*100) if total_equity>0 else 0
+    # NaN/Inf 방어
+    if not math.isfinite(roi_pct):    roi_pct    = 0.0
+    if not math.isfinite(total_pnl):  total_pnl  = 0.0
+    if not math.isfinite(realized):   realized   = 0.0
+    if not math.isfinite(total_equity): total_equity = 0.0
 
     # ── radar 스탯 변환 ─────────────────────────────────────────────
     # 중립값(0/50%) → 30점, 음수/손실 → 10점(최솟값), 최고치 → 100점
@@ -1678,7 +1872,7 @@ def compute_stats(raw, address, label="", src="manual"):
     return {
 
 
-        "address":address,"label":label or address[:8]+"...","total_equity":total_equity,
+        "address":address,"label":label or short_addr(address),"total_equity":total_equity,
         "margin_pct":margin_pct,"realized":realized,"total_upnl":total_upnl,"total_pnl":total_pnl,
         "win_rate":round(win_rate,1),"avg_win":round(avg_win,2),"avg_loss":round(avg_loss,2),
         "profit_factor":round(profit_factor,2),"sharpe":round(sharpe,2),"mdd_pct":round(mdd_pct,1),
@@ -1772,6 +1966,90 @@ def _extract_smm_buckets(fills, addr, label, war, equity, cutoff_ms, bucket_ms, 
             events.append(ev)
             keys.add(key)
     return events, keys
+
+
+async def smm_refresh_fills_for_cache_hits(
+    api, archive, skip_list, fills_cache, smm_keys, smm_merged, smm_cutoff_ms, smm_bucket_ms, smm_now_s
+):
+    """Incremental HL fills for archive cache-hit wallets, then append SMM bucket events.
+
+    Discover/refresh often leaves most ranked wallets in the skip path (needs_update=False).
+    Without this, fills_cache / smart_money_events.json miss today's open/add fills for them.
+    """
+    if not skip_list:
+        return 0, False
+
+    def _hl_start_ms(addr: str):
+        ent = fills_cache.get(addr.lower(), {})
+        hl_fills = [f for f in ent.get("fills", []) if not f.get("_cmm")]
+        if not hl_fills:
+            return None
+        last_t = max(int(f.get("time", 0)) for f in hl_fills)
+        return last_t + 1 if last_t > 0 else None
+
+    new_events = 0
+    fills_dirty = False
+    SCAN_BATCH = 4
+    SCAN_DELAY = 3.0
+
+    for bi in range(0, len(skip_list), SCAN_BATCH):
+        batch = skip_list[bi : bi + SCAN_BATCH]
+        tasks = [api.fetch(addr, fills_start_ms=_hl_start_ms(addr)) for addr, _, _ in batch]
+        fetched = await asyncio.gather(*tasks)
+        for (addr, label, src), raw in zip(batch, fetched):
+            if raw.get("error"):
+                continue
+            if not raw.get("fills_ok", True) and not raw.get("fills"):
+                continue
+            stats = archive.get_stats(addr)
+            if not stats:
+                continue
+            war = float(stats.get("war_score", 0) or 0)
+            if war < 50:
+                continue
+            equity = float(stats.get("total_equity", 0) or 0)
+            if equity <= 0:
+                continue
+            ent = fills_cache.get(
+                addr.lower(),
+                {"fills": [], "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False},
+            )
+            existing = ent.get("fills", [])
+            new_part = raw.get("fills") or []
+            merged = _merge_fills(existing, new_part)
+            if new_part:
+                fills_dirty = True
+            fills_cache[addr.lower()] = {
+                "fills": merged,
+                "cmm_seeded": ent.get("cmm_seeded", False),
+                "cmm_pnl": ent.get("cmm_pnl", {}),
+                "cmm_hi_fill_backfill_done": ent.get("cmm_hi_fill_backfill_done", False),
+            }
+            pos_wrap = [
+                {"coin": p.get("coin", ""), "unrealizedPnl": float(p.get("upnl", 0) or 0)}
+                for p in (stats.get("positions") or [])
+            ]
+            evs, _ = _extract_smm_buckets(
+                merged,
+                addr,
+                label,
+                war,
+                equity,
+                smm_cutoff_ms,
+                smm_bucket_ms,
+                smm_now_s,
+                positions=pos_wrap,
+            )
+            for ne in evs:
+                k2 = f"{ne['addr']}|{ne['coin']}|{ne['t']}|{ne['dir']}"
+                if k2 not in smm_keys:
+                    smm_keys.add(k2)
+                    smm_merged.append(ne)
+                    new_events += 1
+        if bi + SCAN_BATCH < len(skip_list):
+            await asyncio.sleep(SCAN_DELAY)
+
+    return new_events, fills_dirty
 
 
 # ══ PROCESS ════════════════════════════════════════════════════════════
@@ -1892,13 +2170,14 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
             console.print(f"  [dim]📦 {label} (캐시 {archive.age_str(addr)})[/dim]")
             results.append(stats)
 
+    _fills_cache = _load_fills_cache()
+    _fills_cache_dirty = False
+
     if need_fetch:
         # Rate limit: clearinghouseState=weight2, userFills=weight20+per-item
         # BATCH=5 → 배치당 ~110 weight, DELAY=5s → 분당 12배치=1320/1200 (rate limit 주의)
         BATCH=3; DELAY=5.0; RETRY_DELAY=40.0; MAX_RETRY=3; MAX_SAVE=50
         console.print(f"[bold blue]▶ API 수집[/bold blue] [dim]{len(need_fetch)}개 대상 (배치={BATCH}, 딜레이={DELAY}s, 최대저장={MAX_SAVE}개)[/dim]")
-        # fills 누적 캐시 로드 (로컬 전용, GitHub push 안 함)
-        _fills_cache = _load_fills_cache()
         pending = list(need_fetch)
         retry_count = 0
         saved_count = 0   # NEW + 갱신 카운터
@@ -1932,29 +2211,97 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         console.print(f"  [yellow]⚠ {label} — fills 수집 실패, 재시도 예약[/yellow]")
                         still_failed.append((addr, label, src))
                         continue
-                    _entry        = _fills_cache.get(addr.lower(), {"fills": [], "cmm_seeded": False, "cmm_pnl": {}})
+                    _entry = _fills_cache.get(
+                        addr.lower(),
+                        {"fills": [], "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False},
+                    )
                     _existing     = _entry.get("fills", [])
                     _cmm_seeded   = _entry.get("cmm_seeded", False)
                     _cmm_pnl_data = _entry.get("cmm_pnl", {})
-                    # CMM 최초 시딩: 한 번만 실행 (closed trades + leaderboard PnL)
+                    _hi_bf_done   = bool(_entry.get("cmm_hi_fill_backfill_done", False))
+                    _new_fills = raw.get("fills", [])
+                    # 1) HL fills만 머지 → WAR/에쿼티 게이트 (저장 대상 아니면 CMM API 호출 안 함)
+                    _hl_existing = [f for f in _existing if not f.get("_cmm")]
+                    _hl_merged   = _merge_fills(_hl_existing, _new_fills)
+                    _raw_hl = {**raw, "fills": _hl_merged}
+                    _stats_gate = compute_stats(_raw_hl, addr, label, src=src)
+                    _war_gate = float(_stats_gate.get("war_score", 0) or 0)
+                    _eq_gate  = float(_stats_gate.get("total_equity", 0) or 0)
+
+                    if _war_gate < 50.0:
+                        _fills_cache[addr.lower()] = {
+                            "fills": _hl_merged,
+                            "cmm_seeded": False,
+                            "cmm_pnl": {},
+                            "cmm_hi_fill_backfill_done": False,
+                        }
+                        _fills_cache_dirty = True
+                        key = addr.lower()
+                        if key in archive.data:
+                            del archive.data[key]
+                        excluded.record_exclusion(addr, _war_gate)
+                        cnt = excluded.data[addr.lower()]["exclude_count"]
+                        days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
+                        console.print(f"  [dim]제외 {label} — WAR {_war_gate:.1f} (50 미만, HL만) · {cnt}회째 · {days}일 후 재체크[/dim]")
+                        continue
+                    if _eq_gate < MIN_EQUITY:
+                        _fills_cache[addr.lower()] = {
+                            "fills": _hl_merged,
+                            "cmm_seeded": False,
+                            "cmm_pnl": {},
+                            "cmm_hi_fill_backfill_done": False,
+                        }
+                        _fills_cache_dirty = True
+                        key = addr.lower()
+                        if key in archive.data:
+                            del archive.data[key]
+                        excluded.record_exclusion(addr, _war_gate, reason="equity")
+                        cnt = excluded.data[addr.lower()]["exclude_count"]
+                        days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
+                        console.print(f"  [dim]제외 {label} — ${_eq_gate:,.0f} (${MIN_EQUITY:,} 미만, HL만) · {cnt}회째 · {days}일 후 재체크[/dim]")
+                        continue
+
+                    # 2) 저장 대상만 CMM 시딩·백필 (기존에 시딩됐으면 전체 _existing + HL 신규)
+                    _merged = _hl_merged
                     if not _cmm_seeded:
                         try:
                             _cmm_fills = await fetch_cmm_trades_all(api.http, addr)
                             _cmm_pnl_data = await fetch_cmm_pnl(api.http, addr)
-                            _existing = _merge_fills(_existing, _cmm_fills)
+                            _merged = _merge_fills(_hl_merged, _cmm_fills)
                             _cmm_seeded = True
                             _cnt_cmm = len(_cmm_fills)
                             console.print(f"  [dim]CMM seed {label}: {_cnt_cmm}개 trades, pnlAllTime={_cmm_pnl_data.get('alltime',0):,.0f}[/dim]")
                         except Exception:
+                            _merged = _hl_merged
                             pass
-                    # 신규 HL fills 머지
-                    _new_fills = raw.get("fills", [])
-                    _merged    = _merge_fills(_existing, _new_fills)
+                    else:
+                        _merged = _merge_fills(_existing, _new_fills)
+                    if (
+                        len(_merged) >= CMM_BACKFILL_MIN_HL_FILLS
+                        and _cmm_seeded
+                        and not _hi_bf_done
+                        and _cmm_pnl_effectively_empty(_cmm_pnl_data)
+                    ):
+                        try:
+                            _bf_fills = await fetch_cmm_trades_all(api.http, addr)
+                            _bf_pnl = await fetch_cmm_pnl(api.http, addr)
+                            _merged = _merge_fills(_merged, _bf_fills)
+                            if _bf_pnl:
+                                _cmm_pnl_data = {**(_cmm_pnl_data or {}), **_bf_pnl}
+                            console.print(
+                                f"  [dim]CMM hi-fill backfill {label}: +{len(_bf_fills)} trades, "
+                                f"pnlAllTime={_cmm_pnl_data.get('alltime', 0):,.0f}[/dim]"
+                            )
+                        except Exception:
+                            pass
+                        _hi_bf_done = True
                     _fills_cache[addr.lower()] = {
                         "fills":      _merged,
                         "cmm_seeded": _cmm_seeded,
                         "cmm_pnl":    _cmm_pnl_data,
+                        "cmm_hi_fill_backfill_done": _hi_bf_done,
                     }
+                    _fills_cache_dirty = True
                     raw["fills"] = _merged  # compute_stats에 전체 히스토리 전달
                     stats = compute_stats(raw, addr, label, src=src)
                     # CMM leaderboard PnL로 total_pnl 보정 (fills가 부족해도 정확한 값 표시)
@@ -2007,13 +2354,13 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
                         console.print(f"  [dim]제외 {label} — WAR {war:.1f} (50 미만) · {cnt}회째 · {days}일 후 재체크[/dim]")
                         continue
-                    if equity < 50_000:
+                    if equity < MIN_EQUITY:
                         key = addr.lower()
                         if key in archive.data: del archive.data[key]
                         excluded.record_exclusion(addr, war, reason="equity")
                         cnt = excluded.data[addr.lower()]["exclude_count"]
                         days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
-                        console.print(f"  [dim]제외 {label} — ${equity:,.0f} ($50k 미만) · {cnt}회째 · {days}일 후 재체크[/dim]")
+                        console.print(f"  [dim]제외 {label} — ${equity:,.0f} (${MIN_EQUITY:,} 미만) · {cnt}회째 · {days}일 후 재체크[/dim]")
                         continue
                     excluded.clear(addr)  # backoff 초기화 (WAR 회복)
                     archive.upsert(addr, stats)
@@ -2046,10 +2393,32 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
             console.print(f"  [red]최종 실패 {len(pending)}개[/red]")
             for addr,label,src in pending: console.print(f"    ✗ {label}")
 
+    # 캐시 히트 지갑도 HL fills 증분 수집 → SMM 버킷(동그라미)에 오늘 체결 반영
+    if skip:
+        console.print(
+            f"[bold cyan]▶ SMM fills (cache-hit)[/bold cyan] [dim]{len(skip)} wallets — incremental userFills[/dim]"
+        )
+        _smm_skip_n, _fills_skip_dirty = await smm_refresh_fills_for_cache_hits(
+            api,
+            archive,
+            skip,
+            _fills_cache,
+            _smm_keys,
+            _smm_merged,
+            _smm_cutoff_ms,
+            _smm_bucket_ms,
+            _smm_now_s,
+        )
+        _smm_new_count += _smm_skip_n
+        if _fills_skip_dirty:
+            _fills_cache_dirty = True
+        if _smm_skip_n:
+            console.print(f"  [green]SMM cache-hit pass: +{_smm_skip_n} bucket event(s)[/green]")
+
     await api.close()
     archive.save()
     excluded.save()
-    if need_fetch:
+    if _fills_cache_dirty:
         _save_fills_cache(_fills_cache)
     _ex_sum = excluded.summary()
     console.print(f"  [dim]backoff 관리: 총 {_ex_sum['total']}개 지갑 · 현재 스킵 중 {_ex_sum['active_skip']}개[/dim]")
@@ -2359,7 +2728,17 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                          cache_src == 'vault')
         if is_vault_by_addr and s.get('source') != 'vault':
             s['source'] = 'vault'
-    ranked = sorted(all_stats, key=lambda x: x["war_score"], reverse=True)
+    ranked = sorted(all_stats, key=lambda x: x.get("war_score", 0) or 0, reverse=True)
+    # NaN/Inf 방어: 캐시 오염값이 HTML/JS를 깨는 것을 방지
+    _STAT_NUMS = ["total_equity","total_pnl","roi_pct","sharpe","win_rate","mdd_pct",
+                  "big_bet_rate","follow_score","war_score","consistency","durability",
+                  "realized","total_upnl","margin_pct","long_pct","avg_win","avg_loss",
+                  "profit_factor","big_bet_pnl","big_bet_count","closed_count","data_days"]
+    for _s in ranked:
+        for _k in _STAT_NUMS:
+            _v = _s.get(_k, 0)
+            if _v is None or (isinstance(_v, float) and not math.isfinite(_v)):
+                _s[_k] = 0
     palette = ["#cc9166","#f72585","#7209b7","#3a86ff","#fb5607","#ffbe0b","#06d6a0",
                "#ef233c","#ff6b6b","#4ecdc4","#45b7d1","#96ceb4","#ffeaa7","#dfe6e9",
                "#fd79a8","#6c5ce7"]
@@ -2393,7 +2772,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     cards_html = ""
     for rank, s in enumerate(ranked, 1):
         crown = "👑" if rank==1 else f"#{rank}"
-        pnl_color = "#00f5d4" if s["total_pnl"] >= 0 else "#f72585"
+        pnl_color = "var(--profit-neon)" if s["total_pnl"] >= 0 else "var(--loss)"
         sc = "#cc9166" if s["sharpe"]>1 else ("#ffbe0b" if s["sharpe"]>0 else "#f87171")
         dc = "#cc9166" if s["durability"]>=60 else ("#ffbe0b" if s["durability"]>=35 else "#f72585")
         war_bar = min(int(s["war_score"]), 100)
@@ -2423,20 +2802,26 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         _tag_colors = {"KOL":"#3a86ff","Whale":"#9b5de5","Dev":"#cc9166",
                        "Fund":"#ffbe0b","Degen":"#f72585","Bot":"#888888"}
         _meta_tag_html = "".join(
-            f'<span style="font-size:10px;background:#000000;color:{_tag_colors.get(t,"#aaaaaa")};border:0.5px solid {_tag_colors.get(t,"#aaaaaa")};border-radius:3px;padding:1px 6px;margin-left:4px;vertical-align:middle">{_he(t)}</span>'
+            f'<span style="font-size:10px;background:var(--surface2);color:{_tag_colors.get(t,"#aaaaaa")};border:0.5px solid {_tag_colors.get(t,"#aaaaaa")};border-radius:3px;padding:1px 6px;margin-left:4px;vertical-align:middle">{_he(t)}</span>'
             for t in _meta_tags
+        )
+        # 카드 제목: 메타 이름 > 비-주소 커스텀 라벨 > short_addr(주소) — 캐시의 구형 0x… 라벨 통일
+        _lab_disp = (s.get("label") or "").strip()
+        _card_title = (
+            (_meta_name.strip() if _meta_name else "")
+            or (_lab_disp if _lab_disp and not _lab_disp.startswith("0x") else short_addr(s["address"]))
         )
         # 트위터 링크 버튼
         _twitter_btn = (
             f'<a href="{_he(_meta_twitter)}" target="_blank" onclick="event.stopPropagation()" '
-            f'style="font-size:9px;padding:2px 7px;border-radius:4px;border:0.5px solid #1d9bf0;background:transparent;color:#1d9bf0;text-decoration:none;white-space:nowrap;font-family:Inter,sans-serif">𝕏 Twitter</a>'
+            f'style="font-size:9px;padding:2px 7px;border-radius:4px;border:0.5px solid var(--twitter);background:transparent;color:var(--twitter);text-decoration:none;white-space:nowrap;font-family:Inter,sans-serif">𝕏 Twitter</a>'
         ) if _meta_twitter else ""
 
         # ── 팔로우 경고 배지 ──────────────────────────────────────
         _warn_badges = []
         if s.get("mdd_pct", 0) >= 40:
             _warn_badges.append(('<span style="font-size:9px;padding:2px 6px;border-radius:4px;'
-                'background:#030304;color:#f72585;border:0.5px solid #f72585;white-space:nowrap">'
+                'background:var(--surface);color:var(--loss);border:0.5px solid var(--loss);white-space:nowrap">'
                 '⚠ MDD {:.0f}%</span>').format(s["mdd_pct"]))
         if s.get("days_since_last", 0) >= 14:
             _warn_badges.append(('<span style="font-size:9px;padding:2px 6px;border-radius:4px;'
@@ -2444,7 +2829,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                 '💤 Inactive {}d</span>').format(s["days_since_last"]))
         if s.get("closed_count", 0) < 50:
             _warn_badges.append(('<span style="font-size:9px;padding:2px 6px;border-radius:4px;'
-                'background:#030304;color:#777a88;border:1px solid rgba(255,255,255,0.08);white-space:nowrap">'
+                'background:var(--surface);color:var(--dim);border:1px solid var(--glass-edge);white-space:nowrap">'
                 '📉 Low Sample {}trades</span>').format(s["closed_count"]))
         _warn_html = ('<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:2px">'
                       + "".join(_warn_badges) + "</div>") if _warn_badges else ""
@@ -2454,8 +2839,8 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                  max(s["radar"]["sharpe"],10),
                  max(s["radar"].get("win_rate",10),10)]
         lnames=["Profit","ROI","BigBet","Sharpe","WinRate"]
-        bg_poly="".join(f'<polygon points="{" ".join(f"{cx2+R2*lvl*_math.cos(_math.pi*2*j/n2-_math.pi/2):.1f},{cy2+R2*lvl*_math.sin(_math.pi*2*j/n2-_math.pi/2):.1f}" for j in range(n2))}" fill="none" stroke="#1c1d22" stroke-width="1"/>' for lvl in [0.25,0.5,0.75,1.0])
-        axes="".join(f'<line x1="{cx2}" y1="{cy2}" x2="{cx2+R2*_math.cos(_math.pi*2*j/n2-_math.pi/2):.1f}" y2="{cy2+R2*_math.sin(_math.pi*2*j/n2-_math.pi/2):.1f}" stroke="#121317" stroke-width="1"/>' for j in range(n2))
+        bg_poly="".join(f'<polygon points="{" ".join(f"{cx2+R2*lvl*_math.cos(_math.pi*2*j/n2-_math.pi/2):.1f},{cy2+R2*lvl*_math.sin(_math.pi*2*j/n2-_math.pi/2):.1f}" for j in range(n2))}" fill="none" stroke="var(--chart-grid)" stroke-width="1"/>' for lvl in [0.25,0.5,0.75,1.0])
+        axes="".join(f'<line x1="{cx2}" y1="{cy2}" x2="{cx2+R2*_math.cos(_math.pi*2*j/n2-_math.pi/2):.1f}" y2="{cy2+R2*_math.sin(_math.pi*2*j/n2-_math.pi/2):.1f}" stroke="var(--border)" stroke-width="1"/>' for j in range(n2))
         dpts=" ".join(f"{cx2+(v/100*R2)*_math.cos(_math.pi*2*j/n2-_math.pi/2):.1f},{cy2+(v/100*R2)*_math.sin(_math.pi*2*j/n2-_math.pi/2):.1f}" for j,v in enumerate(rv_list))
         data_poly=f'<polygon points="{dpts}" fill="{cc}33" stroke="{cc}" stroke-width="2"/>'
         lbls=""
@@ -2481,7 +2866,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                 f'{i*_W/(len(_pts)-1):.1f},{_H - (_v-_min_v)/_rng*_H:.1f}'
                 for i, _v in enumerate(_vals)
             )
-            _col = '#00f5d4' if _vals[-1] >= _vals[0] else '#f72585'
+            _col = 'var(--profit-neon)' if _vals[-1] >= _vals[0] else 'var(--loss)'
             _fill_pts = f'0,{_H} ' + _coords + f' {_W},{_H}'
             sparkline_svg = (
                 f'<svg viewBox="0 0 {_W} {_H}" width="100%" height="36" preserveAspectRatio="none" style="display:block">'
@@ -2494,16 +2879,27 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                 f'</svg>'
             )
         else:
-            sparkline_svg = '<div style="height:36px;background:#000000;border-radius:4px"></div>'
+            sparkline_svg = '<div style="height:36px;background:var(--chart-area);border-radius:4px"></div>'
 
-        # 30D PnL
+        # 30D PnL (fills 일별 누적). CMM으로 total_pnl만 보정된 지갑은 누적 점이 부족해 0이 되는 경우가 있음 → CMM month로 보완
         _pnl_30d = (_pts[-1]['cum'] - _pts[0]['cum']) if len(_pts) >= 2 else 0
-        _pnl_30d_color = "#00f5d4" if _pnl_30d >= 0 else "#f72585"
+        _pnl_30d_title = "30-day change from daily cumulative realized PnL (merged fills)"
+        _pnl_30d_from_cmm_month = False
+        if s.get("cmm_source"):
+            _cmm_m = float(s.get("cmm_pnl_month") or 0)
+            if len(_pts) < 2 or (_pnl_30d == 0 and _cmm_m != 0):
+                _pnl_30d = _cmm_m
+                _pnl_30d_title = "CMM leaderboard rolling month (pnlMonth); fill-based 30d series unavailable or flat"
+                _pnl_30d_from_cmm_month = True
+        _pnl_30d_color = "var(--profit-neon)" if _pnl_30d >= 0 else "var(--loss)"
         _pnl_30d_sign = "+" if _pnl_30d >= 0 else ""
+        _pnl_30d_lbl_suffix = (
+            ' <span style="font-size:7px;color:#a78bfa">CMM</span>' if _pnl_30d_from_cmm_month else ""
+        )
         # Risk level from MDD
         _mdd = s.get("mdd_pct", 0)
         _risk_label = "Low" if _mdd < 20 else ("Med" if _mdd < 40 else "High")
-        _risk_color = "#06b6d4" if _mdd < 20 else ("#fbbf24" if _mdd < 40 else "#f472b6")
+        _risk_color = "var(--teal)" if _mdd < 20 else ("var(--warn)" if _mdd < 40 else "var(--pink)")
 
         _SRC_MAP={"manual":("Manual","#888888"),"active":("Active","#3a86ff"),
                   "vault":("Vault","#9b5de5"),"cached":("Cached","#555555")}
@@ -2511,7 +2907,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         def _coin_tag(t):
             if isinstance(t, dict): c,p,sd = t["coin"],t["pnl"],t.get("side","")
             else: c,p,sd = t[0],t[1],""  # 구버전 캐시 호환
-            col = "#00f5d4" if p>=0 else "#f72585"
+            col = "var(--profit-neon)" if p>=0 else "var(--loss)"
             arrow = "▲" if sd=="L" else ("▼" if sd=="S" else "")
             return f'<span class="coin-tag" style="border-color:{col};color:{col}">{arrow}{c} ${p:+,.0f}</span>'
         top_coins = ''  # 실현손익 코인태그 제거
@@ -2535,7 +2931,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
             # 롱숏 요약 바
             bar_long  = f'width:{long_pct}%'
             bar_short = f'width:{100-long_pct}%'
-            net_col   = "#3a86ff" if net_exp>=0 else "#f72585"
+            net_col   = "var(--long)" if net_exp>=0 else "var(--short)"
             net_str   = f'{"L" if net_exp>=0 else "S"} ${abs(net_exp):,.0f}'
             summary_html = (
                 f'<div class="pos-summary">'
@@ -2544,9 +2940,9 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
                 f'<div class="pos-bar-short" style="{bar_short}"></div>'
                 f'</div>'
                 f'<div class="pos-bar-labels">'
-                f'<span style="color:#3a86ff">▲{long_pct}%</span>'
+                f'<span style="color:var(--long)">▲{long_pct}%</span>'
                 f'<span style="color:{net_col};font-weight:600">{net_str}</span>'
-                f'<span style="color:#f72585">▼{100-long_pct}%</span>'
+                f'<span style="color:var(--short)">▼{100-long_pct}%</span>'
                 f'</div>'
                 f'</div>'
             )
@@ -2554,9 +2950,9 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
             # 개별 Positions 행
             rows_html = ""
             for p in filtered_pos:
-                sc2  = "#3a86ff" if p["side"]=="LONG" else "#f72585"
+                sc2  = "var(--long)" if p["side"]=="LONG" else "var(--short)"
                 ic2  = "▲" if p["side"]=="LONG" else "▼"
-                uc2  = "#00f5d4" if p["upnl"]>=0 else "#f87171"
+                uc2  = "var(--profit-neon)" if p["upnl"]>=0 else "var(--loss-soft)"
                 lev_ratio = p.get("lev", 0)
                 if lev_ratio >= 1:
                     lev2 = f' x{lev_ratio:.1f}'
@@ -2575,7 +2971,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         else:
             upnl_val = s.get('total_upnl', 0)
             if upnl_val != 0:
-                uc3 = '#00f5d4' if upnl_val >= 0 else '#f87171'
+                uc3 = 'var(--profit-neon)' if upnl_val >= 0 else 'var(--loss-soft)'
                 positions_section = f'<div class="positions-block pos-empty">uPnL <span style="color:{uc3}">${upnl_val:+,.0f}</span> (refresh needed)</div>'
             else:
                 positions_section = '<div class="positions-block pos-empty">— No positions</div>'
@@ -2585,11 +2981,11 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         if open_pos:
             _top_bias = sorted(open_pos, key=lambda x: x.get('notional', 0), reverse=True)[:3]
             for _bp in _top_bias:
-                _bc = "#06b6d4" if _bp["side"] == "LONG" else "#f472b6"
+                _bc = "var(--teal)" if _bp["side"] == "LONG" else "var(--pink)"
                 _bi = "▲" if _bp["side"] == "LONG" else "▼"
-                _bbg = "rgba(6,182,212,0.1)" if _bp["side"] == "LONG" else "rgba(244,114,182,0.1)"
+                _bbg = "var(--pos-long-bg)" if _bp["side"] == "LONG" else "var(--pos-short-bg)"
                 _bias_html += (f'<span style="font-size:10px;color:{_bc};font-weight:600;background:{_bbg};'
-                               f'padding:2px 8px;border-radius:4px;border:1px solid {_bc}40;white-space:nowrap">'
+                               f'padding:2px 8px;border-radius:4px;border:1px solid color-mix(in srgb,{_bc} 40%, transparent);white-space:nowrap">'
                                f'{_bi} {_bp["coin"]}</span>')
 
         cards_html += (
@@ -2599,53 +2995,53 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
               f'<div style="display:flex;align-items:center;gap:10px;min-width:0">'
                 f'<div style="font-size:{"22px" if rank==1 else "13px"};font-weight:700;color:{cc};min-width:26px;flex-shrink:0;line-height:1.2">{crown}</div>'
                 f'<div style="min-width:0">'
-                  f'<div style="font-family:Inter,sans-serif;font-size:15px;font-weight:700;color:#ffffff;display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
-                    f'{_he(_meta_name or s["label"])}'
-                    + (' <span style="font-size:10px;background:#1c1d22;color:#ffbe0b;border:1px solid #ffbe0b;border-radius:3px;padding:1px 5px">⚡ HF</span>' if s.get('is_hf') else '')
-                    + (' <span style="font-size:10px;background:#030304;color:#9b5de5;border:1px solid #9b5de5;border-radius:3px;padding:1px 5px">🏦 Vault</span>' if s.get('is_vault') else '')
-                    + (' <span style="font-size:10px;background:#030304;color:#cc9166;border:1px solid #cc9166;border-radius:3px;padding:1px 5px;font-weight:700">NEW</span>' if is_new else '')
+                  f'<div style="font-family:Inter,sans-serif;font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
+                    f'{_he(_card_title)}'
+                    + (' <span style="font-size:10px;background:var(--surface2);color:var(--warn);border:1px solid var(--warn);border-radius:3px;padding:1px 5px">⚡ HF</span>' if s.get('is_hf') else '')
+                    + (' <span style="font-size:10px;background:var(--surface);color:var(--purple);border:1px solid var(--purple);border-radius:3px;padding:1px 5px">🏦 Vault</span>' if s.get('is_vault') else '')
+                    + (' <span style="font-size:10px;background:var(--surface);color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:1px 5px;font-weight:700">NEW</span>' if is_new else '')
                     + _meta_tag_html
                   + f'</div>'
-                  f'<div style="font-size:11px;color:#777a88;margin-top:2px">{s["trader_type"]}</div>'
+                  f'<div style="font-size:11px;color:var(--dim);margin-top:2px">{s["trader_type"]}</div>'
                 f'</div>'
               f'</div>'
               f'<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px">'
-                f'<button class="like-btn" data-addr="{s["address"]}" onclick="event.stopPropagation();toggleLike(this)" style="font-size:10px;padding:3px 7px;border-radius:5px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer;display:flex;align-items:center;gap:3px;font-family:Inter,sans-serif"><span class="like-icon">🤍</span><span class="like-count" style="font-size:9px">·</span></button>'
-                f'<button class="save-btn" data-addr="{s["address"]}" onclick="event.stopPropagation();toggleSave(this)" style="font-size:14px;padding:3px 7px;border-radius:5px;border:1px solid rgba(255,255,255,0.08);background:transparent;cursor:pointer;font-family:Inter,sans-serif"><span class="save-icon" style="filter:grayscale(1) brightness(0.5)">⭐</span></button>'
-                f'<div class="comment-count-badge" style="font-size:9px;padding:2px 5px;border-radius:4px;color:#3a86ff;min-height:18px;font-family:Inter,sans-serif;text-align:center"></div>'
+                f'<button class="like-btn" data-addr="{s["address"]}" onclick="event.stopPropagation();toggleLike(this)" style="font-size:10px;padding:3px 7px;border-radius:5px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer;display:flex;align-items:center;gap:3px;font-family:Inter,sans-serif"><span class="like-icon">🤍</span><span class="like-count" style="font-size:9px">·</span></button>'
+                f'<button class="save-btn" data-addr="{s["address"]}" onclick="event.stopPropagation();toggleSave(this)" style="font-size:14px;padding:3px 7px;border-radius:5px;border:1px solid var(--glass-edge);background:transparent;cursor:pointer;font-family:Inter,sans-serif"><span class="save-icon" style="filter:grayscale(1) brightness(0.5)">⭐</span></button>'
+                f'<div class="comment-count-badge" style="font-size:9px;padding:2px 5px;border-radius:4px;color:var(--long);min-height:18px;font-family:Inter,sans-serif;text-align:center"></div>'
               f'</div>'
             f'</div>'
             # ── Description ──
-            f'<div style="font-size:11px;color:#acafb9;margin-bottom:12px;line-height:1.4">≈ {s["character"]}</div>'
+            f'<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.4">≈ {s["character"]}</div>'
             # ── Stats grid ──
             f'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px">'
-              f'<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-top:2px solid {cc};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Win-Adjusted Rating: overall skill score (0–100)">'
+              f'<div style="background:var(--stat-box);border:1px solid var(--stat-box-bd);border-top:2px solid {cc};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Win-Adjusted Rating: overall skill score (0–100)">'
                 f'<div style="font-family:Inter,sans-serif;font-size:16px;font-weight:800;color:{cc};line-height:1">{s["war_score"]:.0f}</div>'
-                f'<div style="font-size:9px;color:#777a88;margin-top:3px">WAR</div>'
+                f'<div style="font-size:9px;color:var(--dim);margin-top:3px">WAR</div>'
               f'</div>'
-              f'<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-top:2px solid {fc};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Followability: suitability for copy trading — low drawdown, consistent wins, manageable risk">'
+              f'<div style="background:var(--stat-box);border:1px solid var(--stat-box-bd);border-top:2px solid {fc};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Followability: suitability for copy trading — low drawdown, consistent wins, manageable risk">'
                 f'<div style="font-family:Inter,sans-serif;font-size:16px;font-weight:800;color:{fc};line-height:1">{fs:.0f}</div>'
-                f'<div style="font-size:9px;color:#777a88;margin-top:3px">Follow</div>'
+                f'<div style="font-size:9px;color:var(--dim);margin-top:3px">Follow</div>'
               f'</div>'
-              f'<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 4px;text-align:center">'
-                f'<div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#e2e3e9;line-height:1">{fmt_compact(s["total_equity"]).replace("+$","$")}</div>'
-                f'<div style="font-size:9px;color:#777a88;margin-top:3px">Equity</div>'
+              f'<div style="background:var(--stat-box);border:1px solid var(--stat-box-bd);border-radius:8px;padding:8px 4px;text-align:center">'
+                f'<div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:var(--text);line-height:1">{fmt_compact(s["total_equity"]).replace("+$","$")}</div>'
+                f'<div style="font-size:9px;color:var(--dim);margin-top:3px">Equity</div>'
               f'</div>'
-              f'<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 4px;text-align:center">'
+              f'<div style="background:var(--stat-box);border:1px solid var(--stat-box-bd);border-radius:8px;padding:8px 4px;text-align:center" title="{_he(_pnl_30d_title)}">'
                 f'<div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:{_pnl_30d_color};line-height:1">{fmt_compact(_pnl_30d)}</div>'
-                f'<div style="font-size:9px;color:#777a88;margin-top:3px">30D PnL</div>'
+                f'<div style="font-size:9px;color:var(--dim);margin-top:3px">30D PnL{_pnl_30d_lbl_suffix}</div>'
               f'</div>'
-              f'<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-top:2px solid {_risk_color};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Risk level based on max drawdown and leverage usage (Low / Mid / High / Extreme)">'
+              f'<div style="background:var(--stat-box);border:1px solid var(--stat-box-bd);border-top:2px solid {_risk_color};border-radius:8px;padding:8px 4px;text-align:center;cursor:help" title="Risk level based on max drawdown and leverage usage (Low / Mid / High / Extreme)">'
                 f'<div style="font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:{_risk_color};line-height:1">{_risk_label}</div>'
-                f'<div style="font-size:9px;color:#777a88;margin-top:3px">Risk</div>'
+                f'<div style="font-size:9px;color:var(--dim);margin-top:3px">Risk</div>'
               f'</div>'
             f'</div>'
             # ── Sparkline ──
             f'<div style="margin-bottom:10px;border-radius:6px;overflow:hidden;opacity:0.85">{sparkline_svg}</div>'
             # ── Current bias ──
             + f'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">'
-            + (f'<div style="display:flex;gap:6px;flex-wrap:wrap">{_bias_html}</div>' if _bias_html else f'<div style="font-size:10px;color:#5e616e;font-style:italic">No open positions</div>')
-            + f'<span style="color:#5e616e;font-size:16px;flex-shrink:0;line-height:1">›</span>'
+            + (f'<div style="display:flex;gap:6px;flex-wrap:wrap">{_bias_html}</div>' if _bias_html else f'<div style="font-size:10px;color:var(--dim2);font-style:italic">No open positions</div>')
+            + f'<span style="color:var(--dim2);font-size:16px;flex-shrink:0;line-height:1">›</span>'
             + f'</div>'
             + f'</div>'
         )
@@ -2990,9 +3386,28 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Wallet Scouting Report</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){{
+  var _SEM_DARK = {{
+    '--long':'#3a86ff','--short':'#f72585','--profit':'#10b981','--profit-neon':'#00f5d4','--loss':'#f72585','--loss-soft':'#f87171',
+    '--warn':'#ffbe0b','--purple':'#9b5de5','--twitter':'#1d9bf0','--cmm':'#a78bfa','--btc':'#f59e0b','--size-hit':'#10b981',
+    '--chart-grid':'#1c1d22','--chart-area':'#08080a','--chart-tick':'#5e616e','--modal-scrim':'rgba(0,0,0,0.82)',
+    '--stat-box':'rgba(255,255,255,0.03)','--stat-box-bd':'rgba(255,255,255,0.06)','--card-shadow':'0 8px 32px rgba(0,0,0,0.45)',
+    '--pill-inactive-bd':'rgba(255,255,255,0.1)','--ring-empty':'rgba(255,255,255,0.07)','--header-grad2':'#8b5cf6',
+    '--pos-long-bg':'rgba(58,134,255,0.12)','--pos-short-bg':'rgba(247,37,133,0.12)','--pos-long-bd':'rgba(58,134,255,0.28)','--pos-short-bd':'rgba(247,37,133,0.28)',
+    '--glass-fill':'rgba(255,255,255,0.04)','--glass-edge':'rgba(255,255,255,0.08)'
+  }};
+  var _SEM_LIGHT = {{
+    '--long':'#2563eb','--short':'#db2777','--profit':'#059669','--profit-neon':'#0d9488','--loss':'#dc2626','--loss-soft':'#ea580c',
+    '--warn':'#d97706','--purple':'#7c3aed','--twitter':'#0d7dd6','--cmm':'#6d28d9','--btc':'#d97706','--size-hit':'#059669',
+    '--chart-grid':'#e2e8f0','--chart-area':'#f1f5f9','--chart-tick':'#64748b','--modal-scrim':'rgba(15,23,42,0.55)',
+    '--stat-box':'rgba(15,23,42,0.04)','--stat-box-bd':'rgba(15,23,42,0.08)','--card-shadow':'0 2px 16px rgba(0,0,0,0.08)',
+    '--pill-inactive-bd':'rgba(15,23,42,0.12)','--ring-empty':'rgba(15,23,42,0.1)','--header-grad2':'#6366f1',
+    '--pos-long-bg':'rgba(37,99,235,0.12)','--pos-short-bg':'rgba(219,39,119,0.12)','--pos-long-bd':'rgba(37,99,235,0.35)','--pos-short-bd':'rgba(219,39,119,0.35)',
+    '--glass-fill':'rgba(15,23,42,0.04)','--glass-edge':'rgba(15,23,42,0.1)'
+  }};
+  var _LIGHT_IDS = {{light:1,aave:1,airbnb:1,apple:1,claude:1,duolingo:1,instagram:1,kraken:1,phantom:1,slack:1,tesla:1,palette:1,frictional:1,base:1,coinbase:1}};
   var T={{
     'slash-gold':  {{'--bg':'#000000','--surface':'#030304','--surface2':'#08080a','--border':'#1c1d22','--border2':'rgba(255,255,255,0.04)','--text':'#e2e3e9','--text-muted':'#777a88','--dim':'#777a88','--dim2':'#5e616e','--accent':'#cc9166','--teal':'#06b6d4','--header-bg':'rgba(0,0,0,0.96)'}},
     'hyperliquid': {{'--bg':'#0d0d1f','--surface':'#12122a','--surface2':'#1a1a35','--border':'rgba(255,255,255,0.06)','--border2':'rgba(255,255,255,0.03)','--text':'#d0d8f0','--text-muted':'#4a4a7a','--dim':'#4a4a7a','--dim2':'#3a3a5c','--accent':'#06b6d4','--teal':'#06b6d4','--header-bg':'rgba(13,13,31,0.96)'}},
@@ -3027,94 +3442,120 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     'tesla':       {{'--bg':'#ffffff','--surface':'#eeeeee','--surface2':'#e5e3df','--border':'#cccccc','--border2':'rgba(0,0,0,0.04)','--text':'#171a20','--text-muted':'#5c5e62','--dim':'#888888','--dim2':'#aaaaaa','--accent':'#3e6ae1','--teal':'#3e6ae1','--header-bg':'rgba(255,255,255,0.96)'}}
   }};
   window._T = T;
-  var id = localStorage.getItem('ws_theme') || 'slash-gold';
-  var t = T[id] || T['slash-gold'];
-  var r = document.documentElement;
-  for(var k in t) r.style.setProperty(k, t[k]);
-  r.setAttribute('data-theme', id);
+  var _wsUIPack=___WS_UI_PACK_JSON___;
+  function wsApplyMergedTheme(id){{
+    var r=document.documentElement;
+    var base=_LIGHT_IDS[id]?_SEM_LIGHT:_SEM_DARK;
+    var pack=(typeof _wsUIPack==='object'&&_wsUIPack)?_wsUIPack:{{defaults:{{}},themes:{{}}}};
+    var uiDef=pack.defaults||{{}};
+    var uiTh=(pack.themes&&pack.themes[id])?pack.themes[id]:{{}};
+    var uiMerged=Object.assign({{}},uiDef,uiTh);
+    var o=Object.assign({{}},base,T[id]||T['hyperliquid'],uiMerged);
+    for(var k in o){{ if(k.indexOf('--')===0) r.style.setProperty(k,o[k]); }}
+    r.setAttribute('data-theme',id);
+    r.style.colorScheme=_LIGHT_IDS[id]?'light':'dark';
+  }}
+  window.wsApplyMergedTheme=wsApplyMergedTheme;
+  wsApplyMergedTheme(localStorage.getItem('ws_theme')||'hyperliquid');
 }})();
 </script>
 <style>
-:root{{--bg:#000000;--surface:#030304;--surface2:#08080a;--border:#1c1d22;--border2:rgba(255,255,255,0.04);--text:#e2e3e9;--text-muted:#777a88;--dim:#777a88;--dim2:#5e616e;--teal:#06b6d4;--pink:#f472b6;--amber:#fbbf24;--purple:#8b5cf6;--blue:#3b82f6;--green:#06b6d4;--red:#f472b6;--yellow:#fbbf24;--accent:#cc9166;--header-bg:rgba(0,0,0,0.96);}}
-*{{margin:0;padding:0;box-sizing:border-box;}}body{{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}}
-.header{{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;background:var(--header-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}}
+:root{{--bg:#000000;--surface:#030304;--surface2:#08080a;--border:#1c1d22;--border2:rgba(255,255,255,0.04);--text:#e2e3e9;--text-muted:#777a88;--dim:#777a88;--dim2:#5e616e;--teal:#06b6d4;--pink:#f472b6;--amber:#fbbf24;--purple:#8b5cf6;--blue:#3b82f6;--green:#06b6d4;--red:#f472b6;--yellow:#fbbf24;--accent:#cc9166;--header-bg:rgba(0,0,0,0.96);
+--long:#3a86ff;--short:#f72585;--profit:#10b981;--profit-neon:#00f5d4;--loss:#f72585;--loss-soft:#f87171;--warn:#ffbe0b;--twitter:#1d9bf0;--cmm:#a78bfa;--btc:#f59e0b;--size-hit:#10b981;
+--chart-grid:#1c1d22;--chart-area:#08080a;--chart-tick:#5e616e;--modal-scrim:rgba(0,0,0,0.82);--stat-box:rgba(255,255,255,0.03);--stat-box-bd:rgba(255,255,255,0.06);--card-shadow:0 8px 32px rgba(0,0,0,0.45);
+--pill-inactive-bd:rgba(255,255,255,0.1);--ring-empty:rgba(255,255,255,0.07);--header-grad2:#8b5cf6;
+--pos-long-bg:rgba(58,134,255,0.12);--pos-short-bg:rgba(247,37,133,0.12);--pos-long-bd:rgba(58,134,255,0.28);--pos-short-bd:rgba(247,37,133,0.28);
+--glass-fill:rgba(255,255,255,0.04);--glass-edge:rgba(255,255,255,0.08);
+--font-sans:'Inter',system-ui,sans-serif;--font-display:'Inter',system-ui,sans-serif;--letter-display:0.02em;
+--text-caption:10px;--text-xs:9px;--text-sm:11px;--text-md:12px;--text-body:14px;--text-subtitle:15px;--text-heading:16px;--text-heading-lg:18px;--text-card-title:22px;--text-modal-title:26px;--text-war:17px;--text-tourney-val:28px;
+--line-tight:1.15;--line-body:1.45;
+--radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-xl:18px;--radius-card:20px;--radius-modal:24px;--radius-pill:20px;--radius-logo:10px;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;
+--header-pad-y:12px;--header-pad-x:20px;--header-title-size:18px;--header-sub-size:10px;
+--tab-pad-y:10px;--tab-pad-x:16px;--tab-font-size:11px;
+--section-pad:16px;--section-pad-wide-y:20px;--section-pad-wide-x:32px;--card-pad:18px;--gap-cards:12px;--modal-pad:32px;
+--hdr-search-radius:8px;--theme-panel-radius:14px;}}
+*{{margin:0;padding:0;box-sizing:border-box;}}body{{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:var(--text-body);line-height:var(--line-body);}}
+button,input,select,textarea{{font-family:var(--font-sans);}}
+.top-dock{{position:sticky;top:0;z-index:100;background:var(--bg);}}
+.header{{padding:var(--header-pad-y) var(--header-pad-x);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--header-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}}
 .header-left{{display:flex;align-items:center;gap:10px;}}
-.header-logo{{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}}
-.header-title{{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:0.5px;}}
-.header-sub{{font-size:10px;color:var(--dim);margin-top:1px;}}
-.header-meta{{font-size:10px;color:var(--dim);text-align:right;}}
-.tabs{{display:flex;padding:0;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;background:var(--bg);position:sticky;top:57px;z-index:40;}}
+.header-logo{{width:32px;height:32px;border-radius:var(--radius-logo);background:linear-gradient(135deg,var(--teal),var(--header-grad2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}}
+.header-title{{font-family:var(--font-display);font-size:var(--header-title-size);font-weight:700;color:var(--text);letter-spacing:var(--letter-display);}}
+.header-sub{{font-size:var(--header-sub-size);color:var(--dim);margin-top:1px;}}
+.header-meta{{font-size:var(--header-sub-size);color:var(--dim);text-align:right;}}
+.tabs{{display:flex;padding:0;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;background:var(--bg);}}
 .tabs::-webkit-scrollbar{{display:none;}}
-.tab{{padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:0.3px;cursor:pointer;border-bottom:2px solid transparent;color:var(--dim);transition:.2s;white-space:nowrap;font-family:'Inter',sans-serif;}}
+.tab{{padding:var(--tab-pad-y) var(--tab-pad-x);font-size:var(--tab-font-size);font-weight:600;letter-spacing:0.3px;cursor:pointer;border-bottom:2px solid transparent;color:var(--dim);transition:.2s;white-space:nowrap;font-family:var(--font-sans);}}
 .tab.active{{color:var(--teal);border-bottom-color:var(--teal);}}
 .tab:hover{{color:var(--text);}}
-.section{{display:none;padding:16px;}}.section.active{{display:block;}}
-.cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;}}
-.trader-card{{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden;}}
-.trader-card::before{{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(6,182,212,0.12),transparent);}}
-.trader-card:hover{{border-color:rgba(6,182,212,0.2);transform:translateY(-2px);}}
-.card-top{{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:12px;}}
-.card-rank{{font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:var(--amber);min-width:28px;line-height:1;}}
-.card-name-block{{flex:1;}}.card-name{{font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.1;}}
-.card-type{{font-size:11px;font-weight:600;color:var(--card-accent,var(--teal));margin-top:3px;}}
-.card-character{{font-size:10px;color:var(--dim);margin-top:2px;font-style:italic;}}
-.card-period{{font-size:9px;color:var(--dim2);margin-top:4px;}}
-.card-meta{{font-size:9px;margin-top:3px;}}
+.section{{display:none;padding:var(--section-pad);}}.section.active{{display:block;}}
+.cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:var(--gap-cards);}}
+.trader-card{{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:var(--card-pad);transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;overflow:hidden;box-shadow:var(--card-shadow);}}
+.trader-card::before{{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 22%,transparent),transparent);}}
+.trader-card:hover{{border-color:color-mix(in srgb,var(--teal) 35%,var(--border));transform:translateY(-2px);}}
+.card-top{{display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:var(--space-3);}}
+.card-rank{{font-family:var(--font-sans);font-size:var(--text-card-title);font-weight:700;color:var(--amber);min-width:28px;line-height:var(--line-tight);}}
+.card-name-block{{flex:1;}}.card-name{{font-family:var(--font-sans);font-size:var(--text-card-title);font-weight:700;color:var(--text);line-height:var(--line-tight);}}
+.card-type{{font-size:var(--text-sm);font-weight:600;color:var(--card-accent,var(--teal));margin-top:3px;}}
+.card-character{{font-size:var(--text-caption);color:var(--dim);margin-top:2px;font-style:italic;}}
+.card-period{{font-size:var(--text-xs);color:var(--dim2);margin-top:4px;}}
+.card-meta{{font-size:var(--text-xs);margin-top:3px;}}
 .pos-section{{margin:4px 0;}}
-.card-equity{{font-size:10px;color:#888;margin-left:6px;font-weight:400;}}
-.section-label{{font-size:9px;font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 4px;border-top:1px solid var(--border);padding-top:6px;}}
+.card-equity{{font-size:var(--text-caption);color:var(--dim);margin-left:6px;font-weight:400;}}
+.section-label{{font-size:var(--text-xs);font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 4px;border-top:1px solid var(--border);padding-top:6px;}}
 .pos-summary{{margin-bottom:5px;}}
-.pos-bar-wrap{{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:3px;background:rgba(255,255,255,0.06);}}
-.pos-bar-long{{background:var(--blue);transition:width .3s;}}
-.pos-bar-short{{background:var(--pink);transition:width .3s;}}
-.pos-bar-labels{{display:flex;justify-content:space-between;font-size:9px;}}
+.pos-bar-wrap{{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:3px;background:var(--ring-empty);}}
+.pos-bar-long{{background:var(--long);transition:width .3s;}}
+.pos-bar-short{{background:var(--short);transition:width .3s;}}
+.pos-bar-labels{{display:flex;justify-content:space-between;font-size:var(--text-xs);}}
 .positions-block{{display:flex;flex-direction:column;gap:3px;}}
-.pos-row{{display:grid;grid-template-columns:80px 1fr 1fr;align-items:center;font-size:10px;gap:4px;min-width:0;overflow:hidden;}}
-.pos-ntl{{color:#888;font-size:9px;text-align:right;}}
-.pos-empty{{font-size:9px;color:var(--dim2);}}
+.pos-row{{display:grid;grid-template-columns:80px 1fr 1fr;align-items:center;font-size:var(--text-caption);gap:var(--space-1);min-width:0;overflow:hidden;}}
+.pos-ntl{{color:var(--dim);font-size:var(--text-xs);text-align:right;}}
+.pos-empty{{font-size:var(--text-xs);color:var(--dim2);}}
 .war-circle{{position:relative;width:60px;height:60px;flex-shrink:0;}}.war-circle svg{{width:60px;height:60px;}}
-.war-val{{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-family:'Inter',sans-serif;font-size:17px;font-weight:700;}}
+.war-val{{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-family:var(--font-sans);font-size:var(--text-war);font-weight:700;}}
 .war-label{{position:absolute;top:50%;left:50%;transform:translate(-50%,20%);font-size:8px;color:var(--dim);letter-spacing:1px;}}
 .card-body{{display:flex;flex-direction:column;gap:10px;align-items:stretch;}}.mini-radar{{align-self:center;flex-shrink:0;}}.card-right{{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:10px;}}
 .key-stats{{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}}
-.ks{{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:8px 6px;text-align:center;min-width:0;overflow:hidden;}}
-.ks-v{{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}.ks-l{{font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}
+.ks{{background:var(--stat-box);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-2) 6px;text-align:center;min-width:0;overflow:hidden;}}
+.ks-v{{font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}.ks-l{{font-size:var(--text-xs);color:var(--dim);margin-top:2px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}
 .bottom-row{{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}}
-.coins{{display:flex;flex-wrap:wrap;gap:4px;}}.coin-tag{{font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid;}}
-.tourney-badge{{font-size:10px;color:var(--amber);}}
-.radar-wrap{{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}}
-.radar-canvas-wrap,.radar-legend,.chart-wrap{{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;}}
+.coins{{display:flex;flex-wrap:wrap;gap:4px;}}.coin-tag{{font-size:var(--text-xs);padding:2px 7px;border-radius:var(--radius-sm);border:1px solid;}}
+.tourney-badge{{font-size:var(--text-caption);color:var(--amber);}}
+.radar-wrap{{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);align-items:start;}}
+.radar-canvas-wrap,.radar-legend,.chart-wrap{{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);}}
 .radar-canvas-wrap{{min-height:400px;position:relative;display:flex;align-items:center;justify-content:center;}}
-.legend-title{{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:14px;}}
+.legend-title{{font-family:var(--font-display);font-size:var(--text-heading-lg);font-weight:700;color:var(--text);margin-bottom:14px;}}
 .legend-item{{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}}
-.legend-dot{{width:10px;height:10px;border-radius:50%;flex-shrink:0;}}.legend-name{{font-size:12px;color:var(--text);flex:1;}}.legend-war{{font-size:12px;color:var(--teal);}}
-.tourney-header{{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;}}
+.legend-dot{{width:10px;height:10px;border-radius:50%;flex-shrink:0;}}.legend-name{{font-size:var(--text-md);color:var(--text);flex:1;}}.legend-war{{font-size:var(--text-md);color:var(--teal);}}
+.tourney-header{{display:flex;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap;}}
 .sent-war-grid{{grid-template-columns:repeat(5,1fr);}}
 .sent-type-grid{{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}}
-.tourney-stat{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 20px;}}
-.tourney-stat .val{{font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:var(--amber);}}.tourney-stat .lbl{{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px;}}
+.tourney-stat{{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px var(--space-5);}}
+.tourney-stat .val{{font-family:var(--font-sans);font-size:var(--text-tourney-val);font-weight:700;color:var(--amber);}}.tourney-stat .lbl{{font-size:var(--text-caption);color:var(--dim);letter-spacing:1px;margin-top:2px;}}
 .tourney-table{{width:100%;border-collapse:collapse;margin-bottom:28px;}}
-.tourney-table th{{font-size:10px;color:var(--dim);letter-spacing:1px;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}}
-.tourney-table td{{font-size:12px;padding:10px 12px;border-bottom:1px solid var(--border2);}}
-.tourney-table tr:first-child td{{color:var(--amber);}}.chart-wrap h3{{font-family:'Inter',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--dim);margin-bottom:14px;}}
+.tourney-table th{{font-size:var(--text-caption);color:var(--dim);letter-spacing:1px;text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);}}
+.tourney-table td{{font-size:var(--text-md);padding:10px var(--space-3);border-bottom:1px solid var(--border2);}}
+.tourney-table tr:first-child td{{color:var(--amber);}}.chart-wrap h3{{font-family:var(--font-sans);font-size:var(--text-heading);font-weight:700;letter-spacing:1px;color:var(--dim);margin-bottom:14px;}}
 
-.modal-overlay{{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;}}
+.modal-overlay{{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-scrim);z-index:1000;display:none;align-items:center;justify-content:center;}}
 .modal-overlay.open{{display:flex;}}
-.modal-box{{background:#000000;border:1px solid rgba(255,255,255,0.08);border-radius:24px;width:92%;max-width:900px;max-height:90vh;overflow-y:auto;padding:32px;position:relative;}}
+.modal-box{{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-modal);width:92%;max-width:900px;max-height:90vh;overflow-y:auto;padding:var(--modal-pad);position:relative;box-shadow:var(--card-shadow);}}
 .modal-close{{position:absolute;top:16px;right:20px;font-size:22px;cursor:pointer;color:var(--dim);line-height:1;background:none;border:none;}}
 .modal-close:hover{{color:var(--text);}}
 .modal-header{{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);}}
-.modal-title{{font-family:'Inter',sans-serif;font-size:26px;font-weight:700;}}
-.modal-sub{{font-size:12px;color:var(--dim);margin-top:4px;}}
-.modal-war .war-num{{font-family:'Inter',sans-serif;font-size:40px;font-weight:700;}}
-.modal-war .war-lbl{{font-size:10px;color:var(--dim);letter-spacing:2px;}}
-.modal-grid{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}}
-.modal-block{{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:16px;}}
-.modal-block h4{{font-size:10px;color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}}
+.modal-title{{font-family:var(--font-display);font-size:var(--text-modal-title);font-weight:700;}}
+.modal-sub{{font-size:var(--text-md);color:var(--dim);margin-top:4px;}}
+.modal-war .war-num{{font-family:var(--font-sans);font-size:40px;font-weight:700;}}
+.modal-war .war-lbl{{font-size:var(--text-caption);color:var(--dim);letter-spacing:2px;}}
+.modal-grid{{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin-bottom:var(--space-4);}}
+.modal-block{{background:var(--stat-box);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4);}}
+.modal-block h4{{font-size:var(--text-caption);color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}}
 .modal-stats{{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}}
-.modal-stat{{text-align:center;padding:10px 6px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid var(--border);}}
-.modal-stat .v{{font-family:'Inter',sans-serif;font-size:15px;font-weight:600;}}
-.modal-stat .l{{font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.5px;}}
+.modal-stat{{text-align:center;padding:10px 6px;background:var(--stat-box);border-radius:var(--radius-md);border:1px solid var(--border);}}
+.modal-stat .v{{font-family:var(--font-sans);font-size:15px;font-weight:600;}}
+.modal-stat .l{{font-size:var(--text-xs);color:var(--dim);margin-top:3px;letter-spacing:.5px;}}
 .modal-pnl-chart{{height:140px;}}
 .modal-pos-row{{display:grid;grid-template-columns:100px 1fr 1fr;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);font-size:11px;gap:4px;}}
 .modal-coin-row{{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:11px;border-bottom:1px solid var(--border2);}}
@@ -3171,17 +3612,26 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 /* ── PC wide layout ── */
 @media (min-width:1200px){{
   .cards-grid{{grid-template-columns:repeat(auto-fill,minmax(420px,1fr));}}
-  .section{{padding:20px 32px;}}
+  .section{{padding:var(--section-pad-wide-y) var(--section-pad-wide-x);}}
   #signal-root{{max-width:960px;margin:0 auto;}}
 }}
-.theme-opt{{display:block;width:100%;background:transparent;border:none;border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:Inter,sans-serif;cursor:pointer;text-align:left;transition:background .15s;}}
+.theme-opt{{display:block;width:100%;background:transparent;border:none;border-radius:var(--hdr-search-radius);padding:var(--space-2) var(--space-3);color:var(--text);font-size:var(--text-md);font-family:var(--font-sans);cursor:pointer;text-align:left;transition:background .15s;}}
 .theme-opt:hover{{background:var(--surface2);}}
 .theme-opt.active{{background:var(--surface2);color:var(--accent);font-weight:600;}}
-[data-theme="light"] .modal-overlay{{background:rgba(0,0,0,0.55);}}
-[data-theme="light"] .trader-card{{box-shadow:0 2px 12px rgba(0,0,0,0.08);}}
-[data-theme="light"] .tabs{{border-bottom:1px solid var(--border);}}
+#theme-panel{{box-shadow:var(--card-shadow);border-radius:var(--theme-panel-radius);}}
+.hdr-search-wrap{{display:flex;align-items:center;background:var(--glass-fill);border:1px solid var(--glass-edge);border-radius:var(--hdr-search-radius);padding:0 10px;gap:var(--space-2)}}
+.hdr-search-wrap input{{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:var(--text-md);padding:var(--space-2) 0;font-family:var(--font-sans);min-width:0}}
+.hint-chip{{display:flex;align-items:center;gap:7px;background:var(--stat-box);border:0.5px solid var(--stat-box-bd);border-radius:var(--hdr-search-radius);padding:7px var(--space-3)}}
+.preset-pill{{font-size:var(--text-sm);padding:6px var(--space-4);border-radius:var(--radius-pill);border:1px solid var(--pill-inactive-bd);background:var(--stat-box);color:var(--dim);cursor:pointer;font-family:var(--font-sans);font-weight:600;transition:all .15s}}
+.filter-adv-panel{{display:none;padding:var(--space-3) 0 14px;border-top:0.5px solid var(--border);margin-bottom:var(--space-4)}}
+.form-row select{{font-size:var(--text-sm);padding:5px 10px;border-radius:var(--hdr-search-radius);border:1px solid var(--glass-edge);background:var(--stat-box);color:var(--text);font-family:var(--font-sans)}}
+.smm-panel{{background:var(--chart-area);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}}
+.smm-head{{font-family:var(--font-sans);font-size:var(--text-subtitle);font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:var(--space-2)}}
+#smm-sheet.smm-sheet{{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--surface2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:16px;max-height:60vh;overflow-y:auto;box-shadow:var(--card-shadow)}}
+.wl-radar-wrap{{display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:8px}}
 
 </style></head><body>
+<div class="top-dock">
 <div class="header">
   <div class="header-left">
     <div class="header-logo">⚡</div>
@@ -3191,10 +3641,9 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     </div>
   </div>
   <div style="flex:1;max-width:320px;margin:0 16px">
-    <div style="display:flex;align-items:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0 10px;gap:8px">
-      <span style="color:#777a88;font-size:13px">🔍</span>
+    <div class="hdr-search-wrap">
+      <span style="color:var(--dim);font-size:13px">🔍</span>
       <input id="header-search" type="text" placeholder="Search wallet 0x..."
-        style="flex:1;background:transparent;border:none;outline:none;color:#e2e3e9;font-size:12px;padding:8px 0;font-family:Inter,sans-serif;min-width:0"
         onkeydown="if(event.key==='Enter')headerLookup(this.value)">
     </div>
   </div>
@@ -3202,13 +3651,13 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     <div class="header-meta" style="display:none" id="hdr-meta-desk">{header_meta}</div>
     <div style="position:relative">
       <button id="theme-btn" onclick="toggleThemePanel()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--dim);font-size:11px;font-family:Inter,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--accent')" onmouseout="this.style.borderColor='';this.style.color=''">
-        <span id="theme-icon">🎨</span><span id="theme-label">Style</span>
+        <span id="theme-icon"></span><span id="theme-label">Style</span>
       </button>
-      <div id="theme-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;min-width:320px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+      <div id="theme-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;min-width:320px;z-index:200">
         <div style="font-size:9px;font-weight:600;color:var(--dim2);text-transform:uppercase;letter-spacing:.08em;padding:2px 4px 8px">Theme</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;max-height:340px;overflow-y:auto">
+          <button onclick="applyTheme('hyperliquid')" class="theme-opt" data-tid="hyperliquid">⚡ Basic</button>
           <button onclick="applyTheme('slash-gold')" class="theme-opt" data-tid="slash-gold">🟡 Slash Gold</button>
-          <button onclick="applyTheme('hyperliquid')" class="theme-opt" data-tid="hyperliquid">🔵 Hyperliquid</button>
           <button onclick="applyTheme('ocean')" class="theme-opt" data-tid="ocean">🌊 Ocean</button>
           <button onclick="applyTheme('light')" class="theme-opt" data-tid="light">☀️ Light</button>
           <button onclick="applyTheme('github')" class="theme-opt" data-tid="github">🐙 GitHub</button>
@@ -3248,17 +3697,20 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
   <div class="tab" onclick="showTab('cards',event)">🃏 Top Traders</div>
   <div class="tab" onclick="showTab('sentiment',event)">📡 Sentiment</div>
   <div class="tab" onclick="showTab('watchlist',event)">⭐ Watchlist</div>
+  <div class="tab" onclick="showTab('searched',event)">🔍 Searched</div>
+  <div class="tab" onclick="showTab('named',event)">📛 Named</div>
   <div class="tab" onclick="showTab('guestbook',event)">📝 Guestbook</div>
+</div>
 </div>
 <div class="section active" id="tab-signal">
   <div style="max-width:900px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:8px;padding:7px 12px">
+    <div class="hint-chip">
       <span style="font-size:13px">📊</span>
-      <span style="font-size:11px;color:#8a8aaa">1. Check whether <span style="color:#cdcdcd;font-weight:600">smart money</span> is leaning <span style="color:#3a86ff">long</span> or <span style="color:#f72585">short</span></span>
+      <span style="font-size:11px;color:var(--text-muted)">1. Check whether <span style="color:var(--text);font-weight:600">smart money</span> is leaning <span style="color:var(--long)">long</span> or <span style="color:var(--short)">short</span></span>
     </div>
-    <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:8px;padding:7px 12px">
+    <div class="hint-chip">
       <span style="font-size:13px">⭐</span>
-      <span style="font-size:11px;color:#8a8aaa">2. Save wallets you like to your <span style="color:#ffbe0b;font-weight:600">Watchlist</span></span>
+      <span style="font-size:11px;color:var(--text-muted)">2. Save wallets you like to your <span style="color:var(--warn);font-weight:600">Watchlist</span></span>
     </div>
   </div>
   <div id="signal-root" style="max-width:900px;margin:0 auto"></div>
@@ -3267,38 +3719,35 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
   <div id="war-alert-banner" style="margin-bottom:12px"></div>
   <!-- ── 프리셋 버튼 행 ── -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
-    <button id="preset-beginner" onclick="setPreset('beginner')"
-      style="font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#acafb9;cursor:pointer;font-family:Inter,sans-serif;font-weight:600;transition:all .15s">
+    <button id="preset-beginner" onclick="setPreset('beginner')" class="preset-pill">
       🌱 For Beginners</button>
-    <button id="preset-stable" onclick="setPreset('stable')"
-      style="font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#acafb9;cursor:pointer;font-family:Inter,sans-serif;font-weight:600;transition:all .15s">
+    <button id="preset-stable" onclick="setPreset('stable')" class="preset-pill">
       🛡️ Stable</button>
-    <button id="preset-aggressive" onclick="setPreset('aggressive')"
-      style="font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#acafb9;cursor:pointer;font-family:Inter,sans-serif;font-weight:600;transition:all .15s">
+    <button id="preset-aggressive" onclick="setPreset('aggressive')" class="preset-pill">
       ⚡ Aggressive</button>
-    <span id="filter-count" style="font-size:10px;color:#5e616e;font-family:Inter,sans-serif;font-weight:600"></span>
+    <span id="filter-count" style="font-size:10px;color:var(--dim2);font-family:Inter,sans-serif;font-weight:600"></span>
     <button id="advanced-filter-btn" onclick="toggleAdvancedFilter()"
-      style="margin-left:auto;font-size:10px;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">
+      style="margin-left:auto;font-size:10px;padding:5px 12px;border-radius:8px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">
       Advanced Filters ▾</button>
   </div>
   <!-- ── 고급필터 패널 (기본 숨김) ── -->
-  <div id="advanced-filter-panel" style="display:none;padding:12px 0 14px;border-top:0.5px solid #1c1d22;margin-bottom:16px">
+  <div id="advanced-filter-panel" class="filter-adv-panel" style="display:none">
     <div id="type-filter-bar" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:28px"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-      <select id="filter-source" onchange="applyCardFilters()" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#e2e3e9;font-family:Inter,sans-serif">
+    <div class="form-row" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <select id="filter-source" onchange="applyCardFilters()">
         <option value="">All Sources</option>
         <option value="named">Named Only</option>
         <option value="vault">Vault</option>
         <option value="active">Active</option>
         <option value="manual">Manual</option>
       </select>
-      <select id="filter-conf" onchange="applyCardFilters()" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#e2e3e9;font-family:Inter,sans-serif">
+      <select id="filter-conf" onchange="applyCardFilters()">
         <option value="">All Confidence</option>
         <option value="High Confidence">High Confidence</option>
         <option value="Medium Confidence">Medium Confidence</option>
         <option value="Early Read">Early Read</option>
       </select>
-      <select id="sort-by" onchange="applyCardFilters()" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#e2e3e9;font-family:Inter,sans-serif">
+      <select id="sort-by" onchange="applyCardFilters()">
         <option value="war">Sort: WAR</option>
         <option value="pnl">Sort: Total PnL</option>
         <option value="winrate">Sort: Win Rate</option>
@@ -3309,7 +3758,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         <option value="follow">Sort: Followability</option>
         <option value="likes">Sort: Likes</option>
       </select>
-      <button onclick="resetCardFilters()" style="font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#777a88;cursor:pointer;margin-left:auto;font-family:Inter,sans-serif">↺ Reset</button>
+      <button onclick="resetCardFilters()" style="font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim);cursor:pointer;margin-left:auto;font-family:Inter,sans-serif">↺ Reset</button>
     </div>
   </div>
   <div class="cards-grid" id="cards-grid-inner">{cards_html}</div>
@@ -3317,54 +3766,56 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
 </div>
 <div class="section" id="tab-sentiment">
 <div id="smm-root" style="margin-bottom:20px">
-  <div style="font-family:Inter,sans-serif;font-size:15px;font-weight:700;color:#ffffff;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+  <div class="smm-head">
     <span>📡 Smart Money Map</span>
-    <span id="smm-status" style="font-size:10px;font-weight:400;color:#555;margin-left:4px"></span>
+    <span id="smm-status" style="font-size:10px;font-weight:400;color:var(--dim2);margin-left:4px"></span>
   </div>
   <div id="smm-filter-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center">
-    <button onclick="smmTimeFilter('24h')" id="smm-tf-24h" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">24h</button>
-    <button onclick="smmTimeFilter('7d')" id="smm-tf-7d" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #a78bfa;background:rgba(167,139,250,0.15);color:#a78bfa;cursor:pointer;font-family:Inter,sans-serif">7d</button>
-    <button onclick="smmTimeFilter('30d')" id="smm-tf-30d" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">30d</button>
-    <button onclick="smmTimeFilter('all')" id="smm-tf-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">All</button>
-    <span style="font-size:10px;color:#333;margin-left:2px">|</span>
-    <button onclick="smmFilter('all')" id="smm-f-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #3a86ff;background:rgba(58,134,255,0.15);color:#3a86ff;cursor:pointer;font-family:Inter,sans-serif">All</button>
-    <button onclick="smmFilter('long')" id="smm-f-long" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">▲ Long</button>
-    <button onclick="smmFilter('short')" id="smm-f-short" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">▼ Short</button>
-    <span style="font-size:10px;color:#333;margin-left:2px">|</span>
-    <button onclick="smmCoinFilter('all')" id="smm-cf-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">All Coins</button>
-    <button onclick="smmCoinFilter('btc')" id="smm-cf-btc" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #f59e0b;background:rgba(245,158,11,0.15);color:#f59e0b;cursor:pointer;font-family:Inter,sans-serif">BTC</button>
-    <button onclick="smmCoinFilter('major')" id="smm-cf-major" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">Major</button>
-    <button onclick="smmCoinFilter('alt')" id="smm-cf-alt" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">Alt</button>
-    <span style="font-size:10px;color:#333;margin-left:2px">|</span>
-    <button onclick="smmSizeFilter('100k')" id="smm-sf-100k" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">$100K+</button>
-    <button onclick="smmSizeFilter('500k')" id="smm-sf-500k" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">$500K+</button>
-    <button onclick="smmSizeFilter('1m')" id="smm-sf-1m" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #10b981;background:rgba(16,185,129,0.15);color:#10b981;cursor:pointer;font-family:Inter,sans-serif">$1M+</button>
+    <button onclick="smmTimeFilter('24h')" id="smm-tf-24h" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">24h</button>
+    <button onclick="smmTimeFilter('7d')" id="smm-tf-7d" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--cmm);background:color-mix(in srgb,var(--cmm) 18%,transparent);color:var(--cmm);cursor:pointer;font-family:Inter,sans-serif">7d</button>
+    <button onclick="smmTimeFilter('30d')" id="smm-tf-30d" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">30d</button>
+    <button onclick="smmTimeFilter('all')" id="smm-tf-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">All</button>
+    <span style="font-size:10px;color:var(--border);margin-left:2px">|</span>
+    <button onclick="smmFilter('all')" id="smm-f-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--long);background:var(--pos-long-bg);color:var(--long);cursor:pointer;font-family:Inter,sans-serif">All</button>
+    <button onclick="smmFilter('long')" id="smm-f-long" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">▲ Long</button>
+    <button onclick="smmFilter('short')" id="smm-f-short" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">▼ Short</button>
+    <span style="font-size:10px;color:var(--border);margin-left:2px">|</span>
+    <button onclick="smmCoinFilter('all')" id="smm-cf-all" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">All Coins</button>
+    <button onclick="smmCoinFilter('btc')" id="smm-cf-btc" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--btc);background:color-mix(in srgb,var(--btc) 18%,transparent);color:var(--btc);cursor:pointer;font-family:Inter,sans-serif">BTC</button>
+    <button onclick="smmCoinFilter('major')" id="smm-cf-major" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">Major</button>
+    <button onclick="smmCoinFilter('alt')" id="smm-cf-alt" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">Alt</button>
+    <span style="font-size:10px;color:var(--border);margin-left:2px">|</span>
+    <button onclick="smmSizeFilter('100k')" id="smm-sf-100k" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">$100K+</button>
+    <button onclick="smmSizeFilter('500k')" id="smm-sf-500k" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">$500K+</button>
+    <button onclick="smmSizeFilter('1m')" id="smm-sf-1m" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--size-hit);background:color-mix(in srgb,var(--size-hit) 18%,transparent);color:var(--size-hit);cursor:pointer;font-family:Inter,sans-serif">$1M+</button>
   </div>
-  <div style="position:relative;background:#000000;border-radius:12px;border:1px solid rgba(255,255,255,0.06);overflow:hidden">
+  <div class="smm-panel">
     <div style="height:200px;position:relative"><canvas id="smm-chart"></canvas></div>
-    <div style="height:72px;position:relative;border-top:1px solid rgba(255,255,255,0.05)"><canvas id="smm-vol-chart"></canvas></div>
-    <div id="smm-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#333;font-size:13px">No BTC price data yet — run refresh to collect</div>
+    <div style="height:72px;position:relative;border-top:1px solid var(--border2)"><canvas id="smm-vol-chart"></canvas></div>
+    <div id="smm-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--dim2);font-size:13px">No BTC price data yet — run refresh to collect</div>
   </div>
 </div>
 <div id="sent-root" style="padding:1rem 0"></div>
 </div>
-<div id="smm-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#08080a;border-top:1px solid rgba(255,255,255,0.1);border-radius:16px 16px 0 0;padding:16px;max-height:60vh;overflow-y:auto;box-shadow:0 -4px 32px rgba(0,0,0,0.6)">
+<div id="smm-sheet" class="smm-sheet">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div id="smm-sheet-title" style="font-size:13px;font-weight:700;color:#ffffff"></div>
-    <button onclick="document.getElementById('smm-sheet').style.display='none'" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+    <div id="smm-sheet-title" style="font-size:13px;font-weight:700;color:var(--text)"></div>
+    <button onclick="document.getElementById('smm-sheet').style.display='none'" style="background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0 4px">✕</button>
   </div>
   <div id="smm-sheet-body"></div>
 </div>
 <div style="display:none" id="tab-lookup"><div id="lookup-root" style="max-width:700px;margin:0 auto;padding:20px 0"></div></div>
 <div class="section" id="tab-watchlist">
   <div id="watchlist-root" style="padding:20px 0"></div>
-  <div id="watchlist-radar-wrap" style="display:none;background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;margin-top:8px">
-    <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:700;color:#ffffff;margin-bottom:16px">⬡ Comparison Radar</div>
+  <div id="watchlist-radar-wrap" class="wl-radar-wrap" style="display:none">
+    <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px">⬡ Comparison Radar</div>
     <div style="height:320px;position:relative"><canvas id="watchlistRadarChart"></canvas></div>
     <div id="watchlist-radar-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"></div>
   </div>
   <div id="watchlist-signal-root" style="margin-top:16px"></div>
 </div>
+<div class="section" id="tab-searched"><div id="searched-root" style="max-width:900px;margin:0 auto;padding:20px 0"></div></div>
+<div class="section" id="tab-named"><div id="named-root" style="max-width:900px;margin:0 auto;padding:20px 0"></div></div>
 <div class="section" id="tab-guestbook"><div id="guestbook-root" style="max-width:700px;margin:0 auto;padding:20px 0"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
@@ -3402,6 +3853,18 @@ function openModal(addr) {
   // 대소문자 무관 매칭
   const s = ALL_STATS.find(x => x.address && x.address.toLowerCase() === addr.toLowerCase());
   if (!s) return;
+  // Searched 탭에 저장
+  if(typeof saveToSearchHistory === 'function') {
+    saveToSearchHistory(addr, {
+      equity: s.equity || 0,
+      war: s.war_score || 0,
+      pnl: s.total_pnl || 0,
+      winRate: s.win_rate || 0,
+      traderType: s.trader_type || '',
+      shortAddr: (typeof _shortAddr === 'function') ? _shortAddr(addr) : addr,
+      searchedAt: new Date().toISOString()
+    });
+  }
   // WAR 등수 계산
   const _sortedByWar = ALL_STATS.slice().sort((a,b)=>(b.war_score||0)-(a.war_score||0));
   const _warRank = _sortedByWar.findIndex(x=>x.address===addr) + 1;
@@ -3469,11 +3932,11 @@ function openModal(addr) {
     <div class="modal-header">
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
-          <div class="modal-title" style="color:${cc}">${(WALLET_META[s.address.toLowerCase()]||{}).name || s.label}</div>
+          <div class="modal-title" style="color:${cc}">${_displayTraderName(s.address, s.label)}</div>
           <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#08080a;border:1px solid rgba(255,255,255,0.08);color:#888;font-family:Inter,sans-serif;white-space:nowrap">#${_warRank} WAR</span>
         </div>
         <div class="modal-sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <span style="font-family:'DM Mono',monospace;font-size:11px;color:#777a88;cursor:pointer" onclick="copyAddr('${addrFull}')" title="Click to copy">${addrFull.slice(0,8)}...${addrFull.slice(-6)}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:#777a88;cursor:pointer" onclick="copyAddr('${addrFull}')" title="Click to copy">${_shortAddr(addrFull)}</span>
           <button id="copy-btn" onclick="copyAddr('${addrFull}')" style="font-size:9px;padding:2px 7px;border:1px solid #121317;border-radius:4px;background:none;color:#888;cursor:pointer">📋 Copy</button>
         </div>
         <div class="modal-sub" style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -3701,8 +4164,8 @@ function openModal(addr) {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#5e616e', maxTicksLimit: 6, font: { size: 9 } }, grid: { color: '#1c1d22' } },
-          y: { ticks: { color: '#5e616e', callback: v => '$' + v.toLocaleString(), font: { size: 9 } }, grid: { color: '#1c1d22' } }
+          x: { ticks: { color: wsCss('--chart-tick','#5e616e'), maxTicksLimit: 6, font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } },
+          y: { ticks: { color: wsCss('--chart-tick','#5e616e'), callback: v => '$' + v.toLocaleString(), font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } }
         }
       }
     });
@@ -3732,10 +4195,10 @@ function openModal(addr) {
         responsive: true,
         scales: { r: {
           min: 0, max: 100,
-          grid: { color: 'rgba(255,255,255,0.06)' },
-          angleLines: { color: 'rgba(255,255,255,0.06)' },
+          grid: { color: wsCss('--stat-box-bd','rgba(255,255,255,0.06)') },
+          angleLines: { color: wsCss('--stat-box-bd','rgba(255,255,255,0.06)') },
           ticks: { display: false, stepSize: 25 },
-          pointLabels: { color: '#acafb9', font: { size: 9 } }
+          pointLabels: { color: wsCss('--text-muted','#acafb9'), font: { size: 9 } }
         }},
         plugins: { legend: { display: false }, tooltip: {
           callbacks: { label: ctx => ctx.raw.toFixed(0) }
@@ -3753,79 +4216,106 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 function buildPosChangeHTML(s){
   if(!s.prev_positions||!s.prev_positions.length) return '';
-  var equity = s.total_equity || 1;
+  var equity = Math.max(s.total_equity || 1, 1);
   var prevMap={}, curMap={};
   s.prev_positions.forEach(function(p){prevMap[p.coin]=p;});
   (s.positions||[]).forEach(function(p){curMap[p.coin]=p;});
   var changes=[];
+  var AR = ' \u2192 ';
 
-  function fmtLev(ntl){
-    var r=ntl/equity;
-    return r>=1?'x'+(Math.round(r*10)/10).toFixed(1):'x'+(Math.round(r*100)/100).toFixed(2);
+  function fmtUsd(v){ return '$'+Math.round(v).toLocaleString(); }
+  function fmtUpnl(p){
+    if(!p || p.upnl == null || isNaN(+p.upnl)) return '\u2014';
+    var v = Math.round(+p.upnl);
+    return (v >= 0 ? '+' : '-') + '$' + Math.abs(v).toLocaleString();
+  }
+  function fmtSignedPnl(v){
+    if(v == null || isNaN(+v)) return '\u2014';
+    var n = Math.round(+v);
+    return (n >= 0 ? '+' : '-') + '$' + Math.abs(n).toLocaleString();
+  }
+  function levStr(p){
+    if(!p) return '\u2014';
+    var sl = +p.set_lev || 0;
+    if(sl > 0) return (sl >= 10 ? sl.toFixed(0) : sl >= 1 ? sl.toFixed(1) : sl.toFixed(2)) + '×';
+    var r = (+p.notional || 0) / equity;
+    return (r >= 1 ? (Math.round(r * 10) / 10).toFixed(1) : (Math.round(r * 100) / 100).toFixed(2)) + '×';
+  }
+  function signedNtl(p){
+    if(!p) return 0;
+    var n = +p.notional || 0;
+    return p.side === 'LONG' ? n : -n;
+  }
+  function sideIcon(side){
+    return side === 'LONG'
+      ? { ic:'&#x25B2;', sc:'#3a86ff' }
+      : { ic:'&#x25BC;', sc:'#f72585' };
+  }
+  /** 한 행: 코인·태그 | Size만 이전→이후, Lev·손익(기본 uPnL, closed는 PnL) */
+  function pcRow1(bg, bd, coin, ic, sc, tagLower, sizePair, levNow, profitNow, profitCurVal, profitLabel){
+    profitLabel = profitLabel || 'uPnL ';
+    var uCol = (profitCurVal != null && !isNaN(+profitCurVal))
+      ? (+profitCurVal >= 0 ? '#00f5d4' : '#f72585')
+      : '#777a88';
+    return '<div style="display:flex;align-items:center;gap:10px 14px;flex-wrap:nowrap;padding:8px 10px;border-radius:8px;background:'+bg+';border:1px solid '+bd+';font-size:11px;min-width:0">'
+      +'<span style="color:'+sc+';font-weight:700;flex-shrink:0;font-size:12px">'+ic+' '+coin+'</span>'
+      +'<span style="color:#6b6f7a;font-weight:500;flex-shrink:0">'+tagLower+'</span>'
+      +'<span style="color:#9ca3af;flex-shrink:0;white-space:nowrap;font-variant-numeric:tabular-nums">Lev '+levNow+'</span>'
+      +'<span style="color:#cdcdcd;flex-shrink:0;white-space:nowrap;font-variant-numeric:tabular-nums">Size '+sizePair+'</span>'
+      +'<span style="color:'+uCol+';flex-shrink:0;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600" title="'+(profitLabel.trim()==='PnL'?'Realized PnL from fills since prior snapshot (closed position)':'')+'">'+profitLabel+profitNow+'</span>'
+      +'</div>';
   }
 
-  // 현재 포지션 기준 변화 (신규 진입 / 증감)
   (s.positions||[]).forEach(function(cur){
-    var prev=prevMap[cur.coin];
-    var lev='';
-    var ic=cur.side==='LONG'?'&#x25B2;':'&#x25BC;';
-    var sc=cur.side==='LONG'?'#3a86ff':'#f72585';
+    var prev = prevMap[cur.coin];
+    var ic = cur.side === 'LONG' ? '&#x25B2;' : '&#x25BC;';
+    var sc = cur.side === 'LONG' ? '#3a86ff' : '#f72585';
 
     if(!prev){
-      var dc = cur.side==='LONG' ? '#3a86ff' : '#f72585';
-      changes.push({html:
-        '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#0a1520;border:0.5px solid #1e3a5a">'
-        +'<span style="color:'+sc+';font-weight:700;min-width:90px">'+ic+' '+cur.coin+lev+'</span>'
-        +'<span style="color:'+dc+';font-family:Inter,sans-serif;font-size:11px;font-weight:600">'+fmtLev(cur.notional)+'</span>'
-        +'<span style="font-size:9px;background:#003020;color:#cc9166;border-radius:3px;padding:1px 5px">NEW</span>'
-        +'<span style="color:#555;margin-left:auto;font-size:10px">$'+Math.round(cur.notional).toLocaleString()+'</span>'
-        +'</div>', n:cur.notional});
+      var nl = 'new';
+      changes.push({html: pcRow1('#0a1520','#1e3a5a', cur.coin, ic, sc, nl,
+        '$0'+AR+fmtUsd(cur.notional), levStr(cur), fmtUpnl(cur), cur.upnl), n: cur.notional});
     } else {
-      var flipped = cur.side !== prev.side;
+      var prevSig = signedNtl(prev);
+      var curSig = signedNtl(cur);
+      var exposureFlip = prevSig !== 0 && curSig !== 0 && (prevSig * curSig < 0);
+      var shrink = cur.notional < prev.notional - 1e-9;
+      var mislabelResize = false;
+      if(exposureFlip && shrink){
+        if(prev.side === 'SHORT' && cur.side === 'LONG' && prevSig < 0){ exposureFlip = false; mislabelResize = true; }
+        else if(prev.side === 'LONG' && cur.side === 'SHORT' && prevSig > 0){ exposureFlip = false; mislabelResize = true; }
+      }
       var diff = cur.notional - prev.notional;
       var absDiff = Math.abs(diff);
-
-      if(flipped){
-        changes.push({html:
-          '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#1a0a20;border:0.5px solid #9b5de5">'
-          +'<span style="color:'+sc+';font-weight:700;min-width:90px">'+ic+' '+cur.coin+lev+'</span>'
-          +'<span style="font-size:9px;background:#2a0030;color:#9b5de5;border-radius:3px;padding:1px 5px">FLIP</span>'
-          +'<span style="color:#9b5de5;font-family:Inter,sans-serif;font-size:10px">'+fmtLev(cur.notional)+'</span>'
-          +'<span style="color:#555;margin-left:auto;font-size:10px">$'+Math.round(prev.notional).toLocaleString()+' &#x2192; $'+Math.round(cur.notional).toLocaleString()+'</span>'
-          +'</div>', n:cur.notional+prev.notional});
-      } else if(absDiff / equity >= 0.05){
-        var increased = diff > 0;
-        var sign = increased ? '+' : '-';
-        var dc = (ic === '&#x25B2;') ? '#3a86ff' : '#f72585';
-        changes.push({html:
-          '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#030304;border:1px solid rgba(255,255,255,0.08)">'
-          +'<span style="color:'+sc+';font-weight:700;min-width:90px">'+ic+' '+cur.coin+lev+'</span>'
-          +'<span style="color:'+dc+';font-family:Inter,sans-serif;font-size:11px;font-weight:600">'+fmtLev(cur.notional)+'</span>'
-          +'<span style="color:#555;font-family:Inter,sans-serif;font-size:9px">'+sign+'$'+Math.abs(Math.round(diff)).toLocaleString()+'</span>'
-          +'<span style="color:#333;margin-left:auto;font-size:10px">$'+Math.round(cur.notional).toLocaleString()+'</span>'
-          +'</div>', n:absDiff});
+      var dispSide = mislabelResize ? prev.side : cur.side;
+      var st = sideIcon(dispSide);
+      if(exposureFlip){
+        changes.push({html: pcRow1('#1a0a20','#9b5de5', cur.coin, ic, sc, 'flip',
+          fmtUsd(prev.notional)+AR+fmtUsd(cur.notional), levStr(cur), fmtUpnl(cur), cur.upnl), n: cur.notional + prev.notional});
+      } else if(shrink && !exposureFlip){
+        changes.push({html: pcRow1('#030304','rgba(255,255,255,0.08)', cur.coin, st.ic, st.sc, 'reduce',
+          fmtUsd(prev.notional)+AR+fmtUsd(cur.notional), levStr(cur), fmtUpnl(cur), cur.upnl), n: absDiff});
+      } else if(absDiff / equity >= 0.05 && diff > 0){
+        changes.push({html: pcRow1('#030304','rgba(255,255,255,0.08)', cur.coin, st.ic, st.sc, 'increase',
+          fmtUsd(prev.notional)+AR+fmtUsd(cur.notional), levStr(cur), fmtUpnl(cur), cur.upnl), n: absDiff});
       }
     }
   });
 
-  // 청산된 포지션
   s.prev_positions.forEach(function(prev){
     if(!curMap[prev.coin]){
-      var ic=prev.side==='LONG'?'&#x25B2;':'&#x25BC;';
-      var sc=prev.side==='LONG'?'#3a86ff':'#f72585';
-      var lev='';
-      changes.push({html:
-        '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#1a0808;border:0.5px solid #3a1a1a">'
-        +'<span style="color:'+sc+';font-weight:700;min-width:90px;opacity:0.6">'+ic+' '+prev.coin+lev+'</span>'
-        +'<span style="color:#888;font-family:Inter,sans-serif;font-size:11px;font-weight:600">'+fmtLev(prev.notional)+'</span>'
-        +'<span style="font-size:9px;background:#2a0000;color:#f87171;border-radius:3px;padding:1px 5px">CLOSED</span>'
-        +'<span style="color:#333;margin-left:auto;font-size:10px">was $'+Math.round(prev.notional).toLocaleString()+'</span>'
-        +'</div>', n:prev.notional});
+      var st = sideIcon(prev.side);
+      var pcm = s.pos_change_closed_pnl || {};
+      var rawP = pcm[prev.coin];
+      var pnlNum = (rawP !== undefined && rawP !== null && !isNaN(+rawP)) ? +rawP : null;
+      if (pnlNum === null && prev.upnl != null && !isNaN(+prev.upnl)) pnlNum = +prev.upnl;
+      var pnlStr = fmtSignedPnl(pnlNum);
+      changes.push({html: pcRow1('#1a0808','#3a1a1a', prev.coin, st.ic, st.sc, 'closed',
+        fmtUsd(prev.notional)+AR+'$0', levStr({notional: prev.notional, set_lev: 0}), pnlStr, pnlNum, 'PnL '), n: prev.notional});
     }
   });
 
   if(!changes.length) return '';
-  // 변화 큰 순 정렬
   changes.sort(function(a,b){ return b.n - a.n; });
   var ts=s.prev_positions_ts ? new Date(s.prev_positions_ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : '24h ago';
   return '<div style="margin-bottom:16px;background:#030304;border-radius:10px;padding:14px 16px;border:0.5px solid #08080a">'
@@ -3833,8 +4323,9 @@ function buildPosChangeHTML(s){
     +'&#x1F4CA; Position Changes'
     +'<span style="font-size:9px;color:#777a88;font-family:Inter,sans-serif">vs '+ts+'</span>'
     +'</div>'
-    +'<div style="display:flex;flex-direction:column;gap:5px">'+changes.map(function(c){return c.html;}).join('')+'</div>'
-    +'</div>';
+    +'<div style="max-height:220px;overflow-y:auto;overflow-x:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px;scrollbar-gutter:stable">'
+    +changes.map(function(c){ return c.html; }).join('')
+    +'</div></div>';
 }
 
 </script>
@@ -3867,6 +4358,40 @@ function buildPosChangeHTML(s){
     # 각 Trader에 color 추가
     for i, s in enumerate(ranked):
         s['_color'] = palette[i % len(palette)]
+    # Position Changes「closed」행용: prev 스냅 이후 fills closedPnl 합(코인별)
+    _fc_pc = _load_fills_cache()
+    for s in ranked:
+        _ak = (s.get("address") or "").lower()
+        _fe = (_fc_pc.get(_ak) or {}).get("fills") or []
+        s["pos_change_closed_pnl"] = _pos_change_closed_pnl_map(
+            s.get("prev_positions") or [],
+            (s.get("prev_positions_ts") or "").strip(),
+            _fe,
+            s.get("positions") or [],
+        )
+    # ── 지갑별 detail JSON 파일 생성 (cumulative 등 대용량 분리) ──────────────
+    import os as _os
+    _os.makedirs("data/wallet", exist_ok=True)
+    for _s in ranked:
+        _addr = (_s.get("address") or "").lower()
+        if not _addr:
+            continue
+        _detail = {
+            "cumulative": _s.get("cumulative") or [],
+            "prev_positions": _s.get("prev_positions") or [],
+            "prev_positions_ts": _s.get("prev_positions_ts") or "",
+            "pos_change_closed_pnl": _s.get("pos_change_closed_pnl") or {},
+        }
+        try:
+            with open(f"data/wallet/{_addr}.json", "w", encoding="utf-8") as _wf:
+                json.dump(_detail, _wf, ensure_ascii=False, separators=(",", ":"), default=str)
+        except Exception:
+            pass
+        # inline ALL_STATS에서 대용량 필드 제거
+        _s["cumulative"] = []
+        _s.pop("prev_positions", None)
+        _s.pop("prev_positions_ts", None)
+    # ─────────────────────────────────────────────────────────────────────────
     all_stats_js = json.dumps(ranked, ensure_ascii=False, default=str)
 
     # ══ SIGNAL TAB — Python data computation ════════════════════════════
@@ -3971,7 +4496,7 @@ function buildPosChangeHTML(s){
                 if abs(_diff) >= _eq * 0.15:
                     _sign = "+" if _diff > 0 else "-"
                     _dstr = "Long" if _cur["side"]=="LONG" else "Short"
-                    hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
+                    hot_moves.append({"name":trader_display_label(_s["address"], _s.get("label", ""), _meta),
                         "addr":_s["address"],"war":_s["war_score"],
                         "action":f"{_coin} {_dstr}","change":_sign,
                         "detected_at":_now_iso,
@@ -3980,7 +4505,7 @@ function buildPosChangeHTML(s){
                         "_score":_score})
             else:
                 _dstr = "Long" if _cur["side"]=="LONG" else "Short"
-                hot_moves.append({"name":_s.get("label",short_addr(_s["address"])),
+                hot_moves.append({"name":trader_display_label(_s["address"], _s.get("label", ""), _meta),
                     "addr":_s["address"],"war":_s["war_score"],
                     "action":f"{_coin} {_dstr}","change":"new",
                     "detected_at":_now_iso,
@@ -4075,6 +4600,22 @@ function buildPosChangeHTML(s){
     _btc_prices_js = json.dumps(btc_prices or [], ensure_ascii=False)
     _smm_events_js = json.dumps(smm_events or [], ensure_ascii=False)
 
+    # ── SMM / BTC 별도 파일로 저장 (HTML inline 제거) ────────────────────────
+    _os.makedirs("data", exist_ok=True)
+    try:
+        # $100K 미만 이벤트 제외 → 파일 크기 대폭 축소 (80K → ~20K 이벤트)
+        _smm_filtered = [e for e in (smm_events or []) if (e.get("ntl") or 0) >= 100_000]
+        with open("data/smm.json", "w", encoding="utf-8") as _f:
+            json.dump(_smm_filtered, _f, ensure_ascii=False, separators=(",", ":"))
+    except Exception:
+        pass
+    try:
+        with open("data/btc.json", "w", encoding="utf-8") as _f:
+            json.dump(btc_prices or [], _f, ensure_ascii=False, separators=(",", ":"))
+    except Exception:
+        pass
+    # ─────────────────────────────────────────────────────────────────────────
+
     js_block = (
         f"window.EXPERT_DIR={json.dumps(expert_direction, ensure_ascii=False)};\n"
         f"window.COIN_CONSENSUS={json.dumps(coin_consensus, ensure_ascii=False)};\n"
@@ -4082,9 +4623,16 @@ function buildPosChangeHTML(s){
         f"window.SIM_RETURNS={json.dumps(sim_returns, ensure_ascii=False)};\n"
         f"window.EASY_SIGNALS={json.dumps(easy_signals, ensure_ascii=False)};\n"
         f"window.ALL_STATS={all_stats_js};\n"
+        # JS-side NaN 방어: json.dumps가 float('nan')을 NaN 리터럴로 출력할 수 있어 모달에서 NaN 표시됨
+        "(function(){var _nk=['total_equity','total_pnl','roi_pct','sharpe','win_rate','mdd_pct',"
+        "'big_bet_rate','follow_score','war_score','consistency','durability','realized',"
+        "'total_upnl','margin_pct','long_pct','avg_win','avg_loss','profit_factor','big_bet_pnl'];"
+        "(window.ALL_STATS||[]).forEach(function(s){"
+        "_nk.forEach(function(k){if(typeof s[k]!=='number'||!isFinite(s[k]))s[k]=0;});});"
+        "})();\n"
         f"window.WALLET_META={json.dumps(load_wallets_meta(), ensure_ascii=False)};\n"
-        f"window.BTC_PRICES={_btc_prices_js};\n"
-        f"window.SMM_EVENTS={_smm_events_js};\n"
+        "window.BTC_PRICES=[];\n"
+        "window.SMM_EVENTS=[];\n"
         f"const rd={radar_js};\n"
         f"const SENT={sent_js};\n"
         f"const HIST={hist_js};\n"
@@ -4092,9 +4640,90 @@ function buildPosChangeHTML(s){
         + _chart_radar + "\n"
         + f"const weeks={weeks_js},ws={ws_js};\n"
         + _chart_weekly + "\n"
-        "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}if(n==='lookup')initLookup();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
+        "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
     )
     js_block += """
+// ── Lazy-load: SMM / BTC / wallet cumulative ─────────────────────────────────
+var _smmL=false,_btcL=false,_wdetCache={};
+var _smmCbs=[],_btcCbs=[];
+function _loadSMM(cb){
+  if(window.SMM_EVENTS&&window.SMM_EVENTS.length>0){return cb();}
+  if(_smmL){return cb();}
+  _smmCbs.push(cb);
+  if(_smmCbs.length>1)return;
+  fetch('data/smm.json').then(function(r){return r.json();}).then(function(d){
+    window.SMM_EVENTS=d;_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];
+  }).catch(function(){_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];});
+}
+function _loadBTC(cb){
+  if(window.BTC_PRICES&&window.BTC_PRICES.length>0){return cb();}
+  if(_btcL){return cb();}
+  _btcCbs.push(cb);
+  if(_btcCbs.length>1)return;
+  fetch('data/btc.json').then(function(r){return r.json();}).then(function(d){
+    window.BTC_PRICES=d;_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];
+  }).catch(function(){_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];});
+}
+function _applyWalletDetail(d){if(!d||!d.cumulative||!d.cumulative.length)return;setTimeout(function(){var ctx=document.getElementById('modalPnlChart');if(!ctx||!ctx._chart)return;ctx._chart.data.labels=d.cumulative.map(function(p){return p.date;});ctx._chart.data.datasets[0].data=d.cumulative.map(function(p){return p.cum;});ctx._chart.update();},150);}
+function _showSMMLoading(show){var el=document.getElementById('smm-status');if(!el)return;el.textContent=show?'Loading chart data...':'';el.style.display=show?'block':'none';}
+// renderSMM / openModal 는 나중에 정의되므로 load 이후에 override
+window.addEventListener('load',function(){
+  // 페이지 로드 즉시 백그라운드 prefetch
+  _loadSMM(function(){_loadBTC(function(){
+    // 이미 sentiment/signal 탭이 활성화돼 있으면 즉시 렌더
+    var act=document.querySelector('.section.active');
+    if(act&&(act.id==='sentiment'||act.id==='signal')&&typeof _rSMM_final==='function'){_rSMM_final();}
+  });});
+  if(typeof renderSMM==='function'){
+    var _rSMM_final=renderSMM;
+    window._rSMM_final=_rSMM_final;
+    renderSMM=function(){
+      _showSMMLoading(true);
+      _loadSMM(function(){_loadBTC(function(){_showSMMLoading(false);_rSMM_final();});});
+    };
+  }
+  if(typeof openModal==='function'){
+    var _oO=openModal;
+    openModal=function(addr){
+      _oO(addr);
+      var ak=addr.toLowerCase();
+      if(_wdetCache[ak]){_applyWalletDetail(_wdetCache[ak]);return;}
+      fetch('data/wallet/'+ak+'.json').then(function(r){return r.json();}).then(function(d){_wdetCache[ak]=d;_applyWalletDetail(d);}).catch(function(){});
+    };
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Address display (matches Python short_addr: 0x + 4 hex + ... + last 4) ─
+function _shortAddr(addr) {
+  if (!addr) return '';
+  var a = addr.toLowerCase();
+  if (a.startsWith('0x') && a.length >= 10) {
+    return '0x' + a.slice(2, 6) + '...' + a.slice(-4);
+  }
+  return a.length >= 8 ? a.slice(0, 4) + '...' + a.slice(-4) : a;
+}
+function _displayTraderName(addr, label) {
+  if (!addr) return '';
+  var k = addr.toLowerCase();
+  var meta = (window.WALLET_META || {})[k];
+  if (meta && meta.name) return meta.name;
+  var lab = (label || '').trim();
+  if (lab && !lab.startsWith('0x')) return lab;
+  return _shortAddr(addr);
+}
+// ── Theme-aware CSS helpers ───────────────────────────────────────────
+function wsCss(name, fb) {
+  try {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    v = (v || '').trim();
+    return v || (fb || '');
+  } catch (e) { return fb || ''; }
+}
+function _smmInactive(btn) {
+  btn.style.background = 'transparent';
+  btn.style.color = 'var(--dim)';
+  btn.style.borderColor = 'var(--pill-inactive-bd)';
+}
 // ── Smart Money Map ────────────────────────────────────────────────────
 window.BTC_PRICES = window.BTC_PRICES || [];
 window.SMM_EVENTS = window.SMM_EVENTS || [];
@@ -4110,14 +4739,20 @@ function smmFilter(dir) {
     var btn = document.getElementById('smm-f-' + d);
     if (!btn) return;
     if (d === dir) {
-      btn.style.background = d === 'long' ? 'rgba(58,134,255,0.2)' : d === 'short' ? 'rgba(247,37,133,0.2)' : 'rgba(58,134,255,0.15)';
-      btn.style.color = d === 'long' ? '#3a86ff' : d === 'short' ? '#f72585' : '#3a86ff';
-      btn.style.borderColor = d === 'long' ? '#3a86ff' : d === 'short' ? '#f72585' : '#3a86ff';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = '#777a88';
-      btn.style.borderColor = 'rgba(255,255,255,0.1)';
-    }
+      if (d === 'long') {
+        btn.style.background = 'var(--pos-long-bg)';
+        btn.style.color = 'var(--long)';
+        btn.style.borderColor = 'var(--long)';
+      } else if (d === 'short') {
+        btn.style.background = 'var(--pos-short-bg)';
+        btn.style.color = 'var(--short)';
+        btn.style.borderColor = 'var(--short)';
+      } else {
+        btn.style.background = 'var(--pos-long-bg)';
+        btn.style.color = 'var(--long)';
+        btn.style.borderColor = 'var(--long)';
+      }
+    } else _smmInactive(btn);
   });
   renderSMM();
 }
@@ -4128,14 +4763,10 @@ function smmSizeFilter(sf) {
     var btn = document.getElementById('smm-sf-' + s);
     if (!btn) return;
     if (s === sf) {
-      btn.style.background = 'rgba(16,185,129,0.2)';
-      btn.style.color = '#10b981';
-      btn.style.borderColor = '#10b981';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = '#777a88';
-      btn.style.borderColor = 'rgba(255,255,255,0.1)';
-    }
+      btn.style.background = 'color-mix(in srgb, var(--size-hit) 22%, transparent)';
+      btn.style.color = 'var(--size-hit)';
+      btn.style.borderColor = 'var(--size-hit)';
+    } else _smmInactive(btn);
   });
   renderSMM();
 }
@@ -4146,14 +4777,10 @@ function smmTimeFilter(tf) {
     var btn = document.getElementById('smm-tf-' + t);
     if (!btn) return;
     if (t === tf) {
-      btn.style.background = 'rgba(167,139,250,0.2)';
-      btn.style.color = '#a78bfa';
-      btn.style.borderColor = '#a78bfa';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = '#777a88';
-      btn.style.borderColor = 'rgba(255,255,255,0.1)';
-    }
+      btn.style.background = 'color-mix(in srgb, var(--cmm) 22%, transparent)';
+      btn.style.color = 'var(--cmm)';
+      btn.style.borderColor = 'var(--cmm)';
+    } else _smmInactive(btn);
   });
   renderSMM();
 }
@@ -4164,14 +4791,10 @@ function smmCoinFilter(cf) {
     var btn = document.getElementById('smm-cf-' + c);
     if (!btn) return;
     if (c === cf) {
-      btn.style.background = 'rgba(245,158,11,0.2)';
-      btn.style.color = '#f59e0b';
-      btn.style.borderColor = '#f59e0b';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = '#777a88';
-      btn.style.borderColor = 'rgba(255,255,255,0.1)';
-    }
+      btn.style.background = 'color-mix(in srgb, var(--btc) 22%, transparent)';
+      btn.style.color = 'var(--btc)';
+      btn.style.borderColor = 'var(--btc)';
+    } else _smmInactive(btn);
   });
   renderSMM();
 }
@@ -4181,6 +4804,18 @@ function _smmDestroyChart(canvasId) {
   if (!el) return;
   var existing = Chart.getChart(el);
   if (existing) existing.destroy();
+}
+
+function _smmColorAlpha(cssVar, fallbackHex, a) {
+  var h = (typeof wsCss === 'function' ? wsCss(cssVar, fallbackHex) : fallbackHex) || fallbackHex;
+  h = String(h).trim();
+  if (h.indexOf('rgba') === 0) return h;
+  if (h.indexOf('rgb(') === 0) return h.replace(')', ', '+a+')').replace('rgb(', 'rgba(');
+  var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h);
+  if (m) return 'rgba('+parseInt(m[1],16)+','+parseInt(m[2],16)+','+parseInt(m[3],16)+','+a+')';
+  var sh = /^#?([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(h);
+  if (sh) return 'rgba('+parseInt(sh[1]+sh[1],16)+','+parseInt(sh[2]+sh[2],16)+','+parseInt(sh[3]+sh[3],16)+','+a+')';
+  return 'rgba(128,128,128,'+a+')';
 }
 
 function _smmNearestPrice(t, prices, priceMap) {
@@ -4239,14 +4874,23 @@ function renderSMM() {
   var priceMap = {};
   for (var i = 0; i < filteredPrices.length; i++) priceMap[filteredPrices[i].t] = filteredPrices[i].c;
 
-  // Build scatter dots (price chart)
+  // Build scatter dots — hollow circles (transparent fill) + semi-transparent border
+  var longFill = 'rgba(0,0,0,0)';
+  var longStroke = _smmColorAlpha('--long', '#3a86ff', 0.5);
+  var shortFill = 'rgba(0,0,0,0)';
+  var shortStroke = _smmColorAlpha('--short', '#f72585', 0.5);
   var longDots = [], shortDots = [];
   filteredEvs.forEach(function(ev) {
     var py = _smmNearestPrice(ev.t, filteredPrices, priceMap);
     if (!py) return;
     var r = Math.max(5, Math.min(18, Math.log10(Math.max(ev.ntl, 100000)) * 2.5));
-    var dot = {x: ev.t, y: py, r: r, _ev: ev};
-    if (ev.dir === 'long') longDots.push(dot);
+    var isL = ev.dir === 'long';
+    var dot = {
+      x: ev.t, y: py, r: r, _ev: ev,
+      backgroundColor: isL ? longFill : shortFill,
+      borderColor: isL ? longStroke : shortStroke
+    };
+    if (isL) longDots.push(dot);
     else shortDots.push(dot);
   });
 
@@ -4272,14 +4916,49 @@ function renderSMM() {
   _smmDestroyChart('smm-chart');
   var newChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
+    plugins: [{
+      id: 'smmWatchlistStars',
+      afterDatasetsDraw: function(chart) {
+        var wl = [];
+        try { if (typeof getWatchlist === 'function') wl = getWatchlist().map(function(a){ return String(a).toLowerCase(); }); } catch (e) {}
+        if (!wl.length) return;
+        var ctx = chart.ctx;
+        for (var dsi = 1; dsi <= 2; dsi++) {
+          var ds = chart.data.datasets[dsi];
+          if (!ds || !ds.data) continue;
+          var meta = chart.getDatasetMeta(dsi);
+          if (!meta || meta.hidden) continue;
+          for (var i = 0; i < meta.data.length; i++) {
+            var el = meta.data[i];
+            var raw = ds.data[i];
+            if (!raw || !raw._ev) continue;
+            var addr = (raw._ev.addr || '').toLowerCase();
+            if (wl.indexOf(addr) < 0) continue;
+            var x = el.x, y = el.y;
+            if (x == null || y == null) continue;
+            var rr = raw.r || 8;
+            ctx.save();
+            ctx.font = '13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffbe0b';
+            ctx.fillText('\u2b50', x, y - rr - 4);
+            ctx.restore();
+          }
+        }
+      }
+    }],
     data: {
       datasets: [
-        { label:'BTC Price', data:priceData, borderColor:'#777a88', borderWidth:1.5,
+        { label:'BTC Price', data:priceData, borderColor: wsCss('--dim','#777a88'), borderWidth:1.5,
           pointRadius:0, tension:0, fill:false, yAxisID:'y', order:3 },
         { label:'Long', data:longDots, type:'bubble',
-          backgroundColor:'transparent', borderColor:'rgba(58,134,255,0.7)', borderWidth:1.5, yAxisID:'y', order:1 },
+          backgroundColor:function(c){ var p=c.raw; return (p&&p.backgroundColor)?p.backgroundColor:longFill; },
+          borderColor:function(c){ var p=c.raw; return (p&&p.borderColor)?p.borderColor:longStroke; },
+          borderWidth:1, hoverBorderWidth:1.5, hitRadius:10, yAxisID:'y', order:1 },
         { label:'Short', data:shortDots, type:'bubble',
-          backgroundColor:'transparent', borderColor:'rgba(247,37,133,0.7)', borderWidth:1.5, yAxisID:'y', order:2 }
+          backgroundColor:function(c){ var p=c.raw; return (p&&p.backgroundColor)?p.backgroundColor:shortFill; },
+          borderColor:function(c){ var p=c.raw; return (p&&p.borderColor)?p.borderColor:shortStroke; },
+          borderWidth:1, hoverBorderWidth:1.5, hitRadius:10, yAxisID:'y', order:2 }
       ]
     },
     options: {
@@ -4290,14 +4969,16 @@ function renderSMM() {
         tooltip:{ callbacks:{ label:function(ctx){
           if(ctx.dataset.label==='BTC Price') return 'BTC $'+Math.round(ctx.parsed.y).toLocaleString();
           var ev=ctx.raw._ev; if(!ev) return '';
-          return ev.label+' ('+ev.coin+') $'+ev.ntl.toLocaleString();
+          var wl=[]; try { if (typeof getWatchlist === 'function') wl=getWatchlist().map(function(a){ return String(a).toLowerCase(); }); } catch(e){}
+          var star=(wl.indexOf((ev.addr||'').toLowerCase())>=0) ? '\u2b50 ' : '';
+          return star+ev.label+' ('+ev.coin+') $'+ev.ntl.toLocaleString();
         }}}
       },
       scales:{
         x:{ type:'time', min:xMin, max:xMax,
             time:{unit:'hour',displayFormats:{hour:'M/d HH:mm',day:'M/d'},tooltipFormat:'M/d HH:mm'},
             ticks:{display:false}, grid:{display:false} },
-        y:{ ticks:{color:'#777a88',font:{size:10},callback:function(v){return '$'+Math.round(v).toLocaleString();}},
+        y:{ ticks:{color: wsCss('--dim','#777a88'), font:{size:10},callback:function(v){return '$'+Math.round(v).toLocaleString();}},
             grid:{display:false} }
       },
       onClick:function(evt, elements) {
@@ -4320,10 +5001,10 @@ function renderSMM() {
       type: 'bar',
       data: {
         datasets: [
-          { label:'Long', data:longBars, backgroundColor:'rgba(58,134,255,0.75)',
-            borderColor:'#3a86ff', borderWidth:0, maxBarThickness:8 },
-          { label:'Short', data:shortBars, backgroundColor:'rgba(247,37,133,0.75)',
-            borderColor:'#f72585', borderWidth:0, maxBarThickness:8 }
+          { label:'Long', data:longBars, backgroundColor: wsCss('--long','#3a86ff'),
+            borderColor: wsCss('--long','#3a86ff'), borderWidth:0, maxBarThickness:8 },
+          { label:'Short', data:shortBars, backgroundColor: wsCss('--short','#f72585'),
+            borderColor: wsCss('--short','#f72585'), borderWidth:0, maxBarThickness:8 }
         ]
       },
       options: {
@@ -4339,9 +5020,9 @@ function renderSMM() {
         scales:{
           x:{ type:'time', min:xMin, max:xMax,
               time:{unit:'hour',displayFormats:{hour:'M/d HH:mm',day:'M/d'},tooltipFormat:'M/d HH:mm'},
-              ticks:{color:'#777a88',maxTicksLimit:6,font:{size:9},maxRotation:0},
+              ticks:{color: wsCss('--dim','#777a88'), maxTicksLimit:6, font:{size:9}, maxRotation:0},
               grid:{display:false} },
-          y:{ ticks:{color:'#777a88',font:{size:9},callback:function(v){
+          y:{ ticks:{color: wsCss('--dim','#777a88'), font:{size:9}, callback:function(v){
                 var av=Math.abs(v);
                 return (v<0?'-':'')+''+(av>=1e6?'$'+(av/1e6).toFixed(1)+'M':av>=1e3?'$'+(av/1e3).toFixed(0)+'K':'$'+Math.round(av));
               }},
@@ -4353,8 +5034,8 @@ function renderSMM() {
 }
 
 function _fmtPnl(v) {
-  if (v == null) return '<span style="color:#444">—</span>';
-  var c = v >= 0 ? '#00f5d4' : '#f87171';
+  if (v == null) return '<span style="color:var(--dim2)">—</span>';
+  var c = v >= 0 ? 'var(--profit-neon)' : 'var(--loss-soft)';
   return '<span style="color:' + c + ';font-weight:600">' + (v >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(v)).toLocaleString() + '</span>';
 }
 
@@ -4386,23 +5067,29 @@ function showSMMSheet(evs) {
   var title = document.getElementById('smm-sheet-title');
   var body  = document.getElementById('smm-sheet-body');
   if (!sheet) return;
+  var _wl = [];
+  try { if (typeof getWatchlist === 'function') _wl = getWatchlist().map(function(a){ return String(a).toLowerCase(); }); } catch (e) {}
   var tStr = evs[0] ? new Date(evs[0].t).toLocaleString('en-US', {
     month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false
   }) : '';
-  if (title) title.textContent = tStr + (evs.length > 1 ? '  ·  ' + evs.length + ' signals' : (evs[0] ? '  ·  ' + evs[0].coin : ''));
+  var anyWl = evs.some(function(e){ return _wl.indexOf((e.addr||'').toLowerCase()) >= 0; });
+  if (title) title.textContent = (anyWl ? '\u2b50 ' : '') + tStr + (evs.length > 1 ? '  ·  ' + evs.length + ' signals' : (evs[0] ? '  ·  ' + evs[0].coin : ''));
   var html = '<div style="display:flex;flex-direction:column;gap:10px">';
   var fetchTasks = [];
   evs.forEach(function(ev) {
     var col = ev.dir === 'long' ? '#3a86ff' : '#f72585';
     var arrow = ev.dir === 'long' ? '▲' : '▼';
     var eqPct = ev.eq_ratio != null ? (ev.eq_ratio * 100).toFixed(1) + '% of equity' : '';
+    var wlStar = _wl.indexOf((ev.addr||'').toLowerCase()) >= 0;
     var pnlId = 'spnl-' + ev.addr.slice(2, 10) + '-' + ev.coin.replace(/[^a-zA-Z0-9]/g, '');
     fetchTasks.push([ev.addr, ev.coin, pnlId]);
     html += '<div data-addr="' + ev.addr + '" onclick="openModal(this.dataset.addr)" '
       + 'onmouseenter="_smmCardHover(this,true)" onmouseleave="_smmCardHover(this,false)" '
       + 'style="background:#030304;border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:border-color 0.15s">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
-      + '<span style="font-weight:700;color:#ffffff;font-size:13px">' + (ev.label || ev.addr.slice(0, 10) + '...') + '</span>'
+      + '<span style="font-weight:700;color:#ffffff;font-size:13px;display:flex;align-items:center;gap:6px">'
+      + (wlStar ? '<span title="Watchlist" style="color:#ffbe0b;font-size:14px;line-height:1">\u2b50</span>' : '')
+      + '<span>' + (ev.label || ev.addr.slice(0, 10) + '...') + '</span></span>'
       + '<span style="font-size:11px;color:#555">WAR&nbsp;' + ev.war + '&nbsp;·&nbsp;tap to view ↗</span></div>'
       + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
       + '<span style="font-size:12px;color:' + col + '">' + arrow + '&nbsp;' + ev.dir.toUpperCase() + '</span>'
@@ -4432,8 +5119,8 @@ function toggleHotMoves() {
   var opening = extra.style.display === 'none';
   extra.style.display = opening ? 'block' : 'none';
   btn.textContent = opening ? '▲ Collapse' : '▼ +' + extra.children.length + ' more';
-  btn.style.color = opening ? '#cc9166' : '#777a88';
-  btn.style.borderColor = opening ? 'rgba(0,245,212,0.3)' : 'rgba(255,255,255,0.1)';
+  btn.style.color = opening ? 'var(--accent)' : 'var(--dim)';
+  btn.style.borderColor = opening ? 'color-mix(in srgb, var(--teal) 35%, transparent)' : 'var(--pill-inactive-bd)';
 }
 
 function toggleHotWallets() {
@@ -4443,14 +5130,14 @@ function toggleHotWallets() {
   var collapsed = items.style.maxHeight !== 'none';
   if (collapsed) {
     items.style.maxHeight = 'none';
-    btn.textContent = '접기 ▲';
-    btn.style.color = '#cc9166';
-    btn.style.borderColor = 'rgba(0,245,212,0.3)';
+    btn.textContent = 'Collapse ▲';
+    btn.style.color = 'var(--accent)';
+    btn.style.borderColor = 'color-mix(in srgb, var(--teal) 35%, transparent)';
   } else {
     items.style.maxHeight = '30px';
-    btn.textContent = '펼치기 ▼';
-    btn.style.color = '#777a88';
-    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+    btn.textContent = 'Expand ▼';
+    btn.style.color = 'var(--dim)';
+    btn.style.borderColor = 'var(--pill-inactive-bd)';
   }
 }
 
@@ -4794,7 +5481,7 @@ function renderWatchlistSignal(){
       var upnlStr=(m.upnl>=0?'+':'-')+(upnlAbs>=1e6?(upnlAbs/1e6).toFixed(1)+'M':upnlAbs>=1e3?(upnlAbs/1e3).toFixed(0)+'K':upnlAbs.toFixed(0));
       var rowBg=i%2===0?'transparent':'rgba(255,255,255,0.01)';
       movesHTML+='<div data-addr="'+m.addr+'" onclick="openModal(this.dataset.addr)" style="display:grid;grid-template-columns:1fr 64px 60px 48px 30px 36px;align-items:center;gap:8px;padding:9px 14px;background:'+rowBg+';border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer">'
-        +'<span style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#e2e3e9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc(m.name)+'</span>'
+        +'<span style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#e2e3e9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc(_displayTraderName(m.addr,m.name))+'</span>'
         +'<span style="font-size:11px;font-weight:700;color:'+dc+';white-space:nowrap">'+(isL?'▲ ':'▼ ')+m.action.split(' ')[0]+'</span>'
         +'<span style="font-size:11px;color:#e2e3e9;font-family:Inter,sans-serif;text-align:right">$'+ntl+'</span>'
         +'<span style="font-size:10px;color:#fbbf24;font-weight:600;text-align:right">'+levLabel+'</span>'
@@ -4845,48 +5532,15 @@ function closeLookupOverlay(){
 function headerLookup(val){
   val = val.trim();
   if(!val) return;
-  var found = (window.ALL_STATS||[]).find(function(s){ return s.address.toLowerCase()===val.toLowerCase(); });
-  if(found){ openModal(found.address); document.getElementById('header-search').blur(); return; }
-  var root = document.getElementById('lookup-root');
-  var lookupWrap = document.getElementById('tab-lookup');
-  if(lookupWrap) lookupWrap.style.display='block';
-  if(!root._init){ initLookup(); }
-  var inp = document.getElementById('lookup-input');
-  if(inp){ inp.value = val; }
-  doLookup();
-  var overlay = document.getElementById('lookup-overlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'lookup-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:200;background:#000000;overflow-y:auto;padding:20px';
-    var closeBtn = document.createElement('button');
-    closeBtn.onclick = closeLookupOverlay;
-    closeBtn.style.cssText = 'padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#acafb9;cursor:pointer;font-size:11px';
-    closeBtn.textContent = '✕ Close';
-    var header = document.createElement('div');
-    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-family:Inter,sans-serif;font-size:16px;font-weight:700;color:#ffffff';
-    title.textContent = '🔍 Wallet Lookup';
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-    var inner = document.createElement('div');
-    inner.style.cssText = 'max-width:700px;margin:0 auto';
-    var resWrap = document.createElement('div');
-    resWrap.id = 'lookup-result-overlay';
-    inner.appendChild(header);
-    inner.appendChild(resWrap);
-    overlay.appendChild(inner);
-    document.body.appendChild(overlay);
-  }
-  overlay.style.display = 'block';
-  var resDiv = document.getElementById('lookup-result');
-  var obs = new MutationObserver(function(){
-    var ov = document.getElementById('lookup-result-overlay');
-    if(ov && resDiv) ov.innerHTML = resDiv.innerHTML;
-  });
-  if(resDiv) obs.observe(resDiv,{childList:true,subtree:true,characterData:true});
   document.getElementById('header-search').blur();
+  var found = (window.ALL_STATS||[]).find(function(s){ return s.address.toLowerCase()===val.toLowerCase(); });
+  if(found){ openModal(found.address); return; }
+  if(!/^0x[0-9a-fA-F]{40,}/.test(val)){ return; }
+  var _toast = document.createElement('div');
+  _toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0d0e12;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 22px;font-size:12px;color:#888;z-index:9999;pointer-events:none';
+  _toast.textContent = '⏳ Loading...';
+  document.body.appendChild(_toast);
+  doLookup({ addr: val, asModal: true, toast: _toast });
 }
 
 // 페이지 로드 시 초기화 — Signal 탭 즉시, 나머지는 lazy
@@ -4911,6 +5565,24 @@ function renderWarAlertBanner(){
   var banner = document.getElementById('war-alert-banner');
   if(!Array.isArray(window.ALL_STATS)) return;
   if(!banner || !WAR_HIST || WAR_HIST.length < 2) return;
+
+  function _hotPosLevRatio(p, eq){
+    if(!p) return 0;
+    var sl = +p.set_lev || 0;
+    if(sl > 0) return sl;
+    var n = +p.notional || 0;
+    return eq > 0 ? n / eq : 0;
+  }
+  function _fmtHotLevX(ratio){
+    if(!(ratio > 0)) return 'x0';
+    return ratio >= 1 ? 'x'+(Math.round(ratio*10)/10).toFixed(1) : 'x'+(Math.round(ratio*100)/100).toFixed(2);
+  }
+  function _fmtHotMoney(n){
+    n = Math.round(Math.abs(n||0));
+    if(n >= 1e6) return '$'+(n/1e6).toFixed(1)+'M';
+    if(n >= 1e3) return '$'+(n/1e3).toFixed(0)+'k';
+    return '$'+n.toLocaleString();
+  }
 
   // 최신 스냅샷
   var latest = WAR_HIST[WAR_HIST.length-1];
@@ -4977,30 +5649,81 @@ function renderWarAlertBanner(){
     Object.keys(allCoins).forEach(function(coin){
       var cur  = curPosMap[coin];
       var prev = prevPosMap[coin];
-      var curNtl  = cur  ? cur.notional  : 0;
-      var prevNtl = prev ? prev.notional : 0;
+      var curNtl  = cur  ? (+cur.notional  || 0) : 0;
+      var prevNtl = prev ? (+prev.notional || 0) : 0;
       var curSide  = cur  ? cur.side  : null;
       var prevSide = prev ? prev.side : null;
 
-      var lev = cur ? (cur.set_lev || cur.lev || 1) : (prev ? (prev.set_lev || prev.lev || 1) : 1);
-
-      // 부호 있는 노셔널: 롱=+, 숏=−
       var curSignedNtl  = cur  ? curNtl  * (curSide  === 'LONG' ? 1 : -1) : 0;
       var prevSignedNtl = prev ? prevNtl * (prevSide === 'LONG' ? 1 : -1) : 0;
       var signedChange = curSignedNtl - prevSignedNtl;
       var absChange = Math.abs(signedChange);
-      // 실제 체결 방향: 양수=롱 체결(매수), 음수=숏 체결(매도)
-      var isLong = signedChange >= 0;
+
+      var kind = 'default';
+      var tag = '';
+      var displayLong = signedChange >= 0;
+      var levRatio = 0;
+      var ntlShow = 0;
+      var showNtl = false;
+
+      if(prev && (!cur || curNtl < 1e-6)){
+        kind = 'close';
+        tag = 'close';
+        displayLong = prevSide === 'LONG';
+        ntlShow = prevNtl;
+        levRatio = equity > 0 ? prevNtl / equity : 0;
+        showNtl = prevNtl > 0;
+      } else if(cur && prev){
+        var exposureFlip = prevSignedNtl !== 0 && curSignedNtl !== 0 && (prevSignedNtl * curSignedNtl < 0);
+        var shrink = curNtl < prevNtl - 1e-6;
+        var mislabelResize = false;
+        if(exposureFlip && shrink){
+          if(prevSide === 'SHORT' && curSide === 'LONG' && prevSignedNtl < 0){ exposureFlip = false; mislabelResize = true; }
+          else if(prevSide === 'LONG' && curSide === 'SHORT' && prevSignedNtl > 0){ exposureFlip = false; mislabelResize = true; }
+        }
+        if(exposureFlip){
+          kind = 'flip';
+          tag = 'flip';
+          displayLong = curSide === 'LONG';
+          ntlShow = curNtl;
+          levRatio = _hotPosLevRatio(cur, equity);
+          showNtl = curNtl > 0;
+        } else if(shrink){
+          kind = 'reduce';
+          tag = 'reduce';
+          var dispSide = mislabelResize ? prevSide : curSide;
+          displayLong = dispSide === 'LONG';
+          ntlShow = curNtl;
+          levRatio = _hotPosLevRatio(cur, equity);
+          showNtl = curNtl > 0;
+        } else {
+          levRatio = equity > 0 ? absChange / equity : 0;
+          displayLong = signedChange >= 0;
+        }
+      } else if(cur && !prev){
+        kind = 'open';
+        levRatio = equity > 0 ? absChange / equity : 0;
+        displayLong = curSide === 'LONG';
+      }
 
       if(absChange > bestAbsChange){
         bestAbsChange = absChange;
-        bestPair = { coin: coin, change: signedChange, isLong: isLong, lev: lev, absChange: absChange };
+        bestPair = {
+          coin: coin,
+          change: signedChange,
+          absChange: absChange,
+          kind: kind,
+          tag: tag,
+          displayLong: displayLong,
+          levRatio: levRatio,
+          ntlShow: ntlShow,
+          showNtl: showNtl
+        };
       }
     });
 
     if(bestPair && bestAbsChange >= threshold){
-      var meta = (WALLET_META||{})[s.address.toLowerCase()];
-      var lbl = (meta && meta.name) ? meta.name : (s.label || s.address.slice(0,8)+'...'+s.address.slice(-4));
+      var lbl = _displayTraderName(s.address, s.label);
       hotWallets.push({ addr: s.address, label: lbl, equity: equity, pair: bestPair });
     }
   });
@@ -5008,28 +5731,30 @@ function renderWarAlertBanner(){
 
   if(risers.length === 0 && newEntries.length === 0 && hotWallets.length === 0) return;
 
-  var html = '<div style="background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px">'
+  var html = '<div style="background:var(--surface);border:1px solid var(--stat-box-bd);border-radius:10px;padding:10px 14px">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-    + '<span style="font-size:10px;font-weight:600;color:#777a88">🔥 24H Hot Wallets</span>'
-    + '<button id="hw-toggle-btn" onclick="toggleHotWallets()" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#777a88;cursor:pointer;font-family:Inter,sans-serif">펼치기 ▼</button>'
+    + '<span style="font-size:10px;font-weight:600;color:var(--dim)">🔥 24H Hot Wallets</span>'
+    + '<button id="hw-toggle-btn" onclick="toggleHotWallets()" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--pill-inactive-bd);background:transparent;color:var(--dim);cursor:pointer;font-family:Inter,sans-serif">Expand ▼</button>'
     + '</div>'
     + '<div id="hw-items" style="display:flex;flex-wrap:wrap;gap:8px;max-height:30px;overflow:hidden;transition:max-height 0.3s ease">';
 
-  // 포지션 급변 (최대 4개) — ▲=롱체결(파랑), ▼=숏체결(빨강), 규모는 체결량 기준
+  // 포지션 급변 (최대 4개) — close/reduce/flip 태그·화살표·규모·레버 (Position Changes와 동일 flip/reduce 판정)
   hotWallets.slice(0,4).forEach(function(w){
     var p = w.pair;
-    var levRatio = w.equity > 0 ? p.absChange / w.equity : 0;
-    var levLabel = levRatio >= 1 ? 'x'+(Math.round(levRatio*10)/10).toFixed(1) : 'x'+(Math.round(levRatio*100)/100).toFixed(2);
-    var arrow = p.isLong ? '▲' : '▼';
-    var isUp = p.isLong;
-    var color  = isUp ? '#3a86ff' : '#f72585';
-    var border = isUp ? '#3a86ff' : '#f72585';
-    var bg     = isUp ? '#001020' : '#1a0010';
+    var levStr = _fmtHotLevX(p.levRatio || 0);
+    var isUp = p.displayLong;
+    var arrow = isUp ? '▲' : '▼';
+    var color  = isUp ? 'var(--long)' : 'var(--short)';
+    var border = isUp ? 'var(--long)' : 'var(--short)';
+    var bg     = isUp ? 'color-mix(in srgb, var(--long) 14%, var(--surface))' : 'color-mix(in srgb, var(--short) 14%, var(--surface))';
+    var mainTxt = p.tag
+      ? (p.coin+' '+arrow+' '+p.tag+' '+levStr+(p.showNtl ? ' · '+_fmtHotMoney(p.ntlShow) : ''))
+      : (p.coin+' '+arrow+levStr);
     html += '<button data-wa="'+w.addr+'" onclick="openModal(this.dataset.wa)" '
       + 'style="display:flex;align-items:center;gap:4px;font-size:10px;padding:3px 9px;border-radius:5px;'
-      + 'border:0.5px solid '+border+';background:'+bg+';color:#e2e3e9;cursor:pointer;font-family:Inter,sans-serif">'
-      + '<span style="color:'+color+';font-weight:700">'+p.coin+' '+arrow+levLabel+'</span>'
-      + '<span style="color:#888">'+_esc(w.label)+'</span>'
+      + 'border:0.5px solid '+border+';background:'+bg+';color:var(--text);cursor:pointer;font-family:Inter,sans-serif">'
+      + '<span style="color:'+color+';font-weight:700">'+mainTxt+'</span>'
+      + '<span style="color:var(--dim)">'+_esc(w.label)+'</span>'
       + '</button>';
   });
 
@@ -5037,10 +5762,10 @@ function renderWarAlertBanner(){
   risers.slice(0,3).forEach(function(r){
     html += '<button data-wa="'+r.addr+'" onclick="openModal(this.dataset.wa)" '
       + 'style="display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 9px;border-radius:5px;'
-      + 'border:0.5px solid #cc9166;background:#001a12;color:#e2e3e9;cursor:pointer;font-family:Inter,sans-serif">'
-      + '<span style="color:#cc9166;font-weight:700">WAR ▲+'+r.diff.toFixed(1)+'</span>'
+      + 'border:0.5px solid var(--accent);background:color-mix(in srgb, var(--accent) 12%, var(--surface));color:var(--text);cursor:pointer;font-family:Inter,sans-serif">'
+      + '<span style="color:var(--accent);font-weight:700">WAR ▲+'+r.diff.toFixed(1)+'</span>'
       + '<span>'+_esc(r.label)+'</span>'
-      + '<span style="color:#777a88">'+r.cur.toFixed(1)+'</span>'
+      + '<span style="color:var(--dim)">'+r.cur.toFixed(1)+'</span>'
       + '</button>';
   });
 
@@ -5048,10 +5773,10 @@ function renderWarAlertBanner(){
   newEntries.slice(0,2).forEach(function(e){
     html += '<button data-wa="'+e.addr+'" onclick="openModal(this.dataset.wa)" '
       + 'style="display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 9px;border-radius:5px;'
-      + 'border:0.5px solid #ffbe0b;background:#1a1400;color:#e2e3e9;cursor:pointer;font-family:Inter,sans-serif">'
-      + '<span style="color:#ffbe0b;font-weight:700">New Top 20</span>'
+      + 'border:0.5px solid var(--warn);background:color-mix(in srgb, var(--warn) 12%, var(--surface));color:var(--text);cursor:pointer;font-family:Inter,sans-serif">'
+      + '<span style="color:var(--warn);font-weight:700">New Top 20</span>'
       + '<span>'+_esc(e.label)+'</span>'
-      + '<span style="color:#777a88">#'+e.rank+'</span>'
+      + '<span style="color:var(--dim)">#'+e.rank+'</span>'
       + '</button>';
   });
 
@@ -5091,14 +5816,12 @@ async function _fetchAllComments(){
   }
 }
 
-// 주소로 표시 이름 찾기 (WALLET_META 우선, 없으면 ALL_STATS label)
+// 주소로 표시 이름 찾기 (WALLET_META 우선, 없으면 ALL_STATS label → short_addr 통일)
 function _walletLabel(addr){
   if(!addr) return '';
   var k = addr.toLowerCase();
-  var meta = (WALLET_META||{})[k];
-  if(meta && meta.name) return meta.name;
   var s = ((window.ALL_STATS)||[]).find(function(x){ return x.address && x.address.toLowerCase()===k; });
-  return s ? (s.label||addr.slice(0,8)+'...'+addr.slice(-4)) : addr.slice(0,8)+'...'+addr.slice(-4);
+  return _displayTraderName(addr, s ? s.label : '');
 }
 
 // 날짜+시분 포맷
@@ -5633,6 +6356,11 @@ function applyCardFilters(resetPage){
   if(_cardsCurrentPage > totalPages) _cardsCurrentPage = totalPages;
   var start = (_cardsCurrentPage - 1) * _CARDS_PER_PAGE;
   var end   = start + _CARDS_PER_PAGE;
+  if(filtered.length && start >= filtered.length){
+    _cardsCurrentPage = Math.max(1, Math.ceil(filtered.length / _CARDS_PER_PAGE));
+    start = (_cardsCurrentPage - 1) * _CARDS_PER_PAGE;
+    end = start + _CARDS_PER_PAGE;
+  }
 
   // 카드 표시/숨김
   pairs.forEach(function(p){ p.card.style.display = 'none'; });
@@ -5768,15 +6496,16 @@ function initLookup(){
   `;
 }
 
-async function doLookup(){
-  var addr=(document.getElementById('lookup-input').value||'').trim();
+async function doLookup(opts){
+  var addr=opts&&opts.addr ? opts.addr : (document.getElementById('lookup-input').value||'').trim();
   if(!addr){return;}
   if(!/^0x[0-9a-fA-F]{40,}/.test(addr)){
-    document.getElementById('lookup-status').innerHTML='<span style="color:#f72585">Invalid address format (0x...)</span>';
+    var _st=opts&&opts.statusEl ? opts.statusEl : document.getElementById('lookup-status');
+    if(_st) _st.innerHTML='<span style="color:#f72585">Invalid address format (0x...)</span>';
     return;
   }
-  var status=document.getElementById('lookup-status');
-  var result=document.getElementById('lookup-result');
+  var status=opts&&opts.statusEl ? opts.statusEl : (document.getElementById('lookup-status')||document.createElement('div'));
+  var result=opts&&opts.resultEl ? opts.resultEl : (document.getElementById('lookup-result')||document.createElement('div'));
   status.innerHTML='<span style="color:var(--green)">⏳ Fetching...</span>';
   result.innerHTML='';
 
@@ -5804,7 +6533,7 @@ async function doLookup(){
     var spotHoldings = [];
     var spotEquity = 0;
     ((spotData&&spotData.balances)||[]).forEach(function(b){
-      var coin=b.coin, amt=parseFloat(b.total||0);
+      var coin=b.coin, amt=parseFloat(b.total||0)||0;
       if(coin==='USDC'||coin==='USDT') { spotEquity+=amt; }
       else if(amt>0) { spotHoldings.push({coin:coin, amount:amt}); }
     });
@@ -5831,14 +6560,15 @@ async function doLookup(){
 
     // 기본 지표 계산 — Python compute_stats와 완전 동일
     var ms = ch.marginSummary||{};
-    var _vaultEq = parseFloat(ch.vaultEquity||0);
-    var _acctEq  = parseFloat(ms.accountValue||0);
+    // parseFloat("NaN") = JS NaN → || 0 으로 방어
+    var _vaultEq = parseFloat(ch.vaultEquity||0)||0;
+    var _acctEq  = parseFloat(ms.accountValue||0)||0;
     // Python: vaultEquity > 0 ? vaultEquity : accountValue, 이후 USDC/USDT만 추가
     var _spotUsd = 0;
     ((spotData&&spotData.balances)||[]).forEach(function(b){
-      if(b.coin==='USDC'||b.coin==='USDT') _spotUsd += parseFloat(b.total||0);
+      if(b.coin==='USDC'||b.coin==='USDT') _spotUsd += parseFloat(b.total||0)||0;
     });
-    var equity = (_vaultEq > 0 ? _vaultEq : _acctEq) + _spotUsd;
+    var equity = ((_vaultEq > 0 ? _vaultEq : _acctEq) + _spotUsd)||0;
 
     // 첫/마지막 거래 날짜 계산
     var allTimes = (Array.isArray(closed)?closed:[]).filter(function(f){return f&&f.time;}).map(function(f){return f.time;});
@@ -5865,12 +6595,13 @@ async function doLookup(){
 
     // fills 분석 — Python compute_stats와 동일: closedPnl!=0 인 것만 closed로 사용
     var allFills = Array.isArray(fills) ? fills : [];
-    var closed = allFills.filter(function(f){ return f.closedPnl && parseFloat(f.closedPnl)!==0; });
+    // isFinite 체크: "NaN" 문자열 fills 제외
+    var closed = allFills.filter(function(f){ var p=parseFloat(f.closedPnl); return isFinite(p)&&p!==0; });
     var wins=0, total=closed.length;
     var pnlMap={};
     var realized=0;
     closed.forEach(function(f){
-      var pnl=parseFloat(f.closedPnl);
+      var pnl=parseFloat(f.closedPnl)||0;
       if(pnl>0) wins++;
       pnlMap[f.coin]=(pnlMap[f.coin]||0)+pnl;
       realized+=pnl;
@@ -5882,7 +6613,7 @@ async function doLookup(){
     // Sharpe — Python compute_stats와 동일: closed fills 일별 PnL
     var dayMap={};
     closed.forEach(function(f){
-      var pnl=parseFloat(f.closedPnl);
+      var pnl=parseFloat(f.closedPnl)||0;
       var day=f.time?new Date(f.time).toISOString().slice(0,10):'x';
       dayMap[day]=(dayMap[day]||0)+pnl;
     });
@@ -5909,13 +6640,17 @@ async function doLookup(){
       sharpeEst=std>0?Math.round(mean/std*Math.sqrt(365)*100)/100:0;
       if(totalPnl<0 && sharpeEst>0) sharpeEst=-Math.abs(sharpeEst);
     }
+    // 최종 NaN 방어
+    if(!isFinite(sharpeEst)) sharpeEst=0;
+    if(!isFinite(totalPnl))  totalPnl=0;
+    if(!isFinite(roi))       roi=0;
 
     // Big Bet Hit Rate
     var bigBets=0, bigBetWins=0;
     closed.forEach(function(f){
       if(!f.closedPnl||!f.sz||!f.px) return;
-      var ntl=Math.abs(parseFloat(f.sz))*parseFloat(f.px);
-      if(equity>0&&ntl>equity*0.20){ bigBets++; if(parseFloat(f.closedPnl)>0) bigBetWins++; }
+      var ntl=Math.abs(parseFloat(f.sz)||0)*(parseFloat(f.px)||0);
+      if(equity>0&&ntl>equity*0.20){ bigBets++; if((parseFloat(f.closedPnl)||0)>0) bigBetWins++; }
     });
     var bigBetHit=bigBets>0?Math.round(bigBetWins/bigBets*100):0;
 
@@ -6059,7 +6794,10 @@ async function doLookup(){
 
 
 
-    var shortAddr = addr.slice(0,6)+'...'+addr.slice(-4);
+    var _sa = addr.toLowerCase();
+    var shortAddr = (_sa.startsWith('0x') && _sa.length >= 10)
+      ? ('0x' + _sa.slice(2,6) + '...' + _sa.slice(-4))
+      : (_sa.length >= 8 ? _sa.slice(0,4) + '...' + _sa.slice(-4) : addr);
 
     // 캐시된 지갑이면 WAR/타입/스탯을 캐시 값으로 교체 (더 정확함)
     // ── 캐시/라이브 분리 원칙 ─────────────────────────────────────
@@ -6080,6 +6818,85 @@ async function doLookup(){
       // confidence + type_reasons도 캐시
       // (ai_summary는 아래 _box 블록에서 별도 처리)
     }
+
+    // ── asModal: openModal과 동일한 UI 사용 ──────────────────────────
+    if (opts && opts.asModal) {
+      if (opts.toast) opts.toast.remove();
+      // cumulative 배열 (전체 기간)
+      var allDaysSorted = Object.keys(dayMap).sort();
+      var _runCum = 0;
+      var _cumulative = allDaysSorted.map(function(d){ _runCum += dayMap[d]; return {date:d, cum:_runCum}; });
+      // 날짜 기반 dataDays 재계산 (allTimes는 closed 정의 전에 계산되어 0이므로)
+      var _rDays = allDaysSorted.length>1 ? Math.round((new Date(allDaysSorted[allDaysSorted.length-1])-new Date(allDaysSorted[0]))/(1000*60*60*24))+1 : allDaysSorted.length;
+      // consistency / durability
+      var _profDays = dayVals.filter(function(v){ return v>0; }).length;
+      var _consistency = dayVals.length>0 ? Math.round(_profDays/dayVals.length*100) : 0;
+      var _ds2; if(_rDays<7) _ds2=_rDays/7*20; else _ds2=Math.min(20+80*Math.log(_rDays/7)/Math.log(90/7),100);
+      var _durability = Math.round(Math.max(10,_ds2*0.55+_consistency*0.45)*10)/10;
+      // MDD / profit factor / follow score
+      var _peak=0,_mdd=0; _cumulative.forEach(function(pt){ if(pt.cum>_peak)_peak=pt.cum; var dd=_peak-pt.cum; if(dd>_mdd)_mdd=dd; });
+      var _mddPct = equity>0 ? Math.round(_mdd/equity*100*10)/10 : 0;
+      var _gp=0,_gl=0; closed.forEach(function(f){ var p=parseFloat(f.closedPnl); if(p>0)_gp+=p; else _gl+=Math.abs(p); });
+      var _pf = _gl>0 ? Math.round(_gp/_gl*100)/100 : (_gp>0?99:0);
+      var _mddS=Math.max(0,1-_mddPct/50)*20, _bbS=Math.max(0,1-bigBetHit/60)*20;
+      var _conS=Math.min(1,_consistency/80)*25, _sampS=Math.min(1,total/300)*15;
+      var _pfC=Math.min(_pf,10), _pfS=Math.max(0,Math.min(1,(_pfC-1)/2))*20;
+      var _followScore = Math.round(_mddS+_bbS+_conS+_sampS+_pfS);
+      // radar (0-100 raw scores)
+      var _radar = { profit_amt:_radarVals[0], roi:_radarVals[1], big_bet:_radarVals[2], sharpe:_radarVals[3], win_rate:_radarVals[4] };
+      // war_components (weighted)
+      var _warComp = { 'Profit':_wc.Profit, 'ROI':_wc.ROI, 'Big Bet':_wc.BigBet, 'Sharpe':_wc.Sharpe, 'Win Rate':_wc.WinRate };
+      // type_reasons
+      var _tr = [], _tt = traderType;
+      if(_tt.indexOf('Underwater')>=0){ _tr.push('Total PnL negative ($'+Math.round(totalPnl).toLocaleString()+')'); }
+      else if(_tt.indexOf('Newcomer')>=0){ _tr.push('Only '+total+' closed trades (< 300)'); }
+      else if(_tt.indexOf('Precision Hunter')>=0){ _tr.push('Win Rate '+winRate+'% > 72%'); _tr.push('Sharpe* '+sharpeEst+' > 4'); }
+      else if(_tt.indexOf('Apex Predator')>=0){ _tr.push('Win Rate '+winRate+'% > 65%'); _tr.push('Big Bet Rate '+bigBetHit+'% > 60%'); }
+      else if(_tt.indexOf('Sniper')>=0){ _tr.push('Profit Factor '+_pf.toFixed(1)+'x > 3'); _tr.push('Win Rate '+winRate+'% < 55% (quality over quantity)'); }
+      else if(_tt.indexOf('Momentum')>=0){ _tr.push('Sharpe* '+sharpeEst+' > 4'); _tr.push('ROI '+roi+'% > 10%'); }
+      else if(_tt.indexOf('Steady Shot')>=0){ _tr.push('Win Rate '+winRate+'% > 65%'); _tr.push('Profit Factor '+_pf.toFixed(1)+'x > 1.5'); }
+      else if(_tt.indexOf('All-Rounder')>=0){ _tr.push('Win Rate '+winRate+'% > 60%'); _tr.push('Sharpe* '+sharpeEst+' > 2'); _tr.push('ROI '+roi+'% > 10%'); }
+      else if(_tt.indexOf('Grinder')>=0||_tt.indexOf('Consistent')>=0){ _tr.push('Win Rate '+winRate+'% > 55%'); _tr.push('Profit Factor '+_pf.toFixed(1)+'x > 1.0'); }
+      else if(_tt.indexOf('High Roller')>=0){ _tr.push('PnL Drawdown '+_mddPct+'% > 40%'); _tr.push('Profit Factor '+_pf.toFixed(1)+'x > 1.5'); }
+      else if(_tt.indexOf('Degen')>=0){ _tr.push('PnL Drawdown '+_mddPct+'% > 100%'); _tr.push(bigBets+' large positions taken'); }
+      else { _tr.push('WAR '+warEst+' · Win Rate '+winRate+'% · ROI '+roi+'%'); }
+      // confidence badge
+      var _conf = total>=200&&_rDays>=60&&_consistency>=55 ? 'High Confidence' : total>=80&&_rDays>=20 ? 'Medium Confidence' : total<50||_rDays<14 ? 'Early Read' : 'Medium Confidence';
+      // ai_summary (template)
+      var _aiLines = [];
+      if(totalPnl<0){ _aiLines.push('This wallet is currently underwater with a total realized PnL of $'+Math.round(totalPnl).toLocaleString()+'. The track record does not yet support a positive outlook.'); }
+      else if(total<100){ _aiLines.push('Sample size is limited at '+total+' closed trades. Patterns may not be stable yet — interpret stats with caution.'); }
+      else {
+        if(winRate>65&&sharpeEst>2) _aiLines.push('Strong win rate of '+winRate+'% combined with a Sharpe of '+sharpeEst+' suggests disciplined, repeatable trade selection.');
+        else if(winRate>55) _aiLines.push('A win rate of '+winRate+'% indicates more winning trades than losing ones, though sizing and consistency matter too.');
+        if(roi>50) _aiLines.push('ROI of '+roi+'% is notably high — the wallet converts its edge into meaningful returns relative to account size.');
+        else if(roi>0) _aiLines.push('Positive ROI of '+roi+'% confirms profitable operation over the tracked period.');
+        if(_mddPct>60) _aiLines.push('PnL drawdown of '+_mddPct+'% is elevated — the equity curve has experienced meaningful dips.');
+        else if(_mddPct<20) _aiLines.push('Low PnL drawdown of '+_mddPct+'% suggests the curve is relatively smooth and losses are contained.');
+        if(_pf>2) _aiLines.push('Profit factor of '+_pf.toFixed(1)+'x means gross wins are more than double gross losses — a strong structural edge.');
+        _aiLines.push('Overall: '+traderChar+'.');
+      }
+      var _aiSummary = _aiLines.join(' ');
+      var _cc2 = warEst>=80?'#cc9166':warEst>=60?'#ffbe0b':'#f72585';
+      var mockS = {
+        address: addr, equity: equity, total_equity: equity, war_score: warEst, total_pnl: totalPnl,
+        win_rate: winRate, trader_type: traderType, character: traderChar,
+        sharpe: sharpeEst, roi_pct: roi, big_bet_rate: bigBetHit,
+        positions: positions, label: shortAddr, _color: _cc2,
+        durability: _durability, consistency: _consistency, cumulative: _cumulative,
+        mdd_pct: _mddPct, profit_factor: _pf, follow_score: _followScore,
+        radar: _radar, war_components: _warComp, type_reasons: _tr,
+        ai_summary: _aiSummary, confidence: _conf, prev_positions: [],
+        first_date: firstDate, last_date: lastDate, data_days: dataDays,
+        realized: realized
+      };
+      var _ei = window.ALL_STATS.findIndex(function(x){ return x.address&&x.address.toLowerCase()===addr.toLowerCase(); });
+      if(_ei>=0) window.ALL_STATS.splice(_ei,1);
+      window.ALL_STATS.push(mockS);
+      openModal(addr);
+      return;
+    }
+
     var warColor = warEst>=80?'#cc9166':warEst>=60?'#ffbe0b':'#f72585';
     var stroke   = Math.min(warEst/100*163.4,163.4).toFixed(1);
     var dash     = (163.4 - parseFloat(stroke)).toFixed(1);
@@ -6184,10 +7001,19 @@ async function doLookup(){
       +'<div style="font-size:11px;font-weight:600;color:#e2e3e9;margin-bottom:8px">🤖 AI Analysis</div>'
       +'<div id="ai-lookup-'+addr.slice(2,8)+'" style="font-size:12px;color:#888;line-height:1.7"><span style="color:#777a88">⏳ Analyzing...</span></div>'
       +'</div>'
+      +'<div style="margin-top:16px;border-top:1px solid #1c1d22;padding-top:14px">'
+      +'<div style="font-size:11px;font-weight:600;color:#e2e3e9;margin-bottom:8px">📛 Nickname</div>'
+      +'<div style="display:flex;gap:8px;align-items:center">'
+      +'<input type="text" id="nick-input-'+addr.slice(2,8)+'" placeholder="Set a nickname for this wallet..." value="'+_esc(getWalletName(addr))+'" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;color:#e2e3e9;font-size:12px;font-family:Inter,sans-serif;outline:none">'
+      +'<button data-addr="'+addr+'" onclick="saveNicknameFrom(this.dataset.addr)" style="background:rgba(204,145,102,0.15);border:1px solid #cc9166;border-radius:6px;padding:6px 14px;color:#cc9166;font-size:12px;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif">Save</button>'
+      +'</div>'
+      +'<div id="nick-status-'+addr.slice(2,8)+'" style="font-size:10px;color:var(--dim);margin-top:4px;min-height:14px"></div>'
+      +'</div>'
       +'</div>'
       +'</div>';
 
     result.innerHTML=cardHtml;
+    saveToSearchHistory(addr, {equity:equity, war:warEst, pnl:totalPnl, winRate:winRate, traderType:traderType, shortAddr:shortAddr, searchedAt:new Date().toISOString()});
     // Use Python ai_summary (cached wallets) or show archive message
     var _cached = ALL_STATS.find(function(x){ return x.address && x.address.toLowerCase()===addr.toLowerCase(); });
     var _box = document.getElementById('ai-lookup-'+addr.slice(2,8));
@@ -6211,7 +7037,9 @@ async function doLookup(){
     }
 
   } catch(e) {
-    status.innerHTML='<span style="color:#f72585">Error: '+e.message+'</span>';
+    if(opts&&opts.toast){ opts.toast.textContent='❌ '+e.message; setTimeout(function(){opts.toast.remove();},4000); }
+    else { status.innerHTML='<span style="color:#f72585">Error: '+e.message+'</span>'; }
+    console.error('[doLookup]', e);
   }
 }
 
@@ -6265,6 +7093,231 @@ window._addToArchive=async function(addr){
     }
   }
 }
+
+// ── Searched / Named — server-backed via Cloudflare Worker ─────────────
+window._wsNicknames = {};   // addr(lower) → nickname, cache from server
+
+function getWalletName(addr) {
+  return window._wsNicknames[(addr || '').toLowerCase()] || '';
+}
+
+// Fire-and-forget: POST search event to server
+function saveToSearchHistory(addr, data) {
+  fetch(WORKER + '/api/searched', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      address: addr,
+      shortAddr: data.shortAddr || '',
+      equity: data.equity || 0,
+      war: data.war || 0,
+      pnl: data.pnl || 0,
+      winRate: data.winRate || 0,
+      traderType: data.traderType || '',
+    })
+  }).catch(function(){});
+}
+
+// POST nickname to server then refresh tabs
+async function saveNicknameToServer(addr, name, statusId) {
+  var statusEl = statusId ? document.getElementById(statusId) : null;
+  if (statusEl) { statusEl.textContent = '⏳ Saving...'; statusEl.style.color = '#888'; }
+  try {
+    var r = await fetch(WORKER + '/api/nickname', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({address: addr, nickname: name})
+    });
+    var d = await r.json();
+    if (d.ok) {
+      if (name) window._wsNicknames[addr.toLowerCase()] = name;
+      else delete window._wsNicknames[addr.toLowerCase()];
+      if (statusEl) {
+        statusEl.textContent = name ? '✓ Saved: ' + name : '✓ Cleared';
+        statusEl.style.color = '#cc9166';
+        setTimeout(function(){ statusEl.textContent = ''; }, 2500);
+      }
+      if (document.getElementById('tab-named').classList.contains('active')) initNamed();
+    } else {
+      if (statusEl) { statusEl.textContent = '✗ Failed'; statusEl.style.color = '#f72585'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = '✗ Error'; statusEl.style.color = '#f72585'; }
+  }
+}
+
+// Called from Lookup card "Save" button
+function saveNicknameFrom(addr) {
+  var inp = document.getElementById('nick-input-' + addr.slice(2, 8));
+  if (!inp) return;
+  saveNicknameToServer(addr, inp.value.trim(), 'nick-status-' + addr.slice(2, 8));
+}
+
+// Called from Searched/Named card "Save" button
+function saveNicknameFromCard(addr, inputId, statusId) {
+  var inp = document.getElementById(inputId);
+  if (!inp) return;
+  saveNicknameToServer(addr, inp.value.trim(), statusId);
+}
+
+function clearNickname(btn) {
+  saveNicknameToServer(btn.dataset.addr, '', btn.dataset.st);
+}
+
+// 검색 카드 클릭 — data-addr 읽어서 모달 or 룩업
+function _searchCardClick(el) {
+  var addr = el.dataset.addr;
+  if (!addr) return;
+  var inAll = (window.ALL_STATS || []).some(function(x) {
+    return x.address && x.address.toLowerCase() === addr.toLowerCase();
+  });
+  if (inAll) {
+    openModal(addr);
+  } else {
+    // non-ALL_STATS: 실시간 데이터 fetch 후 openModal과 동일한 모달 표시
+    var _toast = document.createElement('div');
+    _toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0d0e12;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 22px;font-size:12px;color:#888;z-index:9999;pointer-events:none';
+    _toast.textContent = '⏳ Loading...';
+    document.body.appendChild(_toast);
+    doLookup({ addr: addr, asModal: true, toast: _toast });
+  }
+}
+
+function _renderSearchCard(entry, nicknames) {
+  var addr = entry.address;
+  var name = (nicknames || {})[addr.toLowerCase()] || '';
+  var sa = entry.shortAddr || _shortAddr(addr);
+  var displayName = name || sa;
+  var nickId   = 'sh-nick-' + addr.slice(2, 8);
+  var nickStId = 'sh-nickst-' + addr.slice(2, 8);
+  var cntStr = entry.searchCount > 1 ? ' <span style="font-size:9px;color:#555">· ' + entry.searchCount + 'x</span>' : '';
+
+  var s = (window.ALL_STATS || []).find(function(x) {
+    return x.address && x.address.toLowerCase() === addr.toLowerCase();
+  });
+
+  var war      = s ? (s.war_score || 0) : (entry.war || 0);
+  var cc       = war >= 70 ? '#cc9166' : war >= 50 ? '#ffbe0b' : '#f72585';
+  var pnl      = s ? (s.total_pnl || 0) : (entry.pnl || 0);
+  var pnlColor = pnl >= 0 ? 'var(--profit-neon,#00f5d4)' : 'var(--loss,#f72585)';
+  var pnlStr   = (pnl >= 0 ? '+$' : '-$') + Math.round(Math.abs(pnl)).toLocaleString();
+  var equity   = s ? (s.total_equity || s.equity || 0) : (entry.equity || 0);
+  var eqStr    = equity >= 1e6 ? '$' + (equity/1e6).toFixed(1) + 'M' : equity >= 1e3 ? '$' + Math.round(equity/1e3) + 'K' : '$' + Math.round(equity);
+  var winRate  = s ? (s.win_rate || 0) : (entry.winRate || 0);
+  var tType    = s ? (s.trader_type || '') : (entry.traderType || '');
+  var charac   = s ? (s.character || '') : '';
+
+  // 포지션 바이어스
+  var biasHtml = '';
+  if (s && s.positions && s.positions.length) {
+    var spos = s.positions.slice().sort(function(a, b) { return b.notional - a.notional; });
+    var mxN = spos[0].notional || 1;
+    biasHtml = spos.filter(function(p) { return p.notional >= mxN * 0.1; }).slice(0, 3).map(function(p) {
+      var sc = p.side === 'LONG' ? 'var(--long,#3a86ff)' : 'var(--short,#f72585)';
+      var ic = p.side === 'LONG' ? '▲' : '▼';
+      return '<span style="font-size:10px;color:' + sc + ';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:2px 6px">' + ic + ' ' + _esc(p.coin) + '</span>';
+    }).join('');
+  }
+
+  // 스파크라인
+  var sparkHtml = '';
+  if (s && s.cumulative && s.cumulative.length >= 2) {
+    var cpts = s.cumulative.slice(-30);
+    var vals = cpts.map(function(p) { return p.cum; });
+    var minV = Math.min.apply(null, vals), maxV = Math.max.apply(null, vals);
+    var rng = maxV - minV || 1, W = 200, H = 32;
+    var coords = vals.map(function(v, i) {
+      return (i * W / (vals.length - 1)).toFixed(1) + ',' + (H - (v - minV) / rng * H).toFixed(1);
+    }).join(' ');
+    var scol = vals[vals.length - 1] >= vals[0] ? cc : '#f72585';
+    sparkHtml = '<div style="margin-bottom:10px;border-radius:6px;overflow:hidden;opacity:0.85">'
+      + '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="32" preserveAspectRatio="none">'
+      + '<polygon points="0,' + H + ' ' + coords + ' ' + W + ',' + H + '" fill="' + scol + '" fill-opacity="0.15"/>'
+      + '<polyline points="' + coords + '" fill="none" stroke="' + scol + '" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '</svg></div>';
+  }
+
+  // 닉네임 행 — stopPropagation으로 카드 클릭 차단
+  var nickRow = '<div onclick="event.stopPropagation()" style="border-top:1px solid rgba(255,255,255,0.06);margin-top:10px;padding-top:10px;display:flex;gap:6px;align-items:center">'
+    + '<input type="text" id="' + nickId + '" placeholder="Nickname..." value="' + _esc(name) + '" style="flex:1;min-width:0;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 8px;color:#e2e3e9;font-size:11px;font-family:Inter,sans-serif;outline:none">'
+    + '<button data-addr="' + addr + '" data-inp="' + nickId + '" data-st="' + nickStId + '" onclick="saveNicknameFromCard(this.dataset.addr,this.dataset.inp,this.dataset.st)" style="background:rgba(204,145,102,0.12);border:1px solid #cc9166;border-radius:5px;padding:4px 10px;color:#cc9166;font-size:11px;cursor:pointer;white-space:nowrap">📛 Save</button>'
+    + (name ? '<button data-addr="' + addr + '" data-st="' + nickStId + '" onclick="clearNickname(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 7px;color:#555;font-size:11px;cursor:pointer">✕</button>' : '')
+    + '</div>'
+    + '<div id="' + nickStId + '" onclick="event.stopPropagation()" style="font-size:10px;color:#cc9166;min-height:12px;margin-top:2px"></div>';
+
+  return '<div class="trader-card" style="--card-accent:' + cc + ';cursor:pointer;padding:16px 18px" data-addr="' + addr + '" onclick="_searchCardClick(this)">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">'
+    +   '<div style="min-width:0">'
+    +     '<div style="font-size:15px;font-weight:700;color:var(--text);font-family:Inter,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + _esc(displayName) + cntStr + '</div>'
+    +     (name ? '<div style="font-size:10px;color:var(--dim);font-family:DM Mono,monospace">' + _esc(sa) + '</div>' : '')
+    +     '<div style="font-size:11px;color:var(--dim);margin-top:2px">' + _esc(tType) + '</div>'
+    +     (charac ? '<div style="font-size:11px;color:var(--text-muted,#888);margin-top:2px;line-height:1.4">≈ ' + _esc(charac) + '</div>' : '')
+    +   '</div>'
+    +   (!s ? '<span style="font-size:9px;color:#555;flex-shrink:0">🔍 Quick</span>' : '')
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">'
+    +   '<div style="background:var(--stat-box,rgba(255,255,255,0.04));border:1px solid var(--stat-box-bd,rgba(255,255,255,0.08));border-top:2px solid ' + cc + ';border-radius:8px;padding:8px 4px;text-align:center"><div style="font-size:16px;font-weight:800;color:' + cc + ';line-height:1;font-family:Inter,sans-serif">' + Math.round(war) + '</div><div style="font-size:9px;color:var(--dim);margin-top:3px">WAR</div></div>'
+    +   '<div style="background:var(--stat-box,rgba(255,255,255,0.04));border:1px solid var(--stat-box-bd,rgba(255,255,255,0.08));border-radius:8px;padding:8px 4px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--text);line-height:1;font-family:Inter,sans-serif">' + eqStr + '</div><div style="font-size:9px;color:var(--dim);margin-top:3px">Equity</div></div>'
+    +   '<div style="background:var(--stat-box,rgba(255,255,255,0.04));border:1px solid var(--stat-box-bd,rgba(255,255,255,0.08));border-radius:8px;padding:8px 4px;text-align:center"><div style="font-size:12px;font-weight:700;color:' + pnlColor + ';line-height:1;font-family:Inter,sans-serif">' + pnlStr + '</div><div style="font-size:9px;color:var(--dim);margin-top:3px">PnL</div></div>'
+    +   '<div style="background:var(--stat-box,rgba(255,255,255,0.04));border:1px solid var(--stat-box-bd,rgba(255,255,255,0.08));border-radius:8px;padding:8px 4px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--text);line-height:1;font-family:Inter,sans-serif">' + Math.round(winRate) + '%</div><div style="font-size:9px;color:var(--dim);margin-top:3px">Win</div></div>'
+    + '</div>'
+    + sparkHtml
+    + (biasHtml
+        ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + biasHtml + '</div><span style="color:var(--dim2);font-size:16px">›</span></div>'
+        : '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim2);font-style:italic"><span>No open positions</span><span style="font-size:16px">›</span></div>')
+    + nickRow
+    + '</div>';
+}
+
+async function initSearched() {
+  var root = document.getElementById('searched-root');
+  if (!root) return;
+  root.innerHTML = '<div style="text-align:center;color:var(--dim);padding:40px;font-size:13px;font-family:Inter,sans-serif">⏳ Loading...</div>';
+  try {
+    var r = await fetch(WORKER + '/api/searched');
+    var data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+    var items = data.items || [];
+    var nicknames = data.nicknames || {};
+    window._wsNicknames = Object.assign(window._wsNicknames || {}, nicknames);
+    if (!items.length) {
+      root.innerHTML = '<div style="text-align:center;color:var(--dim);padding:60px 20px;font-size:13px;font-family:Inter,sans-serif">No searches yet — search a wallet to see it here.</div>';
+      return;
+    }
+    var html = '<div style="font-size:12px;color:var(--dim);font-family:Inter,sans-serif;margin-bottom:16px">' + items.length + ' wallets searched</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">';
+    html += items.map(function(e){ return _renderSearchCard(e, nicknames); }).join('');
+    html += '</div>';
+    root.innerHTML = html;
+  } catch(e) {
+    root.innerHTML = '<div style="text-align:center;color:#f72585;padding:40px;font-size:12px;font-family:Inter,sans-serif">Failed to load: ' + _esc(String(e)) + '</div>';
+  }
+}
+
+async function initNamed() {
+  var root = document.getElementById('named-root');
+  if (!root) return;
+  root.innerHTML = '<div style="text-align:center;color:var(--dim);padding:40px;font-size:13px;font-family:Inter,sans-serif">⏳ Loading...</div>';
+  try {
+    var r = await fetch(WORKER + '/api/searched');
+    var data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+    var nicknames = data.nicknames || {};
+    window._wsNicknames = Object.assign(window._wsNicknames || {}, nicknames);
+    var named = (data.items || []).filter(function(e){ return !!nicknames[(e.address||'').toLowerCase()]; });
+    if (!named.length) {
+      root.innerHTML = '<div style="text-align:center;color:var(--dim);padding:60px 20px;font-size:13px;font-family:Inter,sans-serif">No named wallets yet.<br><span style="font-size:11px">Search a wallet → set a nickname → it appears here.</span></div>';
+      return;
+    }
+    var html = '<div style="font-size:12px;color:var(--dim);font-family:Inter,sans-serif;margin-bottom:16px">' + named.length + ' named wallets</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">';
+    html += named.map(function(e){ return _renderSearchCard(e, nicknames); }).join('');
+    html += '</div>';
+    root.innerHTML = html;
+  } catch(e) {
+    root.innerHTML = '<div style="text-align:center;color:#f72585;padding:40px;font-size:12px;font-family:Inter,sans-serif">Failed to load: ' + _esc(String(e)) + '</div>';
+  }
+}
 """
 
     js_block += """
@@ -6278,9 +7331,9 @@ window.setWarRange = function(btn) {
   window._warRangeDays = parseInt(btn.dataset.r);
   document.querySelectorAll('.war-range-btn').forEach(function(b){
     var active = b === btn;
-    b.style.borderColor = active ? '#cc9166' : '#121317';
-    b.style.color       = active ? '#cc9166' : '#555';
-    b.style.background  = active ? '#1c1d22' : 'transparent';
+    b.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    b.style.color       = active ? 'var(--accent)' : 'var(--dim2)';
+    b.style.background  = active ? 'var(--surface2)' : 'transparent';
   });
   window.initWarTrendChart();
 };
@@ -6291,9 +7344,9 @@ window.setWarMode = function(mode) {
     var btn = document.getElementById('war-mode-'+m);
     if(!btn) return;
     var active = m === mode;
-    btn.style.borderColor = active ? '#cc9166' : '#121317';
-    btn.style.color       = active ? '#cc9166' : '#555';
-    btn.style.background  = active ? '#1c1d22' : 'transparent';
+    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    btn.style.color       = active ? 'var(--accent)' : 'var(--dim2)';
+    btn.style.background  = active ? 'var(--surface2)' : 'transparent';
   });
   window.initWarTrendChart();
 };
@@ -6318,13 +7371,13 @@ window.initWarTrendChart = function() {
   var lastSnap = recent[recent.length - 1];
   var top100addrs = {};
   (lastSnap.top20 || []).forEach(function(t){
-    if(t.rank <= 100) top100addrs[t.address.toLowerCase()] = t.label;
+    if(t.rank <= 100) top100addrs[t.address.toLowerCase()] = _displayTraderName(t.address, t.label);
   });
   // ALL_STATS에서 WAR rank 순으로 정렬해서 1~100 추가
   if(ALL_STATS && ALL_STATS.length){
     var sorted = ALL_STATS.slice().sort(function(a,b){ return (b.war_score||0)-(a.war_score||0); });
     sorted.slice(0, 100).forEach(function(s){
-      if(s.address) top100addrs[s.address.toLowerCase()] = s.label || s.address.slice(0,8)+'...'+s.address.slice(-4);
+      if(s.address) top100addrs[s.address.toLowerCase()] = _displayTraderName(s.address, s.label);
     });
   }
 
@@ -6380,21 +7433,21 @@ window.initWarTrendChart = function() {
       reverse: false,
       min: vals.length ? Math.floor(Math.min.apply(null,vals)/5)*5-5 : 40,
       max: vals.length ? Math.ceil(Math.max.apply(null,vals)/5)*5+2  : 100,
-      ticks: { color:'#5e616e', font:{size:9}, callback: function(v){ return v; } },
-      grid: { color:'#08080a' }
+      ticks: { color: wsCss('--chart-tick','#5e616e'), font:{size:9}, callback: function(v){ return v; } },
+      grid: { color: wsCss('--chart-area','#08080a') }
     };
   } else if(mode === 'rank'){
     yConfig = {
       reverse: true, min: 1, max: 101,
-      ticks: { color:'#5e616e', font:{size:9}, callback: function(v){ return v<=100 ? '#'+Math.round(v) : ''; } },
-      grid: { color:'#08080a' }
+      ticks: { color: wsCss('--chart-tick','#5e616e'), font:{size:9}, callback: function(v){ return v<=100 ? '#'+Math.round(v) : ''; } },
+      grid: { color: wsCss('--chart-area','#08080a') }
     };
   } else if(mode === 'pnl'){
     yConfig = {
       type: 'logarithmic',
       min: 1000,
       ticks: {
-        color:'#5e616e', font:{size:9},
+        color: wsCss('--chart-tick','#5e616e'), font:{size:9},
         callback: function(v){
           if(v===1000) return '$1K';
           if(v===5000) return '$5K';
@@ -6406,28 +7459,28 @@ window.initWarTrendChart = function() {
           return null;
         }
       },
-      grid: { color:'#08080a' }
+      grid: { color: wsCss('--chart-area','#08080a') }
     };
   } else if(mode === 'roi'){
     yConfig = {
       type: 'logarithmic',
       min: 10,
       ticks: {
-        color:'#5e616e', font:{size:9},
+        color: wsCss('--chart-tick','#5e616e'), font:{size:9},
         callback: function(v){
           if([10,50,100,500,1000].indexOf(v) >= 0) return v+'%';
           return null;
         }
       },
-      grid: { color:'#08080a' }
+      grid: { color: wsCss('--chart-area','#08080a') }
     };
   } else if(mode === 'follow'){
     var vals=[]; datasets.forEach(function(d){ d.data.forEach(function(p){ if(p&&p.y!=null) vals.push(p.y); }); });
     yConfig = {
       min: 0,
       max: vals.length ? Math.ceil(Math.max.apply(null,vals)/10)*10+5 : 100,
-      ticks: { color:'#5e616e', font:{size:9} },
-      grid: { color:'#08080a' }
+      ticks: { color: wsCss('--chart-tick','#5e616e'), font:{size:9} },
+      grid: { color: wsCss('--chart-area','#08080a') }
     };
   }
 
@@ -6445,8 +7498,8 @@ window.initWarTrendChart = function() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor:'#030304', borderColor:'#121317', borderWidth:1,
-          titleColor:'#cdcdcd', bodyColor:'#888',
+          backgroundColor: wsCss('--surface','#030304'), borderColor: wsCss('--border','#121317'), borderWidth:1,
+          titleColor: wsCss('--text-muted','#888'), bodyColor: wsCss('--dim','#888'),
           filter: function(item){ return window._hoveredWarIdx === undefined || item.datasetIndex === window._hoveredWarIdx; },
           callbacks: {
             title: function(items){ return items.length ? (items[0].dataset.label||'') : ''; },
@@ -6477,8 +7530,8 @@ window.initWarTrendChart = function() {
           type: 'time',
           time: { unit:'hour', displayFormats:{hour:'M/d HH:mm', day:'M/d'}, tooltipFormat:'M/d HH:mm' },
           min: cutoff > 0 ? cutoff : undefined, max: now,
-          ticks: { color:'#5e616e', font:{size:9}, maxTicksLimit:7, maxRotation:0 },
-          grid: { color:'#08080a' }
+          ticks: { color: wsCss('--chart-tick','#5e616e'), font:{size:9}, maxTicksLimit:7, maxRotation:0 },
+          grid: { color: wsCss('--chart-area','#08080a') }
         },
         y: yConfig
       }
@@ -6527,14 +7580,14 @@ function renderSignal(){
 
   // ── helpers ──────────────────────────────────────────────────────────
   function pill(dir){
-    if(dir==='long')  return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3);font-size:10px;font-weight:700">▲ Long</span>';
-    if(dir==='short') return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:rgba(244,114,182,0.15);color:#f472b6;border:1px solid rgba(244,114,182,0.3);font-size:10px;font-weight:700">▼ Short</span>';
-    return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.06);color:#acafb9;border:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:700">Neutral</span>';
+    if(dir==='long')  return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:var(--pos-long-bg);color:var(--teal);border:1px solid var(--pos-long-bd);font-size:10px;font-weight:700">▲ Long</span>';
+    if(dir==='short') return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:var(--pos-short-bg);color:var(--pink);border:1px solid var(--pos-short-bd);font-size:10px;font-weight:700">▼ Short</span>';
+    return '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:var(--stat-box);color:var(--text-muted);border:1px solid var(--stat-box-bd);font-size:10px;font-weight:700">Neutral</span>';
   }
   function diffBadge(d){
-    if(d==='easy') return '<span style="padding:2px 8px;border-radius:6px;background:rgba(6,182,212,0.12);color:#06b6d4;border:1px solid rgba(6,182,212,0.25);font-size:9px;font-weight:700">Easy</span>';
-    if(d==='hard') return '<span style="padding:2px 8px;border-radius:6px;background:rgba(244,114,182,0.12);color:#f472b6;border:1px solid rgba(244,114,182,0.25);font-size:9px;font-weight:700">Hard</span>';
-    return '<span style="padding:2px 8px;border-radius:6px;background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);font-size:9px;font-weight:700">Medium</span>';
+    if(d==='easy') return '<span style="padding:2px 8px;border-radius:6px;background:var(--pos-long-bg);color:var(--teal);border:1px solid var(--pos-long-bd);font-size:9px;font-weight:700">Easy</span>';
+    if(d==='hard') return '<span style="padding:2px 8px;border-radius:6px;background:var(--pos-short-bg);color:var(--pink);border:1px solid var(--pos-short-bd);font-size:9px;font-weight:700">Hard</span>';
+    return '<span style="padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--warn) 14%, transparent);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%, transparent);font-size:9px;font-weight:700">Medium</span>';
   }
   // ── helpers ──────────────────────────────────────────────────────────
   function interpText(d){
@@ -6562,15 +7615,15 @@ function renderSignal(){
     var shortPx = +(sp / 100 * circ - 3).toFixed(2);
 
     var isLong  = lp >= sp;
-    var domColor = isLong ? '#06b6d4' : '#f472b6';
+    var domColor = isLong ? 'var(--teal)' : 'var(--pink)';
     var domLabel = isLong ? 'LONG' : 'SHORT';
     var domPct   = isLong ? lp : sp;
-    var domGlow  = isLong ? 'rgba(6,182,212,0.35)' : 'rgba(244,114,182,0.35)';
+    var domGlow  = isLong ? 'color-mix(in srgb, var(--teal) 35%, transparent)' : 'color-mix(in srgb, var(--pink) 35%, transparent)';
 
     var svg = '<svg viewBox="0 0 160 160" width="160" height="160" style="display:block;transform:rotate(-90deg)">'
-      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="' + sw + '"/>'
-      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="#f472b6" stroke-width="' + sw + '" stroke-dasharray="' + shortPx + ' ' + circ + '" stroke-dashoffset="-' + (+(lp/100*circ)).toFixed(2) + '" stroke-linecap="round" opacity="0.75"/>'
-      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="#06b6d4" stroke-width="' + sw + '" stroke-dasharray="' + longPx + ' ' + circ + '" stroke-linecap="round"/>'
+      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="var(--ring-empty)" stroke-width="' + sw + '"/>'
+      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="var(--pink)" stroke-width="' + sw + '" stroke-dasharray="' + shortPx + ' ' + circ + '" stroke-dashoffset="-' + (+(lp/100*circ)).toFixed(2) + '" stroke-linecap="round" opacity="0.75"/>'
+      + '<circle cx="80" cy="80" r="' + r + '" fill="none" stroke="var(--teal)" stroke-width="' + sw + '" stroke-dasharray="' + longPx + ' ' + circ + '" stroke-linecap="round"/>'
       + '</svg>';
 
     var centerLabel = '<div style="position:absolute;top:0;left:0;width:160px;height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">'
@@ -6581,17 +7634,17 @@ function renderSignal(){
     var donut = '<div style="position:relative;width:160px;height:160px;flex-shrink:0">' + svg + centerLabel + '</div>';
 
     var stats = '<div style="flex:1;min-width:140px;display:flex;flex-direction:column;justify-content:center;gap:14px">'
-      + '<div style="font-size:10px;color:#777a88">' + title + ' · ' + tc + ' experts'
-        + (ch !== 0 ? ' · <span style="color:' + (ch>=0?'#06b6d4':'#f472b6') + '">' + chSign + ch.toFixed(1) + '% 24h</span>' : '')
+      + '<div style="font-size:10px;color:var(--dim)">' + title + ' · ' + tc + ' experts'
+        + (ch !== 0 ? ' · <span style="color:' + (ch>=0?'var(--teal)':'var(--pink)') + '">' + chSign + ch.toFixed(1) + '% 24h</span>' : '')
       + '</div>'
       + '<div style="display:flex;gap:24px">'
-        + '<div><div style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;color:#06b6d4;line-height:1">' + lp.toFixed(0) + '%</div><div style="font-size:10px;color:#777a88;margin-top:3px;letter-spacing:1px">LONG</div></div>'
-        + '<div><div style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;color:#f472b6;line-height:1">' + sp.toFixed(0) + '%</div><div style="font-size:10px;color:#777a88;margin-top:3px;letter-spacing:1px">SHORT</div></div>'
+        + '<div><div style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;color:var(--teal);line-height:1">' + lp.toFixed(0) + '%</div><div style="font-size:10px;color:var(--dim);margin-top:3px;letter-spacing:1px">LONG</div></div>'
+        + '<div><div style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;color:var(--pink);line-height:1">' + sp.toFixed(0) + '%</div><div style="font-size:10px;color:var(--dim);margin-top:3px;letter-spacing:1px">SHORT</div></div>'
       + '</div>'
-      + '<div style="font-size:11px;color:#acafb9;line-height:1.5">' + interp + '</div>'
+      + '<div style="font-size:11px;color:var(--text-muted);line-height:1.5">' + interp + '</div>'
     + '</div>';
 
-    return '<div style="background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:20px 24px;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap">'
+    return '<div style="background:var(--surface);border:1px solid var(--stat-box-bd);border-radius:20px;padding:20px 24px;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap">'
       + donut + stats
     + '</div>';
   }
@@ -6600,35 +7653,35 @@ function renderSignal(){
 
   // ── Section 1 ──────────────────────────────────────────────────────
   h += '<div style="margin-bottom:28px">'
-    + '<div style="font-family:Inter,sans-serif;font-size:20px;font-weight:700;color:#ffffff;margin-bottom:3px">Smart Money Direction</div>'
-    + '<div style="font-size:11px;color:#777a88;margin-bottom:14px">Are top traders going long or short right now?</div>'
+    + '<div style="font-family:Inter,sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:3px">Smart Money Direction</div>'
+    + '<div style="font-size:11px;color:var(--dim);margin-bottom:14px">Are top traders going long or short right now?</div>'
     + buildHero(ED.all, 'Smart Money');
 
   h += '</div>';
 
   // ── Section 2: Easy Signals ────────────────────────────────────────
   h+='<div style="margin-bottom:28px">'
-    +'<div style="font-family:Inter,sans-serif;font-size:20px;font-weight:700;color:#ffffff;margin-bottom:3px">Easy Signals Today</div>'
-    +'<div style="font-size:11px;color:#777a88;margin-bottom:14px">Expert signals ranked by beginner-friendliness</div>';
+    +'<div style="font-family:Inter,sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:3px">Easy Signals Today</div>'
+    +'<div style="font-size:11px;color:var(--dim);margin-bottom:14px">Expert signals ranked by beginner-friendliness</div>';
   if(ES.length){
-    h+='<div style="background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden">';
-    h+='<div style="display:grid;grid-template-columns:100px 68px 72px 1fr;align-items:center;gap:12px;padding:7px 16px;border-bottom:1px solid rgba(255,255,255,0.04)">'
-      +'<span style="font-size:9px;color:#5e616e;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Coin</span>'
-      +'<span style="font-size:9px;color:#5e616e;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Direction</span>'
-      +'<span style="font-size:9px;color:#5e616e;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Level</span>'
-      +'<span style="font-size:9px;color:#5e616e;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Consensus</span>'
+    h+='<div style="background:var(--surface);border:1px solid var(--stat-box-bd);border-radius:16px;overflow:hidden">';
+    h+='<div style="display:grid;grid-template-columns:100px 68px 72px 1fr;align-items:center;gap:12px;padding:7px 16px;border-bottom:1px solid var(--border2)">'
+      +'<span style="font-size:9px;color:var(--dim2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Coin</span>'
+      +'<span style="font-size:9px;color:var(--dim2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Direction</span>'
+      +'<span style="font-size:9px;color:var(--dim2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Level</span>'
+      +'<span style="font-size:9px;color:var(--dim2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Consensus</span>'
     +'</div>';
     ES.forEach(function(e,i){
       var isLong=e.direction==='long';
-      var dirColor=isLong?'#06b6d4':'#f472b6';
-      var dirBg=isLong?'rgba(6,182,212,0.12)':'rgba(244,114,182,0.12)';
-      var dirBorder=isLong?'rgba(6,182,212,0.25)':'rgba(244,114,182,0.25)';
-      var diffColor=e.difficulty==='easy'?'#06b6d4':e.difficulty==='hard'?'#f472b6':'#fbbf24';
-      var diffBg=e.difficulty==='easy'?'rgba(6,182,212,0.08)':e.difficulty==='hard'?'rgba(244,114,182,0.08)':'rgba(251,191,36,0.08)';
-      var rowBg=isLong?'rgba(6,182,212,0.06)':'rgba(244,114,182,0.06)';
-      var rowBorder=isLong?'rgba(6,182,212,0.12)':'rgba(244,114,182,0.12)';
+      var dirColor=isLong?'var(--teal)':'var(--pink)';
+      var dirBg=isLong?'var(--pos-long-bg)':'var(--pos-short-bg)';
+      var dirBorder=isLong?'var(--pos-long-bd)':'var(--pos-short-bd)';
+      var diffColor=e.difficulty==='easy'?'var(--teal)':e.difficulty==='hard'?'var(--pink)':'var(--warn)';
+      var diffBg=e.difficulty==='easy'?'var(--pos-long-bg)':e.difficulty==='hard'?'var(--pos-short-bg)':'color-mix(in srgb,var(--warn) 12%, transparent)';
+      var rowBg=isLong?'color-mix(in srgb,var(--teal) 8%, transparent)':'color-mix(in srgb,var(--pink) 8%, transparent)';
+      var rowBorder=isLong?'color-mix(in srgb,var(--teal) 18%, transparent)':'color-mix(in srgb,var(--pink) 18%, transparent)';
       h+='<div style="display:grid;grid-template-columns:100px 68px 72px 1fr;align-items:center;gap:12px;padding:11px 16px;background:'+rowBg+';border-bottom:1px solid '+rowBorder+';border-left:3px solid '+dirColor+'">'
-        +'<span style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:#ffffff">'+e.coin+'</span>'
+        +'<span style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+e.coin+'</span>'
         +'<span style="display:inline-block;padding:3px 8px;border-radius:5px;background:'+dirBg+';color:'+dirColor+';border:1px solid '+dirBorder+';font-size:10px;font-weight:700;letter-spacing:.5px">'+(isLong?'LONG':'SHORT')+'</span>'
         +'<span style="display:inline-block;padding:3px 8px;border-radius:5px;background:'+diffBg+';color:'+diffColor+';font-size:10px;font-weight:600">'+e.difficulty.charAt(0).toUpperCase()+e.difficulty.slice(1)+'</span>'
         +'<span style="font-family:Inter,sans-serif;font-size:18px;font-weight:800;color:'+dirColor+'">'+e.consensus_pct.toFixed(0)+'%</span>'
@@ -6636,7 +7689,7 @@ function renderSignal(){
     });
     h+='</div>';
   } else {
-    h+='<div style="background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;text-align:center;color:#777a88;font-size:12px">Not enough data to generate easy signals.</div>';
+    h+='<div style="background:var(--surface);border:1px solid var(--stat-box-bd);border-radius:16px;padding:24px;text-align:center;color:var(--dim);font-size:12px">Not enough data to generate easy signals.</div>';
   }
   h+='</div>';
 
@@ -6706,7 +7759,7 @@ function renderSignal(){
       var upnlStr=upnlAbs>=1e6?(upnlSign+(upnlAbs/1e6).toFixed(1)+'M'):upnlAbs>=1e3?(upnlSign+(upnlAbs/1e3).toFixed(0)+'K'):(upnlSign+upnlAbs.toFixed(0));
       var rowBg=i%2===0?'transparent':'rgba(255,255,255,0.01)';
       return '<div data-addr="'+m.addr+'" onclick="openModal(this.dataset.addr)" style="display:grid;grid-template-columns:1fr 64px 60px 48px 30px 36px;align-items:center;gap:8px;padding:9px 14px;background:'+rowBg+';border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer">'
-        +'<span style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#e2e3e9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+m.name+'</span>'
+        +'<span style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#e2e3e9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc(_displayTraderName(m.addr,m.name))+'</span>'
         +'<span style="font-size:11px;font-weight:700;color:'+dirColor+';white-space:nowrap">'+(isLong?'▲ ':'▼ ')+m.action.split(' ')[0]+'</span>'
         +'<span style="font-size:11px;color:#e2e3e9;font-family:Inter,sans-serif;text-align:right">$'+ntl+'</span>'
         +'<span style="font-size:10px;color:#fbbf24;font-weight:600;text-align:right">'+levLabel+'</span>'
@@ -6742,7 +7795,7 @@ function renderSignal(){
   var _simGroup='war80',_simPeriod='7d';
   h+='<div style="margin-bottom:28px">'
     +'<div style="font-family:Inter,sans-serif;font-size:20px;font-weight:700;color:#ffffff;margin-bottom:3px">If You Had Followed...</div>'
-    +'<div style="font-size:11px;color:#777a88;margin-bottom:14px">Realized PnL / balance of wallets in WAR range</div>'
+    +'<div style="font-size:11px;color:#777a88;margin-bottom:14px">Return vs. total balance by cohort (WAR band or Followable).</div>'
     +'<div style="background:#030304;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px">'
       +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center">'
         +'<div style="display:flex;gap:4px">'
@@ -6758,7 +7811,7 @@ function renderSignal(){
         +'</div>'
       +'</div>'
       +'<div id="sim-result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:10px"></div>'
-      +'<div style="font-size:9px;color:#777a88">Based on realized PnL vs. balance of tracked wallets.</div>'
+      +'<div id="sim-footnote" style="font-size:9px;color:#777a88">Based on realized return vs. balance of tracked wallets.</div>'
     +'</div>'
   +'</div>';
   window._simCurrentGroup='war80';window._simCurrentPeriod='7d';
@@ -6835,30 +7888,28 @@ function updateSimulator(){
   var period=window._simCurrentPeriod||'7d';
   var r=_computeSimReturn(group, period);
   var pct=r.pct, count=r.count;
-  var pctColor=pct>=0?'#06b6d4':'#f472b6';
+  var pctColor=pct>=0?(typeof wsCss==='function'?wsCss('--teal','#06b6d4'):'#06b6d4'):(typeof wsCss==='function'?wsCss('--pink','#f472b6'):'#f472b6');
   var pctSign=pct>=0?'+':'';
   var groupLabel=group==='war80'?'WAR 80+':group==='war70'?'WAR 70~80':group==='war60'?'WAR 60~70':group==='war50'?'WAR 50~60':'Followable';
-  var pnlStr=(r.pnl>=0?'+':'')+r.pnl.toLocaleString();
-  var showPnl = group !== 'follow';
+  var subLine = group === 'follow'
+    ? ('Balance-weighted return · '+period+' · '+groupLabel+' ('+count+' wallets)')
+    : ('Realized PnL / balance · '+period+' · '+groupLabel+' ('+count+' wallets)');
   resDiv.innerHTML=
-    '<div style="background:rgba(255,255,255,0.03);border:1px solid '+pctColor+';border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
+    '<div style="background:var(--surface2);border:1px solid '+pctColor+';border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
       +'<div>'
         +'<div style="font-family:Inter,sans-serif;font-size:32px;font-weight:800;color:'+pctColor+';line-height:1">'+pctSign+pct.toFixed(2)+'%</div>'
-        +'<div style="font-size:10px;color:#777a88;margin-top:4px">Realized PnL / balance · '+period+' · '+groupLabel+' ('+count+' wallets)</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:4px">'+subLine+'</div>'
       +'</div>'
-      +(showPnl
-        ? '<div style="border-left:1px solid rgba(255,255,255,0.06);padding-left:20px">'
-            +'<div style="font-size:18px;font-weight:700;color:'+pctColor+'">$'+pnlStr+'</div>'
-            +'<div style="font-size:10px;color:#777a88;margin-top:4px">Total realized PnL</div>'
-          +'</div>'
-        : '')
     +'</div>';
+  var foot=document.getElementById('sim-footnote');
+  if(foot) foot.textContent = 'Hypothetical balance-weighted return % — dollar PnL not shown.';
 }
 """
 
     js_block += """function renderSentiment(){
   const root=document.getElementById('sent-root');
-  const BL='#3b82f6', RD='#f472b6';
+  const BL=typeof wsCss==='function'?wsCss('--long','#3b82f6'):'#3b82f6';
+  const RD=typeof wsCss==='function'?wsCss('--pink','#f472b6'):'#f472b6';
   if(!root) return;
   if(!SENT) SENT = {all:null, coins:[], bands:[], types:[], equities:[]};
 
@@ -6870,33 +7921,33 @@ function updateSimulator(){
     const _maxVal=Math.ceil(_maxRaw/100)*100;
     const lW=Math.min(a.long_pct/_maxVal*100,100).toFixed(2);
     const sW=Math.min(a.short_pct/_maxVal*100,100).toFixed(2);
-    h+=`<div id="bcard-all" onclick="switchBubbles('all')" style="cursor:pointer;margin-bottom:20px;padding:12px;border-radius:8px;border:1px solid ${BL};background:#08080a">
-      <div style="font-size:11px;color:#888;margin-bottom:10px">Smart Money ${a.traders} · Portfolio-weighted exposure (All)</div>
+    h+=`<div id="bcard-all" onclick="switchBubbles('all')" style="cursor:pointer;margin-bottom:20px;padding:12px;border-radius:8px;border:1px solid var(--long);background:var(--chart-area)">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:10px">Smart Money ${a.traders} · Portfolio-weighted exposure (All)</div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:12px;color:${BL};font-weight:600;width:44px;flex-shrink:0;display:flex;align-items:center;gap:2px;line-height:1"><span style="font-size:10px">▲</span><span>Long</span></span>
-          <div style="flex:1;position:relative;height:20px;background:#1c1d22;border-radius:4px">
-            <div style="width:${lW}%;height:100%;background:${BL};border-radius:4px 0 0 4px;position:relative">
-              <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:#c8e8ff;white-space:nowrap">${a.long_pct}%</span>
+          <span style="font-size:12px;color:var(--long);font-weight:600;width:44px;flex-shrink:0;display:flex;align-items:center;gap:2px;line-height:1"><span style="font-size:10px">▲</span><span>Long</span></span>
+          <div style="flex:1;position:relative;height:20px;background:var(--chart-grid);border-radius:4px">
+            <div style="width:${lW}%;height:100%;background:var(--long);border-radius:4px 0 0 4px;position:relative">
+              <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--text);white-space:nowrap">${a.long_pct}%</span>
             </div>
-            ${Array.from({length:Math.max(0,_maxVal/100-1)},(_,i)=>(i+1)*100).map(v=>'<div style="position:absolute;top:0;left:'+(v/_maxVal*100).toFixed(1)+'%;width:1px;height:100%;background:#5e616e"></div>').join("")}
+            ${Array.from({length:Math.max(0,_maxVal/100-1)},(_,i)=>(i+1)*100).map(v=>'<div style="position:absolute;top:0;left:'+(v/_maxVal*100).toFixed(1)+'%;width:1px;height:100%;background:var(--dim2)"></div>').join("")}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:12px;color:${RD};font-weight:600;width:44px;flex-shrink:0;display:flex;align-items:center;gap:2px;line-height:1"><span style="font-size:10px">▼</span><span>Short</span></span>
-          <div style="flex:1;position:relative;height:20px;background:#1c1d22;border-radius:4px">
-            <div style="width:${sW}%;height:100%;background:${RD};border-radius:4px 0 0 4px;position:relative">
-              <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:#ffd0e0;white-space:nowrap">${a.short_pct}%</span>
+          <span style="font-size:12px;color:var(--pink);font-weight:600;width:44px;flex-shrink:0;display:flex;align-items:center;gap:2px;line-height:1"><span style="font-size:10px">▼</span><span>Short</span></span>
+          <div style="flex:1;position:relative;height:20px;background:var(--chart-grid);border-radius:4px">
+            <div style="width:${sW}%;height:100%;background:var(--pink);border-radius:4px 0 0 4px;position:relative">
+              <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--text);white-space:nowrap">${a.short_pct}%</span>
             </div>
-            ${Array.from({length:Math.max(0,_maxVal/100-1)},(_,i)=>(i+1)*100).map(v=>'<div style="position:absolute;top:0;left:'+(v/_maxVal*100).toFixed(1)+'%;width:1px;height:100%;background:#5e616e"></div>').join("")}
+            ${Array.from({length:Math.max(0,_maxVal/100-1)},(_,i)=>(i+1)*100).map(v=>'<div style="position:absolute;top:0;left:'+(v/_maxVal*100).toFixed(1)+'%;width:1px;height:100%;background:var(--dim2)"></div>').join("")}
           </div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:44px;flex-shrink:0"></div>
         <div style="flex:1;position:relative;height:12px">
-          <div style="position:absolute;left:0;font-size:9px;color:#777a88">0%</div>
-          ${Array.from({length:Math.floor(_maxVal/100)+1},(_,i)=>i*100).map(v=>{const pct=(v/_maxVal*100).toFixed(2);const pos=v===_maxVal?'right:0':'left:'+pct+'%';const tr=v===0||v===_maxVal?'':'transform:translateX(-50%);';return '<div style="position:absolute;'+pos+';'+tr+'font-size:9px;color:#777a88">'+v+'%</div>';}).join('')}
+          <div style="position:absolute;left:0;font-size:9px;color:var(--dim)">0%</div>
+          ${Array.from({length:Math.floor(_maxVal/100)+1},(_,i)=>i*100).map(v=>{const pct=(v/_maxVal*100).toFixed(2);const pos=v===_maxVal?'right:0':'left:'+pct+'%';const tr=v===0||v===_maxVal?'':'transform:translateX(-50%);';return '<div style="position:absolute;'+pos+';'+tr+'font-size:9px;color:var(--dim)">'+v+'%</div>';}).join('')}
         </div>
       </div>
     </div>`;
@@ -6908,9 +7959,9 @@ function updateSimulator(){
 
   // ─ WAR Section ─
   h+='<div class="sent-section" id="ssec-war">';
-  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;war&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#030304;border-radius:8px;margin-bottom:8px;user-select:none">';
-  h+='<span style="font-size:12px;font-weight:600;color:#e2e3e9">📊 By WAR Band</span>';
-  h+='<span id="sarrow-war" style="font-size:10px;color:#777a88">▼</span>';
+  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;war&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-radius:8px;margin-bottom:8px;user-select:none">';
+  h+='<span style="font-size:12px;font-weight:600;color:var(--text)">📊 By WAR Band</span>';
+  h+='<span id="sarrow-war" style="font-size:10px;color:var(--dim)">▼</span>';
   h+='</div>';
   h+='<div id="sbody-war" class="sent-sec-body">';
   h+='<div class="sent-war-grid" style="display:grid;gap:8px;margin-bottom:8px">';
@@ -6924,18 +7975,18 @@ function updateSimulator(){
       var bLW=Math.min(r.long_pct/_bmaxVal*100,100).toFixed(2);
       var bSW=Math.min(r.short_pct/_bmaxVal*100,100).toFixed(2);
       var dividers='';
-      for(var di=1;di<_bmaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_bmaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:#5e616e"></div>';
+      for(var di=1;di<_bmaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_bmaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:var(--dim2)"></div>';
       inner='<div style="display:flex;flex-direction:column;gap:3px">'
         +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:9px;color:'+BL+';width:20px;flex-shrink:0">▲L</span>'
-        +'<div style="flex:1;position:relative;height:7px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+bLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
+        +'<div style="flex:1;position:relative;height:7px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+bLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
         +'<span style="font-size:9px;color:'+BL+';width:36px;text-align:right">'+r.long_pct+'%</span></div>'
         +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:9px;color:'+RD+';width:20px;flex-shrink:0">▼S</span>'
-        +'<div style="flex:1;position:relative;height:7px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+bSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
+        +'<div style="flex:1;position:relative;height:7px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+bSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
         +'<span style="font-size:9px;color:'+RD+';width:36px;text-align:right">'+r.short_pct+'%</span></div>'
         +'</div>';
-    } else { inner='<div style="font-size:10px;color:#333">Data N/A</div>'; }
-    h+='<div id="bcard-'+b.label+'" data-bkey="'+b.label+'" onclick="switchBubbles(this.dataset.bkey)" style="background:#08080a;border-radius:8px;padding:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)">'
-      +'<div style="font-size:10px;color:#888;margin-bottom:4px">WAR '+b.label+' <span style="color:#555">('+cntLabel+')</span></div>'+inner+'</div>';
+    } else { inner='<div style="font-size:10px;color:var(--dim2)">Data N/A</div>'; }
+    h+='<div id="bcard-'+b.label+'" data-bkey="'+b.label+'" onclick="switchBubbles(this.dataset.bkey)" style="background:var(--chart-area);border-radius:8px;padding:10px;cursor:pointer;border:1px solid var(--stat-box-bd)">'
+      +'<div style="font-size:10px;color:var(--dim);margin-bottom:4px">WAR '+b.label+' <span style="color:var(--dim2)">('+cntLabel+')</span></div>'+inner+'</div>';
   });
   h+='</div>';
   h+='<div id="bubble-war" class="inline-bubble" style="display:none"></div>';
@@ -6943,9 +7994,9 @@ function updateSimulator(){
 
   // ─ Trader Type Section ─
   h+='<div class="sent-section" id="ssec-type" style="margin-top:12px">';
-  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;type&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#030304;border-radius:8px;margin-bottom:8px;user-select:none">';
-  h+='<span style="font-size:12px;font-weight:600;color:#e2e3e9">🎭 By Trader Type</span>';
-  h+='<span id="sarrow-type" style="font-size:10px;color:#777a88">▶</span>';
+  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;type&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-radius:8px;margin-bottom:8px;user-select:none">';
+  h+='<span style="font-size:12px;font-weight:600;color:var(--text)">🎭 By Trader Type</span>';
+  h+='<span id="sarrow-type" style="font-size:10px;color:var(--dim)">▶</span>';
   h+='</div>';
   h+='<div id="sbody-type" class="sent-sec-body" style="display:none">';
   if(SENT.types&&SENT.types.length){
@@ -6961,19 +8012,19 @@ function updateSimulator(){
         var bLW=Math.min(r.long_pct/_tmaxVal*100,100).toFixed(2);
         var bSW=Math.min(r.short_pct/_tmaxVal*100,100).toFixed(2);
         var dividers='';
-        for(var di=1;di<_tmaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_tmaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:#5e616e"></div>';
+        for(var di=1;di<_tmaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_tmaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:var(--dim2)"></div>';
         inner='<div style="display:flex;flex-direction:column;gap:3px">'
           +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:'+BL+';width:16px;flex-shrink:0">▲L</span>'
-          +'<div style="flex:1;position:relative;height:5px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+bLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
+          +'<div style="flex:1;position:relative;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+bLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
           +'<span style="font-size:8px;color:'+BL+';width:32px;text-align:right">'+r.long_pct+'%</span></div>'
           +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:'+RD+';width:16px;flex-shrink:0">▼S</span>'
-          +'<div style="flex:1;position:relative;height:5px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+bSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
+          +'<div style="flex:1;position:relative;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+bSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
           +'<span style="font-size:8px;color:'+RD+';width:32px;text-align:right">'+r.short_pct+'%</span></div>'
           +'</div>';
-      } else { inner='<div style="font-size:9px;color:#333">Positions N/A</div>'; }
-      h+='<div id="bcard-'+key+'" data-bkey="'+key+'" onclick="switchBubbles(this.dataset.bkey)" style="background:#08080a;border-radius:8px;padding:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)">'
-        +'<div style="font-size:10px;color:#e2e3e9;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+key+'</div>'
-        +'<div style="font-size:9px;color:#555;margin-bottom:5px">'+cntLabel+'</div>'+inner+'</div>';
+      } else { inner='<div style="font-size:9px;color:var(--dim2)">Positions N/A</div>'; }
+      h+='<div id="bcard-'+key+'" data-bkey="'+key+'" onclick="switchBubbles(this.dataset.bkey)" style="background:var(--chart-area);border-radius:8px;padding:10px;cursor:pointer;border:1px solid var(--stat-box-bd)">'
+        +'<div style="font-size:10px;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+key+'</div>'
+        +'<div style="font-size:9px;color:var(--dim2);margin-bottom:5px">'+cntLabel+'</div>'+inner+'</div>';
     });
     h+='</div>';
   }
@@ -6982,9 +8033,9 @@ function updateSimulator(){
 
   // ─ Portfolio 규모 Section ─
   h+='<div class="sent-section" id="ssec-equity" style="margin-top:12px">';
-  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;equity&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#030304;border-radius:8px;margin-bottom:8px;user-select:none">';
-  h+='<span style="font-size:12px;font-weight:600;color:#e2e3e9">💰 By Portfolio Size</span>';
-  h+='<span id="sarrow-equity" style="font-size:10px;color:#777a88">▶</span>';
+  h+='<div class="sent-sec-header" onclick="toggleSection(&quot;equity&quot;)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-radius:8px;margin-bottom:8px;user-select:none">';
+  h+='<span style="font-size:12px;font-weight:600;color:var(--text)">💰 By Portfolio Size</span>';
+  h+='<span id="sarrow-equity" style="font-size:10px;color:var(--dim)">▶</span>';
   h+='</div>';
   h+='<div id="sbody-equity" class="sent-sec-body" style="display:none">';
   if(SENT.equities&&SENT.equities.length){
@@ -7000,19 +8051,19 @@ function updateSimulator(){
         var eLW=Math.min(r.long_pct/_emaxVal*100,100).toFixed(2);
         var eSW=Math.min(r.short_pct/_emaxVal*100,100).toFixed(2);
         var dividers='';
-        for(var di=1;di<_emaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_emaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:#5e616e"></div>';
+        for(var di=1;di<_emaxVal/100;di++) dividers+='<div style="position:absolute;top:0;left:'+(di*100/_emaxVal*100).toFixed(1)+'%;width:1px;height:100%;background:var(--dim2)"></div>';
         inner='<div style="display:flex;flex-direction:column;gap:3px">'
           +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:'+BL+';width:16px;flex-shrink:0">▲L</span>'
-          +'<div style="flex:1;position:relative;height:5px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+eLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
+          +'<div style="flex:1;position:relative;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+eLW+'%;height:100%;background:'+BL+'"></div>'+dividers+'</div>'
           +'<span style="font-size:8px;color:'+BL+';width:32px;text-align:right">'+r.long_pct+'%</span></div>'
           +'<div style="display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:'+RD+';width:16px;flex-shrink:0">▼S</span>'
-          +'<div style="flex:1;position:relative;height:5px;background:#121317;border-radius:3px;overflow:hidden"><div style="width:'+eSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
+          +'<div style="flex:1;position:relative;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+eSW+'%;height:100%;background:'+RD+'"></div>'+dividers+'</div>'
           +'<span style="font-size:8px;color:'+RD+';width:32px;text-align:right">'+r.short_pct+'%</span></div>'
           +'</div>';
-      } else { inner='<div style="font-size:9px;color:#333">Positions N/A</div>'; }
-      h+='<div id="bcard-'+key+'" data-bkey="'+key+'" onclick="switchBubbles(this.dataset.bkey)" style="background:#08080a;border-radius:8px;padding:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)">'
-        +'<div style="font-size:10px;color:#ffbe0b;margin-bottom:2px;font-weight:600">'+key+'</div>'
-        +'<div style="font-size:9px;color:#555;margin-bottom:5px">'+cntLabel+'</div>'+inner+'</div>';
+      } else { inner='<div style="font-size:9px;color:var(--dim2)">Positions N/A</div>'; }
+      h+='<div id="bcard-'+key+'" data-bkey="'+key+'" onclick="switchBubbles(this.dataset.bkey)" style="background:var(--chart-area);border-radius:8px;padding:10px;cursor:pointer;border:1px solid var(--stat-box-bd)">'
+        +'<div style="font-size:10px;color:var(--warn);margin-bottom:2px;font-weight:600">'+key+'</div>'
+        +'<div style="font-size:9px;color:var(--dim2);margin-bottom:5px">'+cntLabel+'</div>'+inner+'</div>';
     });
     h+='</div>';
   }
@@ -7023,18 +8074,18 @@ function updateSimulator(){
 
   // ── 히스토리 차트 ────────────────────────────────────────────
   if(HIST && HIST.length >= 2){
-    h+='<div style="margin-top:24px;background:#030304;border-radius:10px;padding:16px">';
+    h+='<div style="margin-top:24px;background:var(--surface);border-radius:10px;padding:16px">';
     h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
-    h+='<div style="font-size:12px;font-weight:600;color:#e2e3e9">📈 Sentiment History</div>';
-    h+='<div id="hist-group-label" style="font-size:10px;color:#555">All Smart Money</div>';
+    h+='<div style="font-size:12px;font-weight:600;color:var(--text)">📈 Sentiment History</div>';
+    h+='<div id="hist-group-label" style="font-size:10px;color:var(--dim2)">All Smart Money</div>';
     h+='</div>';
-    h+='<div style="font-size:10px;color:#444;margin-bottom:10px">Smart Money long/short exposure + BTC price (right axis) · Click a card to compare · Solid=All Dashed=Group</div>';
+    h+='<div style="font-size:10px;color:var(--dim2);margin-bottom:10px">Smart Money long/short exposure + BTC price (right axis) · Click a card to compare · Solid=All Dashed=Group</div>';
     h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">';
-    h+='<span style="font-size:10px;color:#3a86ff">━ Long %</span>';
-    h+='<span style="font-size:10px;color:#f72585">━ Short %</span>';
-    h+='<span id="hist-legend-long" style="font-size:10px;color:#3a86ff;display:none">╌ Group Long %</span>';
-    h+='<span id="hist-legend-short" style="font-size:10px;color:#f72585;display:none">╌ Group Short %</span>';
-    h+='<span id="hist-legend-btc" style="font-size:10px;color:#f7931a">― BTC Price (right axis)</span>';
+    h+='<span style="font-size:10px;color:var(--long)">━ Long %</span>';
+    h+='<span style="font-size:10px;color:var(--short)">━ Short %</span>';
+    h+='<span id="hist-legend-long" style="font-size:10px;color:var(--long);display:none">╌ Group Long %</span>';
+    h+='<span id="hist-legend-short" style="font-size:10px;color:var(--short);display:none">╌ Group Short %</span>';
+    h+='<span id="hist-legend-btc" style="font-size:10px;color:var(--btc)">― BTC Price (right axis)</span>';
     h+='</div>';
     h+='<div style="position:relative;width:100%;height:220px;overflow:hidden"><canvas id="histChart"></canvas></div>';
     h+='</div>';
@@ -7042,24 +8093,24 @@ function updateSimulator(){
 
   // ── WAR 랭킹 트렌드 차트 ──────────────────────────────────────
   if(WAR_HIST && WAR_HIST.length >= 2){
-    h+='<div style="margin-top:24px;background:#030304;border-radius:10px;padding:16px">';
+    h+='<div style="margin-top:24px;background:var(--surface);border-radius:10px;padding:16px">';
     h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
-    h+='<div style="font-size:12px;font-weight:600;color:#e2e3e9">🏆 WAR Ranking Trend</div>';
+    h+='<div style="font-size:12px;font-weight:600;color:var(--text)">🏆 WAR Ranking Trend</div>';
     h+='<div style="display:flex;gap:6px;flex-wrap:wrap" id="war-btn-bar">';
-    h+='<button id="war-mode-war" data-m="war" style="font-size:9px;padding:3px 8px;border-radius:4px;border:0.5px solid #cc9166;background:#1c1d22;color:#cc9166;cursor:pointer">WAR Score</button>';
-    h+='<button id="war-mode-rank" data-m="rank" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">Ranking</button>';
-    h+='<button id="war-mode-pnl" data-m="pnl" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">PnL</button>';
-    h+='<button id="war-mode-roi" data-m="roi" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">ROI</button>';
-    h+='<button id="war-mode-follow" data-m="follow" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">Follow</button>';
-    h+='<div style="width:1px;background:#121317;margin:0 2px"></div>';
-    h+='<button class="war-range-btn" data-r="1" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">24H</button>';
-    h+='<button class="war-range-btn" data-r="7" style="font-size:9px;padding:3px 8px;border-radius:4px;border:0.5px solid #cc9166;background:#1c1d22;color:#cc9166;cursor:pointer">7D</button>';
-    h+='<button class="war-range-btn" data-r="30" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">30D</button>';
-    h+='<button class="war-range-btn" data-r="0" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;cursor:pointer">All</button>';
+    h+='<button id="war-mode-war" data-m="war" style="font-size:9px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--accent);background:var(--surface2);color:var(--accent);cursor:pointer">WAR Score</button>';
+    h+='<button id="war-mode-rank" data-m="rank" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">Ranking</button>';
+    h+='<button id="war-mode-pnl" data-m="pnl" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">PnL</button>';
+    h+='<button id="war-mode-roi" data-m="roi" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">ROI</button>';
+    h+='<button id="war-mode-follow" data-m="follow" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">Follow</button>';
+    h+='<div style="width:1px;background:var(--border);margin:0 2px"></div>';
+    h+='<button class="war-range-btn" data-r="1" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">24H</button>';
+    h+='<button class="war-range-btn" data-r="7" style="font-size:9px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--accent);background:var(--surface2);color:var(--accent);cursor:pointer">7D</button>';
+    h+='<button class="war-range-btn" data-r="30" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">30D</button>';
+    h+='<button class="war-range-btn" data-r="0" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--glass-edge);background:transparent;color:var(--dim2);cursor:pointer">All</button>';
     h+='</div></div>';
-    h+='<div style="font-size:10px;color:#444;margin-bottom:8px">WAR score or ranking change for top 100 wallets · hover to inspect · click to open card</div>';
+    h+='<div style="font-size:10px;color:var(--dim2);margin-bottom:8px">WAR score or ranking change for top 100 wallets · hover to inspect · click to open card</div>';
     // war-legend removed
-    h+='<div style="position:relative;width:100%;height:480px;overflow:hidden"><canvas id="warTrendChart"></canvas><div id="warTrendEmpty" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:#777a88;text-align:center;pointer-events:none">Not enough snapshots yet.<br>Run discover to collect more data.</div></div>';
+    h+='<div style="position:relative;width:100%;height:480px;overflow:hidden"><canvas id="warTrendChart"></canvas><div id="warTrendEmpty" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--dim);text-align:center;pointer-events:none">Not enough snapshots yet.<br>Run discover to collect more data.</div></div>';
     h+='</div>';
   }
 
@@ -7076,9 +8127,9 @@ function updateSimulator(){
         window._warMode = btn.dataset.m;
         warBar.querySelectorAll('[data-m]').forEach(function(b){
           var a = b===btn;
-          b.style.borderColor = a?'#cc9166':'#121317';
-          b.style.color       = a?'#cc9166':'#555';
-          b.style.background  = a?'#1c1d22':'transparent';
+          b.style.borderColor = a?'var(--accent)':'var(--border)';
+          b.style.color       = a?'var(--accent)':'var(--dim2)';
+          b.style.background  = a?'var(--surface2)':'transparent';
         });
         window.initWarTrendChart();
       } else if(btn.dataset.r !== undefined){
@@ -7086,9 +8137,9 @@ function updateSimulator(){
         window._warRangeDays = parseInt(btn.dataset.r);
         warBar.querySelectorAll('.war-range-btn').forEach(function(b){
           var a = b===btn;
-          b.style.borderColor = a?'#cc9166':'#121317';
-          b.style.color       = a?'#cc9166':'#555';
-          b.style.background  = a?'#1c1d22':'transparent';
+          b.style.borderColor = a?'var(--accent)':'var(--border)';
+          b.style.color       = a?'var(--accent)':'var(--dim2)';
+          b.style.background  = a?'var(--surface2)':'transparent';
         });
         window.initWarTrendChart();
       }
@@ -7108,9 +8159,9 @@ function updateSimulator(){
     var labels=filteredHIST.map(function(d){return new Date(d.ts.replace(' ','T')).getTime();});
     var datasets=[
       {label:'Long %', data:filteredHIST.map(function(d,i){return {x:labels[i],y:d.all?d.all.long_pct:null};}),
-       borderColor:'#3a86ff',borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
+       borderColor: wsCss('--long','#3a86ff'),borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
       {label:'Short %', data:filteredHIST.map(function(d,i){return {x:labels[i],y:d.all?d.all.short_pct:null};}),
-       borderColor:'#f72585',borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
+       borderColor: wsCss('--short','#f72585'),borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
     ];
     // BTC 가격 (오른쪽 y축) — BTC_PRICES 30분봉 우선, 없으면 히스토리 snapshot 사용
     var _btcCandles = (window.BTC_PRICES || []).filter(function(c){ return c.t >= oneWeekAgo; });
@@ -7123,8 +8174,8 @@ function updateSimulator(){
       datasets.push({
         label:'BTC Price',
         data: _btcData,
-        borderColor:'#f7931a',
-        backgroundColor:'#f7931a18',
+        borderColor: wsCss('--btc','#f7931a'),
+        backgroundColor: wsCss('--btc','#f7931a')+'18',
         borderWidth:1.5,
         tension:0.2,
         fill:false,
@@ -7137,10 +8188,10 @@ function updateSimulator(){
     }
     if(groupLong){
       datasets.push({label:groupLabel+' Long%', data:groupLong,
-        borderColor:'#3a86ff',borderWidth:1.5,tension:0.3,fill:false,
+        borderColor: wsCss('--long','#3a86ff'),borderWidth:1.5,tension:0.3,fill:false,
         pointRadius:2,borderDash:[5,3],backgroundColor:'transparent'});
       datasets.push({label:groupLabel+' Short%', data:groupShort,
-        borderColor:'#f72585',borderWidth:1.5,tension:0.3,fill:false,
+        borderColor: wsCss('--short','#f72585'),borderWidth:1.5,tension:0.3,fill:false,
         pointRadius:2,borderDash:[5,3],backgroundColor:'transparent'});
     }
     if(_histChart) _histChart.destroy();
@@ -7153,8 +8204,8 @@ function updateSimulator(){
         plugins:{
           legend:{display:false},
           tooltip:{
-            backgroundColor:'#030304',borderColor:'#121317',borderWidth:1,
-            titleColor:'#888',bodyColor:'#cdcdcd',titleFont:{size:10},bodyFont:{size:11},
+            backgroundColor: wsCss('--surface','#030304'),borderColor: wsCss('--border','#121317'),borderWidth:1,
+            titleColor: wsCss('--dim','#888'),bodyColor: wsCss('--text-muted','#cdcdcd'),titleFont:{size:10},bodyFont:{size:11},
             callbacks:{
               title:function(items){
                 if(!items.length) return '';
@@ -7178,7 +8229,7 @@ function updateSimulator(){
             min:Date.now()-7*24*60*60*1000,
             max:Date.now(),
             ticks:{
-              color:'#5e616e',font:{size:9},maxTicksLimit:7,maxRotation:0,
+              color: wsCss('--chart-tick','#5e616e'),font:{size:9},maxTicksLimit:7,maxRotation:0,
               callback:function(val){
                 var d=new Date(val);
                 var m=String(d.getMonth()+1).padStart(2,'0');
@@ -7188,19 +8239,19 @@ function updateSimulator(){
                 return m+'/'+day+' '+h+':'+mn;
               }
             },
-            grid:{color:'#08080a'}
+            grid:{color: wsCss('--chart-area','#08080a')}
           },
           y:{
-            ticks:{color:'#5e616e',font:{size:9},callback:function(v){return v+'%';}},
-            grid:{color:'#08080a'},
+            ticks:{color: wsCss('--chart-tick','#5e616e'),font:{size:9},callback:function(v){return v+'%';}},
+            grid:{color: wsCss('--chart-area','#08080a')},
             min:0,
-            title:{display:true,text:'Long/Short %',color:'#5e616e',font:{size:9}}
+            title:{display:true,text:'Long/Short %',color: wsCss('--chart-tick','#5e616e'),font:{size:9}}
           },
           yBtc:{
             display: hasBtc,
             position:'right',
             ticks:{
-              color:'#f7931a',
+              color: wsCss('--btc','#f7931a'),
               font:{size:9},
               stepSize: 500,
               callback:function(v){
@@ -7209,7 +8260,7 @@ function updateSimulator(){
               }
             },
             grid:{display:false},
-            title:{display:hasBtc,text:'BTC Price',color:'#f7931a',font:{size:9}}
+            title:{display:hasBtc,text:'BTC Price',color: wsCss('--btc','#f7931a'),font:{size:9}}
           }
         }
       }
@@ -7305,7 +8356,7 @@ function updateSimulator(){
     var wrap=document.getElementById('bubble-'+secId);
     if(!wrap||wrap._init) return;
     wrap._init=true;
-    wrap.style.cssText='position:relative;width:100%;height:360px;overflow:hidden;background:#030304;border-radius:8px;cursor:crosshair;margin-bottom:12px';
+    wrap.style.cssText='position:relative;width:100%;height:360px;overflow:hidden;background:var(--chart-area);border-radius:8px;cursor:crosshair;margin-bottom:12px;border:1px solid var(--border)';
 
     var W=wrap.offsetWidth||700, H=360;
     var ns='http://www.w3.org/2000/svg';
@@ -7319,7 +8370,7 @@ function updateSimulator(){
     wrap.appendChild(fxCv);
 
     var tipEl=document.createElement('div');
-    tipEl.style.cssText='position:absolute;background:#030304;border:1px solid #121317;border-radius:6px;padding:7px 10px;font-size:11px;color:#e2e3e9;pointer-events:none;display:none;z-index:10;white-space:nowrap;line-height:1.6';
+    tipEl.style.cssText='position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);pointer-events:none;display:none;z-index:10;white-space:nowrap;line-height:1.6';
     wrap.appendChild(tipEl);
 
     // state Init
@@ -7341,7 +8392,7 @@ function updateSimulator(){
       var ic=document.createElementNS(ns,'circle'); ic.setAttribute('class','ic'); g.appendChild(ic);
       var t=document.createElementNS(ns,'text');
       t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-      t.setAttribute('font-weight','600');t.setAttribute('fill','#e8ecf4');t.textContent=coin;
+      t.setAttribute('font-weight','600');t.setAttribute('fill','var(--text)');t.textContent=coin;
       g.appendChild(t); svg.appendChild(g); elems[coin]=g;
     });
 
@@ -7355,9 +8406,9 @@ function updateSimulator(){
         var net=(s.tgtLong-s.tgtShort).toFixed(1);
         var lNtl=s.tgtLongNtl||0,sNtl=s.tgtShortNtl||0;
         var fN=function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+Math.round(v);};
-        tipEl.innerHTML='<b style="color:#e8ecf4">'+coin+'</b><br>'
-          +'<span style="color:'+BL+'">▲ Long '+fN(lNtl)+'</span>  <span style="color:'+RD+'">▼ Short '+fN(sNtl)+'</span><br>'
-          +'<span style="color:#888;font-size:10px">vs Portfolio: '+s.tgtLong.toFixed(1)+'% / '+s.tgtShort.toFixed(1)+'%</span>';
+        tipEl.innerHTML='<b style="color:var(--text)">'+coin+'</b><br>'
+          +'<span style="color:var(--long)">▲ Long '+fN(lNtl)+'</span>  <span style="color:var(--short)">▼ Short '+fN(sNtl)+'</span><br>'
+          +'<span style="color:var(--dim);font-size:10px">vs Portfolio: '+s.tgtLong.toFixed(1)+'% / '+s.tgtShort.toFixed(1)+'%</span>';
         tipEl.style.display='block';
       });
       g.addEventListener('mousemove',ev=>{
@@ -7463,12 +8514,12 @@ function updateSimulator(){
 
   window.switchBubbles=function(key){
     // Card 테두리 Init
-    document.querySelectorAll('[id^="bcard-"]').forEach(el=>el.style.border='0.5px solid #121317');
+    document.querySelectorAll('[id^="bcard-"]').forEach(el=>el.style.border='0.5px solid var(--border)');
     var allCard=document.getElementById('bcard-all');
-    if(allCard) allCard.style.border='1px solid #121317';
+    if(allCard) allCard.style.border='1px solid var(--border)';
     var sel=document.getElementById('bcard-'+key);
-    if(sel) sel.style.border='1px solid '+BL;
-    if(key==='all'&&allCard) allCard.style.border='2px solid '+BL;
+    if(sel) sel.style.border='1px solid var(--long)';
+    if(key==='all'&&allCard) allCard.style.border='2px solid var(--long)';
 
     // 어느 Section 키인지 판별
     var secId=null;
@@ -7580,7 +8631,7 @@ var THEME_CMAPS = {
   'tesla':       _cmap(['#ffffff','#eeeeee','#e5e3df','#f0f0f0','#f5f5f5','#d5d5d5','#cccccc','#171a20','#2a2d35','#393c41','#5c5e62','#888888','#3e6ae1'],_LR),
 };
 var _THEME_LABELS = {
-  'slash-gold':'🟡 Slash Gold','hyperliquid':'🔵 Hyperliquid','ocean':'🌊 Ocean','light':'☀️ Light',
+  'hyperliquid':'⚡ Basic','slash-gold':'🟡 Slash Gold','ocean':'🌊 Ocean','light':'☀️ Light',
   'github':'🐙 GitHub','spotify':'🎵 Spotify','netflix':'🎬 Netflix','discord':'🎮 Discord',
   'midjourney':'🖼 Midjourney','opensea':'💠 OpenSea','notion':'📝 Notion','suno':'🎶 Suno',
   'navigate':'🗺 Navigate','canva':'🎨 Canva','ferrari':'🏎 Ferrari','lamborghini':'🏆 Lamborghini',
@@ -7589,8 +8640,20 @@ var _THEME_LABELS = {
   'slack':'💬 Slack','phantom':'👻 Phantom','aave':'🟣 AAVE','instagram':'📸 Instagram',
   'frictional':'🎪 Frictional','palette':'🖌 Palette','base':'🔷 Base'
 };
+var _THEME_ICONS = {
+  'hyperliquid':'⚡','slash-gold':'🟡','ocean':'🌊','light':'☀️','github':'🐙','spotify':'🎵','netflix':'🎬','discord':'🎮',
+  'midjourney':'🖼','opensea':'💠','notion':'📝','suno':'🎶','navigate':'🗺','canva':'🎨','ferrari':'🏎','lamborghini':'🏆',
+  'scale':'📊','apple':'🍎','coinbase':'💎','tesla':'⚡','claude':'🤖','airbnb':'🏠','duolingo':'🦉','kraken':'🔮',
+  'slack':'💬','phantom':'👻','aave':'🟣','instagram':'📸','frictional':'🎪','palette':'🖌','base':'🔷'
+};
+function _themePlainName(tid){
+  var s=_THEME_LABELS[tid]; if(!s) return 'Style';
+  var parts=s.trim().split(/\\s+/);
+  if(parts.length>=2 && /^[^\\w]/.test(parts[0])) return parts.slice(1).join(' ');
+  return s;
+}
 var _baseStyleCache = new Map();
-var _activeThemeId = localStorage.getItem('ws_theme') || 'slash-gold';
+var _activeThemeId = localStorage.getItem('ws_theme') || 'hyperliquid';
 function _initBaseStyles() {
   if(_baseStyleCache.size > 0) return;
   document.querySelectorAll('[style]').forEach(function(el){
@@ -7626,21 +8689,36 @@ var _mo = new MutationObserver(function(muts){
 });
 function applyTheme(tid) {
   var t = THEMES[tid]; if(!t) return;
-  var r = document.documentElement;
-  for(var k in t) r.style.setProperty(k,t[k]);
-  r.setAttribute('data-theme',tid);
+  if (typeof wsApplyMergedTheme === 'function') wsApplyMergedTheme(tid);
+  else {
+    var r = document.documentElement;
+    for(var k in t) r.style.setProperty(k,t[k]);
+    r.setAttribute('data-theme',tid);
+    r.style.colorScheme = /^(light|aave|airbnb|apple|claude|duolingo|instagram|kraken|phantom|slack|tesla|palette|frictional|base|coinbase)$/.test(tid) ? 'light' : 'dark';
+  }
   localStorage.setItem('ws_theme',tid);
   _activeThemeId = tid;
+  _baseStyleCache.clear();
   _initBaseStyles();
   _applyColorMap(THEME_CMAPS[tid]);
   _mo.disconnect();
   _mo.observe(document.body,{childList:true,subtree:true});
+  var ic=document.getElementById('theme-icon');
   var lbl=document.getElementById('theme-label');
-  if(lbl) lbl.textContent=_THEME_LABELS[tid]||'Style';
+  if(ic) ic.textContent=_THEME_ICONS[tid]||'⚡';
+  if(lbl) lbl.textContent=_themePlainName(tid);
   document.querySelectorAll('.theme-opt').forEach(function(b){
     b.classList.toggle('active',b.getAttribute('data-tid')===tid);
   });
   toggleThemePanel(false);
+  try {
+    window.dispatchEvent(new CustomEvent('ws-theme-changed',{detail:{id:tid}}));
+    if (typeof window.initWarTrendChart === 'function') setTimeout(function(){ try{window.initWarTrendChart();}catch(e){} }, 30);
+    if (typeof window.renderSMM === 'function') setTimeout(function(){ try{window.renderSMM();}catch(e){} }, 40);
+    if (typeof window.renderSignal === 'function') setTimeout(function(){ try{window.renderSignal();}catch(e){} }, 20);
+    if (typeof window.renderWarAlertBanner === 'function') setTimeout(function(){ try{window.renderWarAlertBanner();}catch(e){} }, 25);
+    if (typeof window.renderSentiment === 'function') setTimeout(function(){ try{window.renderSentiment();}catch(e){} }, 48);
+  } catch(e) {}
 }
 function toggleThemePanel(force) {
   var p=document.getElementById('theme-panel'); if(!p) return;
@@ -7654,18 +8732,22 @@ document.addEventListener('click',function(e){
 });
 (function(){
   var saved=_activeThemeId;
+  var ic=document.getElementById('theme-icon');
   var lbl=document.getElementById('theme-label');
-  if(lbl) lbl.textContent=_THEME_LABELS[saved]||'Style';
+  if(ic) ic.textContent=_THEME_ICONS[saved]||'⚡';
+  if(lbl) lbl.textContent=_themePlainName(saved);
   document.querySelectorAll('.theme-opt').forEach(function(b){
     b.classList.toggle('active',b.getAttribute('data-tid')===saved);
   });
   if(saved!=='slash-gold'){
+    _baseStyleCache.clear();
     _initBaseStyles();
     _applyColorMap(THEME_CMAPS[saved]);
     _mo.observe(document.body,{childList:true,subtree:true});
   }
 })();
 """
+    html = html.replace("___WS_UI_PACK_JSON___", _embed_ui_tokens_json_str())
     html = html.replace("%%SCRIPT%%", js_block)
     html = html.replace("%%MODAL%%", modal_block)
     html = html.replace("%%ALL_STATS%%", all_stats_js)
@@ -7841,7 +8923,7 @@ async def main_async(args):
                 addrs = [a for a, _ in sync_addrs]
                 await process_addresses(
                     addrs,
-                    [a[:6]+"..."+a[-4:] for a in addrs],
+                    [short_addr(a) for a in addrs],
                     ["manual"] * len(addrs),
                     archive, force=True
                 )
@@ -7876,7 +8958,7 @@ async def main_async(args):
             console.print(f"  [dim]wallets.txt에 {len(new_w)}개 추가됨[/dim]")
         await process_addresses(
             lookup_addrs,
-            [a[:6]+"..."+a[-4:] for a in lookup_addrs],
+            [short_addr(a) for a in lookup_addrs],
             ["manual"] * len(lookup_addrs),
             archive, force=True
         )
