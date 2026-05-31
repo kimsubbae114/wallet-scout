@@ -2219,6 +2219,12 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                     _cmm_seeded   = _entry.get("cmm_seeded", False)
                     _cmm_pnl_data = _entry.get("cmm_pnl", {})
                     _hi_bf_done   = bool(_entry.get("cmm_hi_fill_backfill_done", False))
+                    # fills_cache에 없으면 archive(_cmm_pnl)에서 복원 (GitHub Actions 대응)
+                    if not _cmm_seeded:
+                        _arch_entry = archive.data.get(addr.lower(), {}).get("stats") or {}
+                        if _arch_entry.get("_cmm_seeded") and _arch_entry.get("_cmm_pnl"):
+                            _cmm_seeded   = True
+                            _cmm_pnl_data = _arch_entry["_cmm_pnl"]
                     _new_fills = raw.get("fills", [])
                     # 1) HL fills만 머지 → WAR/에쿼티 게이트 (저장 대상 아니면 CMM API 호출 안 함)
                     _hl_existing = [f for f in _existing if not f.get("_cmm")]
@@ -2261,40 +2267,47 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         console.print(f"  [dim]제외 {label} — ${_eq_gate:,.0f} (${MIN_EQUITY:,} 미만, HL만) · {cnt}회째 · {days}일 후 재체크[/dim]")
                         continue
 
-                    # 2) 저장 대상만 CMM 시딩·백필 (기존에 시딩됐으면 전체 _existing + HL 신규)
-                    _merged = _hl_merged
-                    if not _cmm_seeded:
+                    # 2) CMM 시딩: 2회 방식 (wallets + closed-trades/summary), WAR 높은 지갑 우선
+                    _merged = _merge_fills(_existing, _new_fills) if _cmm_seeded else _hl_merged
+                    if not _cmm_seeded and cmm_quota_remaining() >= 2:
+                        # 아카이브 WAR 점수 확인 — 낮은 WAR는 한도 아낄 때 스킵 가능
+                        _arch_war = (archive.data.get(addr.lower(), {}).get("stats", {}) or {}).get("war_score", 0) or 0
                         try:
-                            _cmm_fills = await fetch_cmm_trades_all(api.http, addr)
-                            _cmm_pnl_data = await fetch_cmm_pnl(api.http, addr)
-                            _merged = _merge_fills(_hl_merged, _cmm_fills)
+                            _tok = CMM_TOKEN_FILE.read_text(encoding="utf-8").strip() if CMM_TOKEN_FILE.exists() else ""
+                            _hdrs = {"Authorization": f"Bearer {_tok}"} if _tok else {}
+                            _pnl_new = {}
+                            if _tok:
+                                # wallets 엔드포인트 (1회)
+                                if _cmm_quota_try_acquire(1):
+                                    _rw = await api.http.get(
+                                        f"{CMM_API_BASE}/api/external/wallets",
+                                        headers=_hdrs, params={"address": addr.lower(), "limit": 1}, timeout=10)
+                                    if _rw.status_code == 200:
+                                        _wi = _rw.json().get("items", [])
+                                        if _wi:
+                                            _pnl_new["alltime"] = round(_wi[0].get("perpPnl", 0) or 0, 2)
+                                            _pnl_new["perp_pnl"] = _pnl_new["alltime"]
+                                # closed-trades/summary 엔드포인트 (1회)
+                                if _cmm_quota_try_acquire(1):
+                                    _rs = await api.http.get(
+                                        f"{CMM_API_BASE}/api/external/closed-trades/summary",
+                                        headers=_hdrs, params={"address": addr.lower(), "interval": "all"}, timeout=10)
+                                    if _rs.status_code == 200:
+                                        _sm = _rs.json().get("summary", {})
+                                        _pnl_new["win_rate_cmm"]    = _sm.get("winRate", 0) or 0
+                                        _pnl_new["profit_factor_cmm"] = _sm.get("profitFactor", 0) or 0
+                                        _pnl_new["net_pnl_cmm"]     = _sm.get("netPnl", 0) or 0
+                                        _pnl_new["total_trades_cmm"] = _sm.get("totalTrades", 0) or 0
+                            if _pnl_new:
+                                _cmm_pnl_data = _pnl_new
                             _cmm_seeded = True
-                            _cnt_cmm = len(_cmm_fills)
-                            console.print(f"  [dim]CMM seed {label}: {_cnt_cmm}개 trades, pnlAllTime={_cmm_pnl_data.get('alltime',0):,.0f}[/dim]")
-                        except Exception:
-                            _merged = _hl_merged
-                            pass
-                    else:
-                        _merged = _merge_fills(_existing, _new_fills)
-                    if (
-                        len(_merged) >= CMM_BACKFILL_MIN_HL_FILLS
-                        and _cmm_seeded
-                        and not _hi_bf_done
-                        and _cmm_pnl_effectively_empty(_cmm_pnl_data)
-                    ):
-                        try:
-                            _bf_fills = await fetch_cmm_trades_all(api.http, addr)
-                            _bf_pnl = await fetch_cmm_pnl(api.http, addr)
-                            _merged = _merge_fills(_merged, _bf_fills)
-                            if _bf_pnl:
-                                _cmm_pnl_data = {**(_cmm_pnl_data or {}), **_bf_pnl}
                             console.print(
-                                f"  [dim]CMM hi-fill backfill {label}: +{len(_bf_fills)} trades, "
-                                f"pnlAllTime={_cmm_pnl_data.get('alltime', 0):,.0f}[/dim]"
+                                f"  [dim]CMM seed {label} (WAR {_arch_war:.0f}): "
+                                f"perpPnl=${_pnl_new.get('alltime',0):,.0f} "
+                                f"winRate={_pnl_new.get('win_rate_cmm',0):.1%}[/dim]"
                             )
                         except Exception:
                             pass
-                        _hi_bf_done = True
                     _fills_cache[addr.lower()] = {
                         "fills":      _merged,
                         "cmm_seeded": _cmm_seeded,
@@ -2363,6 +2376,10 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         console.print(f"  [dim]제외 {label} — ${equity:,.0f} (${MIN_EQUITY:,} 미만) · {cnt}회째 · {days}일 후 재체크[/dim]")
                         continue
                     excluded.clear(addr)  # backoff 초기화 (WAR 회복)
+                    # cmm_pnl을 archive에도 저장 → GitHub Actions에서도 유지
+                    if _cmm_pnl_data:
+                        stats["_cmm_pnl"]    = _cmm_pnl_data
+                        stats["_cmm_seeded"] = _cmm_seeded
                     archive.upsert(addr, stats)
                     results.append(stats)
                     saved_count += 1
