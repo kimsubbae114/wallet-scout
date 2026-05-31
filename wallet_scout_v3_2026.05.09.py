@@ -4644,6 +4644,11 @@ function buildPosChangeHTML(s){
     )
     js_block += """
 // ── Lazy-load: SMM / BTC / wallet cumulative ─────────────────────────────────
+// GitHub Pages를 data 소스로 사용 (Cloudflare/어느 URL에서든 동작)
+var _DATA=window.location.origin+window.location.pathname.replace(/\\/+$/,'').replace(/\\/[^/]*$/,'')+'/';
+if(_DATA.indexOf('github.io')<0&&_DATA.indexOf('workers.dev')<0)_DATA='';
+var _GH_DATA='https://kimsubbae114.github.io/wallet-scout/';
+var _BASE=_DATA||_GH_DATA;
 var _smmL=false,_btcL=false,_wdetCache={};
 var _smmCbs=[],_btcCbs=[];
 function _loadSMM(cb){
@@ -4651,7 +4656,7 @@ function _loadSMM(cb){
   if(_smmL){return cb();}
   _smmCbs.push(cb);
   if(_smmCbs.length>1)return;
-  fetch('data/smm.json').then(function(r){return r.json();}).then(function(d){
+  fetch(_GH_DATA+'data/smm.json').then(function(r){return r.json();}).then(function(d){
     window.SMM_EVENTS=d;_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];
   }).catch(function(){_smmL=true;_smmCbs.forEach(function(f){f();});_smmCbs=[];});
 }
@@ -4660,7 +4665,7 @@ function _loadBTC(cb){
   if(_btcL){return cb();}
   _btcCbs.push(cb);
   if(_btcCbs.length>1)return;
-  fetch('data/btc.json').then(function(r){return r.json();}).then(function(d){
+  fetch(_GH_DATA+'data/btc.json').then(function(r){return r.json();}).then(function(d){
     window.BTC_PRICES=d;_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];
   }).catch(function(){_btcL=true;_btcCbs.forEach(function(f){f();});_btcCbs=[];});
 }
@@ -4688,7 +4693,7 @@ window.addEventListener('load',function(){
       _oO(addr);
       var ak=addr.toLowerCase();
       if(_wdetCache[ak]){_applyWalletDetail(_wdetCache[ak]);return;}
-      fetch('data/wallet/'+ak+'.json').then(function(r){return r.json();}).then(function(d){_wdetCache[ak]=d;_applyWalletDetail(d);}).catch(function(){});
+      fetch(_GH_DATA+'data/wallet/'+ak+'.json').then(function(r){return r.json();}).then(function(d){_wdetCache[ak]=d;_applyWalletDetail(d);}).catch(function(){});
     };
   }
 });
