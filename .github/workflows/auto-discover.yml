@@ -27,7 +27,7 @@ jobs:
         run: echo "${{ secrets.CMM_TOKEN }}" > cmm_token.txt
 
       - name: Run discover + report
-        run: python wallet_scout_v3_2026.05.09.py --discover --report
+        run: python wallet_scout_v3_2026.05.09.py --discover --report --cmm-limit 90
         env:
           PYTHONIOENCODING: utf-8
 

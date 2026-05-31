@@ -8747,6 +8747,30 @@ async def main_async(args):
         if before != after:
             console.print(f"[yellow]--prune-war: removed {before-after} wallets below WAR {args.prune_war}[/yellow]")
 
+    # --cmm-fetch: 지정 지갑 CMM 데이터 즉시 수집
+    if getattr(args, "cmm_fetch", None):
+        console.print(f"\n[bold cyan]CMM 수동 수집: {len(args.cmm_fetch)}개 지갑[/bold cyan]")
+        _fc = _load_fills_cache()
+        async with httpx.AsyncClient(timeout=30) as _http:
+            for _addr in args.cmm_fetch:
+                _ak = _addr.strip().lower()
+                _rem = cmm_quota_remaining()
+                if _rem <= 0:
+                    console.print(f"  [red]CMM 한도 소진 — {_addr[:12]}... 스킵[/red]")
+                    break
+                console.print(f"  CMM fetch: {_addr[:12]}... (남은 한도: {_rem})")
+                try:
+                    _pnl = await fetch_cmm_pnl(_http, _addr)
+                    if _fc.get(_ak) is None:
+                        _fc[_ak] = {"fills": [], "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False}
+                    _fc[_ak]["cmm_pnl"] = _pnl
+                    _fc[_ak]["cmm_seeded"] = True
+                    console.print(f"    [green]OK[/green] alltime={_pnl.get('alltime',0):,.0f}")
+                except Exception as _e:
+                    console.print(f"    [red]실패: {_e}[/red]")
+        _save_fills_cache(_fc)
+        console.print("[green]fills_cache.json 저장 완료[/green]")
+
     # --mark-vault: manually tag addresses as vault source
     if getattr(args, "mark_vault", None):
         for addr in args.mark_vault:
@@ -9138,7 +9162,17 @@ def main():
     parser.add_argument("--mark-vault", nargs="+", metavar="ADDR", help="Manually tag addresses as vault source")
     parser.add_argument("--prune-war", type=float, default=None, help="Remove wallets below this WAR score from archive")
     parser.add_argument("--report", "-r", action="store_true", help="HTML 리포트 Gen")
+    parser.add_argument("--cmm-limit", type=int, default=None,
+                        help="오늘 CMM API 한도 상한 (기본: CMM_DAILY_API_LIMIT=100). 자동실행 시 90 권장")
+    parser.add_argument("--cmm-fetch", nargs="+", metavar="ADDR",
+                        help="지정 지갑 CMM 데이터 즉시 수집 (남은 한도 내)")
     args = parser.parse_args()
+
+    # --cmm-limit 로 전역 한도 재설정
+    if args.cmm_limit is not None:
+        global CMM_DAILY_API_LIMIT
+        CMM_DAILY_API_LIMIT = args.cmm_limit
+
     asyncio.run(main_async(args))
 
 
