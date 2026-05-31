@@ -1,0 +1,45 @@
+name: Auto Discover & Refresh
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # 30분마다
+  workflow_dispatch:          # 수동 실행 버튼
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install httpx rich
+
+      - name: Run discover + report
+        run: python wallet_scout_v3_2026.05.09.py --discover --report
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Copy latest report to index.html
+        run: |
+          LATEST=$(ls -t scouting_report_*.html | head -1)
+          echo "Latest report: $LATEST"
+          cp "$LATEST" index.html
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html wallet_cache.json sentiment_history.json war_history.json data/ || true
+          git add btc_price_cache.json smart_money_events.json war_excluded.json wallets_meta.json 2>/dev/null || true
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "auto-discover $(date +'%Y-%m-%d %H:%M UTC')"
+          git push
