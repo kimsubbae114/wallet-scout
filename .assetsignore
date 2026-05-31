@@ -1,20 +1,24 @@
-# Cache / data files
-*.json
-*.log
-*.txt
+# 대용량 캐시 파일 (Cloudflare 25MB 제한 초과 방지)
+fills_cache.json
+wallet_cache.json
+btc_price_cache.json
+smart_money_events.json
+cmm_api_quota.json
+wallets_meta.json
+war_excluded.json
 
-# Python
+# 로그 / 임시 파일
+*.log
 *.py
+*.bat
+*.txt
 __pycache__/
 
-# HTML reports (index.html 만 배포)
+# HTML 리포트 (index.html 만 배포)
 scouting_report_*.html
 pnl_chart_*.html
 
-# Dev files
-*.bat
-*.js
-*.md
+# 개발 폴더
 Design/
 old/
 worker/
