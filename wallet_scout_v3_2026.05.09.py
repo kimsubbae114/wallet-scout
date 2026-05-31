@@ -4362,13 +4362,22 @@ function buildPosChangeHTML(s){
     _fc_pc = _load_fills_cache()
     for s in ranked:
         _ak = (s.get("address") or "").lower()
-        _fe = (_fc_pc.get(_ak) or {}).get("fills") or []
+        _fc_entry = _fc_pc.get(_ak) or {}
+        _fe = _fc_entry.get("fills") or []
         s["pos_change_closed_pnl"] = _pos_change_closed_pnl_map(
             s.get("prev_positions") or [],
             (s.get("prev_positions_ts") or "").strip(),
             _fe,
             s.get("positions") or [],
         )
+        # fills_cache의 cmm_pnl을 리포트에 즉시 반영 (--cmm-fetch 후 discover 없이도 CMM 뱃지 표시)
+        _fc_cmm = _fc_entry.get("cmm_pnl") or {}
+        if _fc_cmm.get("alltime") and not s.get("cmm_source"):
+            s["total_pnl"]     = round(_fc_cmm["alltime"], 2)
+            s["cmm_pnl_day"]   = round(_fc_cmm.get("day", 0), 2)
+            s["cmm_pnl_week"]  = round(_fc_cmm.get("week", 0), 2)
+            s["cmm_pnl_month"] = round(_fc_cmm.get("month", 0), 2)
+            s["cmm_source"]    = True
     # ── 지갑별 detail JSON 파일 생성 (cumulative 등 대용량 분리) ──────────────
     import os as _os
     _os.makedirs("data/wallet", exist_ok=True)
@@ -4387,8 +4396,7 @@ function buildPosChangeHTML(s){
                 json.dump(_detail, _wf, ensure_ascii=False, separators=(",", ":"), default=str)
         except Exception:
             pass
-        # inline ALL_STATS에서 대용량 필드만 제거 (cumulative만 - prev_positions는 24h Hot Wallets에 필요)
-        _s["cumulative"] = []
+        # prev_positions는 24h Hot Wallets에 필요하므로 유지, cumulative도 모달 PnL 차트에 필요하므로 유지
     # ─────────────────────────────────────────────────────────────────────────
     all_stats_js = json.dumps(ranked, ensure_ascii=False, default=str)
 
