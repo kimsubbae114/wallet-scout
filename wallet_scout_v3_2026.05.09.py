@@ -8747,29 +8747,65 @@ async def main_async(args):
         if before != after:
             console.print(f"[yellow]--prune-war: removed {before-after} wallets below WAR {args.prune_war}[/yellow]")
 
-    # --cmm-fetch: 지정 지갑 CMM 데이터 즉시 수집
+    # --cmm-fetch: 지정 지갑 CMM 데이터 즉시 수집 (wallets + closed-trades/summary 엔드포인트)
     if getattr(args, "cmm_fetch", None):
         console.print(f"\n[bold cyan]CMM 수동 수집: {len(args.cmm_fetch)}개 지갑[/bold cyan]")
         _fc = _load_fills_cache()
-        async with httpx.AsyncClient(timeout=30) as _http:
-            for _addr in args.cmm_fetch:
-                _ak = _addr.strip().lower()
-                _rem = cmm_quota_remaining()
-                if _rem <= 0:
-                    console.print(f"  [red]CMM 한도 소진 — {_addr[:12]}... 스킵[/red]")
-                    break
-                console.print(f"  CMM fetch: {_addr[:12]}... (남은 한도: {_rem})")
-                try:
-                    _pnl = await fetch_cmm_pnl(_http, _addr)
-                    if _fc.get(_ak) is None:
-                        _fc[_ak] = {"fills": [], "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False}
-                    _fc[_ak]["cmm_pnl"] = _pnl
-                    _fc[_ak]["cmm_seeded"] = True
-                    console.print(f"    [green]OK[/green] alltime={_pnl.get('alltime',0):,.0f}")
-                except Exception as _e:
-                    console.print(f"    [red]실패: {_e}[/red]")
-        _save_fills_cache(_fc)
-        console.print("[green]fills_cache.json 저장 완료[/green]")
+        if not CMM_TOKEN_FILE.exists():
+            console.print("[red]cmm_token.txt 없음 — 스킵[/red]")
+        else:
+            _cmm_tok = CMM_TOKEN_FILE.read_text(encoding="utf-8").strip()
+            _cmm_hdrs = {"Authorization": f"Bearer {_cmm_tok}"}
+            async with httpx.AsyncClient(timeout=30) as _http:
+                for _addr in args.cmm_fetch:
+                    _ak = _addr.strip().lower()
+                    _rem = cmm_quota_remaining()
+                    if _rem < 2:
+                        console.print(f"  [red]CMM 한도 부족({_rem}) — {_addr[:12]}... 스킵[/red]")
+                        break
+                    console.print(f"  CMM fetch: {_addr[:12]}... (남은 한도: {_rem})")
+                    _pnl_data = {}
+                    _wallet_data = {}
+                    _summary_data = {}
+                    try:
+                        # 1. wallets 엔드포인트 (equity, perpPnl, bias 등)
+                        if _cmm_quota_try_acquire(1):
+                            _rw = await _http.get(
+                                f"{CMM_API_BASE}/api/external/wallets",
+                                headers=_cmm_hdrs, params={"address": _ak, "limit": 1}, timeout=10)
+                            if _rw.status_code == 200:
+                                _items = _rw.json().get("items", [])
+                                if _items:
+                                    _wallet_data = _items[0]
+                                    _pnl_data["perp_pnl"] = _wallet_data.get("perpPnl", 0) or 0
+                                    _pnl_data["total_equity"] = _wallet_data.get("totalEquity", 0) or 0
+                                    _pnl_data["alltime"] = _pnl_data["perp_pnl"]
+                        # 2. closed-trades/summary (win rate, profit factor 등)
+                        if _cmm_quota_try_acquire(1):
+                            _rs = await _http.get(
+                                f"{CMM_API_BASE}/api/external/closed-trades/summary",
+                                headers=_cmm_hdrs, params={"address": _ak, "interval": "all"}, timeout=10)
+                            if _rs.status_code == 200:
+                                _summary_data = _rs.json().get("summary", {})
+                                _pnl_data["win_rate_cmm"] = _summary_data.get("winRate", 0) or 0
+                                _pnl_data["profit_factor_cmm"] = _summary_data.get("profitFactor", 0) or 0
+                                _pnl_data["net_pnl_cmm"] = _summary_data.get("netPnl", 0) or 0
+                                _pnl_data["total_trades_cmm"] = _summary_data.get("totalTrades", 0) or 0
+                                _pnl_data["expectancy_cmm"] = _summary_data.get("expectancy", 0) or 0
+                        if _fc.get(_ak) is None:
+                            _fc[_ak] = {"fills": [], "cmm_seeded": False, "cmm_pnl": {}, "cmm_hi_fill_backfill_done": False}
+                        _fc[_ak]["cmm_pnl"] = _pnl_data
+                        _fc[_ak]["cmm_seeded"] = True
+                        console.print(
+                            f"    [green]OK[/green] perpPnl=${_pnl_data.get('perp_pnl',0):,.0f} "
+                            f"| winRate={_pnl_data.get('win_rate_cmm',0):.1%} "
+                            f"| profitFactor={_pnl_data.get('profit_factor_cmm',0):.2f} "
+                            f"| trades={_pnl_data.get('total_trades_cmm',0)}"
+                        )
+                    except Exception as _e:
+                        console.print(f"    [red]실패: {_e}[/red]")
+            _save_fills_cache(_fc)
+            console.print("[green]fills_cache.json 저장 완료[/green]")
 
     # --mark-vault: manually tag addresses as vault source
     if getattr(args, "mark_vault", None):
