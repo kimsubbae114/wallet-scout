@@ -191,10 +191,11 @@ console = TeeConsole(_raw_console, _LOG_PATH)
 
 
 # ══ EXCLUDED MANAGER ═══════════════════════════════════════════════════
-# WAR 40 미만으로 제외된 지갑의 backoff 관리
-# 제외 횟수에 따라 점차 체크 간격을 늘림 (최대 30일)
-BACKOFF_DAYS = {1:1, 2:3, 3:7, 4:14, 5:21, 6:30, 7:30, 8:30, 9:30, 10:30}
-BACKOFF_MAX_DAYS = 30
+# WAR 50 미만으로 제외된 지갑의 backoff 관리
+# 1회:3일 / 2회:7일 / 3회 이상:영구 스킵
+BACKOFF_DAYS = {1: 3, 2: 7}
+BACKOFF_MAX_DAYS = 7
+BACKOFF_PERMANENT_THRESHOLD = 3  # 이 횟수 이상이면 영구 스킵
 
 class ExcludedManager:
     def __init__(self, path=None):
@@ -241,21 +242,29 @@ class ExcludedManager:
         war    = entry.get("last_war", 0)
         reason = entry.get("reason", "war")
         reason_str = "WAR 미달" if reason == "war" else "Equity 부족"
+        if entry.get("permanent") or cnt >= BACKOFF_PERMANENT_THRESHOLD:
+            return f"{reason_str} (WAR {war:.1f}) · 제외 {cnt}회 · 🚫 영구 스킵"
         return f"{reason_str} (WAR {war:.1f}) · 제외 {cnt}회 · 다음체크 {nc}"
 
     def record_exclusion(self, address: str, war: float, reason: str = "war"):
-        """WAR 40 미만 또는 equity 부족으로 제외될 때 호출 — backoff 갱신"""
+        """WAR 50 미만 또는 equity 부족으로 제외될 때 호출 — backoff 갱신"""
         key = address.lower()
         now = datetime.now(tz=timezone.utc)
         cnt = self.data.get(key, {}).get("exclude_count", 0) + 1
-        days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
-        next_check = (now + timedelta(days=days)).isoformat()
+        if cnt >= BACKOFF_PERMANENT_THRESHOLD:
+            next_check = (now + timedelta(days=36500)).isoformat()
+            permanent = True
+        else:
+            days = BACKOFF_DAYS.get(cnt, BACKOFF_MAX_DAYS)
+            next_check = (now + timedelta(days=days)).isoformat()
+            permanent = False
         self.data[key] = {
-            "exclude_count":  cnt,
+            "exclude_count":    cnt,
             "last_excluded_at": now.isoformat(),
-            "next_check_at":  next_check,
-            "last_war":       round(war, 1),
-            "reason":         reason,   # "war" | "equity"
+            "next_check_at":    next_check,
+            "last_war":         round(war, 1),
+            "reason":           reason,   # "war" | "equity"
+            "permanent":        permanent,
         }
 
     def clear(self, address: str):
