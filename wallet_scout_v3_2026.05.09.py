@@ -2317,6 +2317,11 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                     _fills_cache_dirty = True
                     raw["fills"] = _merged  # compute_stats에 전체 히스토리 전달
                     stats = compute_stats(raw, addr, label, src=src)
+                    # HL 기준값 저장 (CMM 덮어쓰기 전)
+                    stats["hl_total_pnl"] = stats.get("total_pnl", 0)
+                    stats["hl_war_score"] = stats.get("war_score", 0)
+                    _hl_roi_comp  = stats.get("war_components", {}).get("ROI", 0)
+                    _hl_radar_roi = stats.get("radar", {}).get("roi", 0)
                     # CMM leaderboard PnL로 total_pnl 보정 (fills가 부족해도 정확한 값 표시)
                     if _cmm_pnl_data.get("alltime"):
                         stats["total_pnl"]     = round(_cmm_pnl_data["alltime"], 2)
@@ -2340,6 +2345,11 @@ async def process_addresses(addresses, labels, sources, archive: ArchiveManager,
                         # WAR 컴포넌트·점수도 재계산
                         stats["war_components"]["ROI"] = round(_new_roi_score * 0.25, 1)
                         stats["war_score"] = round(sum(stats["war_components"].values()), 1)
+                        # HL WAR이 더 높으면 복원 (CMM PNL이 낮아 ROI가 더 작은 경우)
+                        if stats["hl_war_score"] > stats["war_score"]:
+                            stats["war_score"] = stats["hl_war_score"]
+                            stats["war_components"]["ROI"] = _hl_roi_comp
+                            stats["radar"]["roi"] = _hl_radar_roi
                     equity = stats.get("total_equity", 0)
                     war = stats.get("war_score", 0)
                     # 디버그: WAR 계산 근거 로그
@@ -2772,6 +2782,8 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
             s["days_in_report"] = (datetime.now(timezone.utc) - _fs_date).days
         except Exception:
             s["days_in_report"] = None
+        # 마지막 업데이트 시각 (모달 "X ago" 표시용)
+        s["fetched_at"] = archive.data.get(addr.lower(), {}).get("fetched_at", "") if archive else ""
 
     radar_labels  = ["Profit","ROI","Big Bet","Sharpe","Win Rate"]
     radar_datasets = [{"label":s["label"],"addr":s["address"],"data":[s["radar"]["profit_amt"],s["radar"]["roi"],
@@ -4390,11 +4402,35 @@ function buildPosChangeHTML(s){
         # fills_cache의 cmm_pnl을 리포트에 즉시 반영 (--cmm-fetch 후 discover 없이도 CMM 뱃지 표시)
         _fc_cmm = _fc_entry.get("cmm_pnl") or {}
         if _fc_cmm.get("alltime") and not s.get("cmm_source"):
+            import math as _cm3
+            s["hl_total_pnl"] = s.get("total_pnl", 0)
+            s["hl_war_score"] = s.get("war_score", 0)
+            _fc_hl_roi_comp  = s.get("war_components", {}).get("ROI", 0)
+            _fc_hl_radar_roi = s.get("radar", {}).get("roi", 0)
             s["total_pnl"]     = round(_fc_cmm["alltime"], 2)
             s["cmm_pnl_day"]   = round(_fc_cmm.get("day", 0), 2)
             s["cmm_pnl_week"]  = round(_fc_cmm.get("week", 0), 2)
             s["cmm_pnl_month"] = round(_fc_cmm.get("month", 0), 2)
             s["cmm_source"]    = True
+            # CMM 기반 ROI·WAR 재계산
+            _fc_roi = round(_fc_cmm["alltime"] / max(s.get("total_equity", 1), 1) * 100, 2)
+            s["roi_pct"] = _fc_roi
+            _fc_nc = s.get("closed_count", 0)
+            if _fc_nc < 3 or _fc_roi <= 0:
+                _fc_roi_score = 10.0
+            else:
+                _fc_r = min(_fc_roi, 400.0)
+                _fc_roi_score = round(min(30 + 70 * _cm3.log1p(_fc_r) / _cm3.log1p(400), 100.0), 1)
+            _fc_cmm_war = round(sum(v for k, v in (s.get("war_components") or {}).items() if k != "ROI") + _fc_roi_score * 0.25, 1)
+            if s["hl_war_score"] > _fc_cmm_war:
+                # HL WAR이 더 높음 → WAR은 유지, ROI 컴포넌트도 유지
+                pass
+            else:
+                if s.get("radar"):
+                    s["radar"]["roi"] = _fc_roi_score
+                if s.get("war_components") is not None:
+                    s["war_components"]["ROI"] = round(_fc_roi_score * 0.25, 1)
+                s["war_score"] = _fc_cmm_war
     # ── 지갑별 detail JSON 파일 생성 (cumulative 등 대용량 분리) ──────────────
     import os as _os
     _os.makedirs("data/wallet", exist_ok=True)
@@ -9066,7 +9102,7 @@ async def main_async(args):
                 _all_long  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG") for s in _pos_traders)
                 _all_short = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in _pos_traders)
                 _snap = {
-                    "ts": _dt.now().strftime("%Y-%m-%dT%H:%M:%S"),
+                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
                     "all": {
                         "long_pct":  round(_all_long/_all_eq*100, 1) if _all_eq>0 else 0,
                         "short_pct": round(_all_short/_all_eq*100, 1) if _all_eq>0 else 0,
@@ -9119,6 +9155,8 @@ async def main_async(args):
                     sn  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in grp)
                     _snap["equities"].append({"label": lbl, "long_pct": round(ln/geq*100,1), "short_pct": round(sn/geq*100,1)})
                 _hist.append(_snap)
+                # ts 기준 정렬 (GitHub Actions 큐 지연으로 늦게 실행된 스냅샷이 뒤에 append되는 문제 방지)
+                _hist.sort(key=lambda x: x.get("ts", ""))
                 # 최대 200개 스냅샷 유지
                 if len(_hist) > 200: _hist = _hist[-200:]
                 _hist_path.write_text(json.dumps(_hist, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -9136,7 +9174,7 @@ async def main_async(args):
             _top100 = _war_sorted[:100]
             if _top100:
                 _war_snap = {
-                    "ts": _dt.now().strftime("%Y-%m-%dT%H:%M:%S"),
+                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
                     "top20": [
                         {
                             "address": s["address"],
@@ -9152,6 +9190,7 @@ async def main_async(args):
                     ]
                 }
                 _war_hist.append(_war_snap)
+                _war_hist.sort(key=lambda x: x.get("ts", ""))
                 if len(_war_hist) > 200:
                     _war_hist = _war_hist[-200:]
                 _war_hist_path.write_text(json.dumps(_war_hist, ensure_ascii=False, indent=2), encoding="utf-8")

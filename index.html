@@ -636,6 +636,27 @@ function renderSMM() {
     return true;
   });
   var filteredPrices = timeMs ? prices.filter(function(p){ return p.t >= cutoffT; }) : prices;
+
+  // 동일 지갑·코인·방향에서 4시간 이내 유사 규모(50% 이내 차이) 중복 제거
+  (function() {
+    var deduped = [];
+    for (var di = 0; di < filteredEvs.length; di++) {
+      var ev = filteredEvs[di];
+      var dup = false;
+      for (var dj = 0; dj < deduped.length; dj++) {
+        var e = deduped[dj];
+        if (e.addr !== ev.addr || e.coin !== ev.coin || e.dir !== ev.dir) continue;
+        if (Math.abs(ev.t - e.t) > 4 * 3600 * 1000) continue;
+        var bigger = Math.max(ev.ntl, e.ntl), smaller = Math.max(Math.min(ev.ntl, e.ntl), 1);
+        if (bigger / smaller > 1.5) continue;
+        if (ev.ntl > e.ntl) deduped[dj] = ev;
+        dup = true; break;
+      }
+      if (!dup) deduped.push(ev);
+    }
+    filteredEvs = deduped;
+  })();
+
   window._smmFilteredEvs = filteredEvs;
 
   if (statusEl) {
@@ -4536,6 +4557,18 @@ function copyAddr(addr) {
   if(el){el.textContent='✓ Copied';setTimeout(()=>{el.textContent='📋 Copy';},1500);}
 }
 
+function _timeAgo(isoStr) {
+  if (!isoStr) return '';
+  try {
+    var d = new Date(isoStr);
+    var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (sec < 60)   return 'just now';
+    if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+    if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+    return Math.floor(sec / 86400) + 'd ago';
+  } catch(e) { return ''; }
+}
+
 function openModal(addr) {
   if(!addr) return;
   // 대소문자 무관 매칭
@@ -4637,7 +4670,7 @@ function openModal(addr) {
             s.confidence==='High Confidence'?'#030304':s.confidence==='Medium Confidence'?'#1c1d22':'#08080a'
           };font-family:Inter,sans-serif">${s.confidence||''}</span>
         </div>
-        <div class="modal-sub" style="margin-top:4px">📅 ${s.first_date} ~ ${s.last_date} &nbsp;|&nbsp; ${s.data_days}d &nbsp;|&nbsp; $${Math.round(s.total_equity).toLocaleString()}${s.days_in_report!=null?' &nbsp;|&nbsp; <span style="color:#ffbe0b;font-weight:600">'+s.days_in_report+'d in report</span>':''}</div>
+        <div class="modal-sub" style="margin-top:4px">📅 ${s.first_date} ~ ${s.last_date} &nbsp;|&nbsp; ${s.data_days}d &nbsp;|&nbsp; $${Math.round(s.total_equity).toLocaleString()}${s.days_in_report!=null?' &nbsp;|&nbsp; <span style="color:#ffbe0b;font-weight:600">'+s.days_in_report+'d in report</span>':''}${s.fetched_at?' &nbsp;|&nbsp; <span title="Last data update" style="color:#777a88">🕐 '+_timeAgo(s.fetched_at)+'</span>':''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${linkHTML}</div>
       </div>
       <div style="flex-shrink:0;margin-left:16px;display:flex;flex-direction:column;align-items:center;gap:8px">
@@ -4682,7 +4715,29 @@ function openModal(addr) {
       <div class="modal-block">
         <h4>📊 Key Stats</h4>
         <div class="modal-stats">
-          <div class="modal-stat"><div class="v" style="color:${pnlColor}">$${s.total_pnl>=0?'+':''}${Math.round(s.total_pnl).toLocaleString()}</div><div class="l">Total PnL${s.cmm_source?'<span title="Source: CoinMarketMan" style="font-size:8px;color:#a78bfa;margin-left:3px">CMM</span>':''}</div></div>
+          ${(function(){
+            var hlPnl = s.hl_total_pnl != null ? s.hl_total_pnl : (s.cmm_source ? null : s.total_pnl);
+            var cmmPnl = s.cmm_source ? s.total_pnl : null;
+            var activePnl = s.total_pnl;
+            var activePnlColor = activePnl >= 0 ? '#00f5d4' : '#f72585';
+            if (s.cmm_source && cmmPnl != null && hlPnl != null) {
+              var hlColor = hlPnl >= 0 ? '#00f5d4' : '#f72585';
+              var cmmColor = cmmPnl >= 0 ? '#00f5d4' : '#f72585';
+              var hlWarStr = s.hl_war_score != null ? ' WAR '+s.hl_war_score : '';
+              var cmmWarStr = '';
+              return '<div class="modal-stat" style="grid-column:1/-1;flex-direction:row;align-items:stretch;gap:0;padding:0;background:transparent;border:none">'
+                + '<div style="flex:1;background:#030304;border-radius:8px 0 0 8px;border:1px solid rgba(255,255,255,0.06);padding:8px 12px">'
+                + '<div class="v" style="color:'+hlColor+'">$'+(hlPnl>=0?'+':'')+Math.round(hlPnl).toLocaleString()+'</div>'
+                + '<div class="l">HL PnL<span style="font-size:8px;color:#555;margin-left:4px">'+hlWarStr+'</span></div>'
+                + '</div>'
+                + '<div style="flex:1;background:#030304;border-radius:0 8px 8px 0;border:1px solid rgba(255,255,255,0.06);border-left:none;padding:8px 12px">'
+                + '<div class="v" style="color:'+cmmColor+'">$'+(cmmPnl>=0?'+':'')+Math.round(cmmPnl).toLocaleString()+'</div>'
+                + '<div class="l">CMM PnL <span title="Source: CoinMarketMan — static snapshot" style="font-size:8px;color:#a78bfa;cursor:help">CMM</span></div>'
+                + '</div>'
+                + '</div>';
+            }
+            return '<div class="modal-stat"><div class="v" style="color:'+activePnlColor+'">$'+(activePnl>=0?'+':'')+Math.round(activePnl).toLocaleString()+'</div><div class="l">Total PnL</div></div>';
+          })()}
           <div class="modal-stat"><div class="v">${s.win_rate}%</div><div class="l">Win Rate</div></div>
           <div class="modal-stat"><div class="v" style="color:${sc}">${s.sharpe}</div><div class="l" title="Estimated Sharpe — non-standard calculation used as relative WAR signal.">Sharpe* ⓘ</div></div>
           <div class="modal-stat"><div class="v">${s.roi_pct}%</div><div class="l">ROI</div></div>
