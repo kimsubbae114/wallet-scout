@@ -4719,7 +4719,7 @@ function buildPosChangeHTML(s){
         + _chart_radar + "\n"
         + f"const weeks={weeks_js},ws={ws_js};\n"
         + _chart_weekly + "\n"
-        "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
+        "function showTab(n,e){var _ss=document.getElementById('smm-sheet');if(_ss)_ss.style.display='none';var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
     )
     js_block += """
 // ── Address display (matches Python short_addr: 0x + 4 hex + ... + last 4) ─
@@ -5112,7 +5112,7 @@ function showSMMSheet(evs) {
     var wlStar = _wl.indexOf((ev.addr||'').toLowerCase()) >= 0;
     var pnlId = 'spnl-' + ev.addr.slice(2, 10) + '-' + ev.coin.replace(/[^a-zA-Z0-9]/g, '');
     fetchTasks.push([ev.addr, ev.coin, pnlId]);
-    html += '<div data-addr="' + ev.addr + '" onclick="openModal(this.dataset.addr)" '
+    html += '<div data-addr="' + ev.addr + '" onclick="document.getElementById(\'smm-sheet\').style.display=\'none\';openModal(this.dataset.addr)" '
       + 'onmouseenter="_smmCardHover(this,true)" onmouseleave="_smmCardHover(this,false)" '
       + 'style="background:#030304;border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:border-color 0.15s">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
