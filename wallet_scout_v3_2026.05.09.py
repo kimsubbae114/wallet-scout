@@ -2894,7 +2894,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
         _cum = s.get('cumulative', [])
         # 최근 30일치만
         from datetime import datetime as _dt2, timedelta as _td
-        _cutoff = (_dt2.utcnow() - _td(days=30)).strftime('%Y-%m-%d')
+        _cutoff = (datetime.now(timezone.utc) - _td(days=30)).strftime('%Y-%m-%d')
         _pts = [p for p in _cum if p['date'] >= _cutoff] or _cum[-30:]
         if len(_pts) >= 2:
             _vals = [p['cum'] for p in _pts]
@@ -3393,7 +3393,7 @@ def generate_html(all_stats, tournament, archive: ArchiveManager, hist_path: Pat
     radar_js  = json.dumps({"labels":radar_labels,"datasets":radar_datasets})
     ws_js     = json.dumps(weekly_series)
     weeks_js  = json.dumps(weeks)
-    ts        = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ts        = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     champion_label   = ranked[0]["label"] if ranked else "-"
     max_weekly_wins  = max((s["tourney_wins"] for s in ranked), default=0)
     total_rounds     = len(tournament.get("rounds", []))
@@ -5103,6 +5103,12 @@ function _fetchSMMPnl(addr, coin, elId) {
   }).catch(function(){ var el = document.getElementById(elId); if (el) el.innerHTML = 'Realized: ' + _fmtPnl(null) + '&nbsp;&nbsp;uPnL: ' + _fmtPnl(null); });
 }
 
+function _tsToMs(ts) {
+  if (!ts) return 0;
+  var s = ts.replace(' ', 'T');
+  if (!s.endsWith('Z') && !s.includes('+')) s += 'Z';
+  return new Date(s).getTime();
+}
 function closeSMMAndOpen(addr) {
   var s = document.getElementById('smm-sheet');
   if (s) s.style.display = 'none';
@@ -5633,13 +5639,13 @@ function renderWarAlertBanner(){
   // 최신 스냅샷
   var latest = WAR_HIST[WAR_HIST.length-1];
   if(!latest) return;
-  var latestTs = new Date(latest.ts.replace(' ','T')).getTime();
+  var latestTs = _tsToMs(latest.ts);
 
   // 24시간 전 기준: 그 시점에서 가장 가까운(최신) 스냅샷 선택
   var cutoff24h = latestTs - 24 * 60 * 60 * 1000;
   var prev = null;
   for(var i = WAR_HIST.length - 2; i >= 0; i--){
-    var t = new Date(WAR_HIST[i].ts.replace(' ','T')).getTime();
+    var t = _tsToMs(WAR_HIST[i].ts);
     if(t <= cutoff24h){ prev = WAR_HIST[i]; break; }
   }
   // 24시간 전 스냅샷이 없으면 가장 오래된 것 사용
@@ -7405,7 +7411,7 @@ window.initWarTrendChart = function() {
   var _days = (window._warRangeDays !== undefined) ? window._warRangeDays : 7;
   var cutoff = _days > 0 ? now - _days * 24 * 60 * 60 * 1000 : 0;
   var recent = cutoff > 0 ? WAR_HIST.filter(function(snap){
-    var t = new Date(snap.ts.replace(' ','T')).getTime();
+    var t = _tsToMs(snap.ts);
     return !isNaN(t) && t >= cutoff;
   }) : WAR_HIST.slice();
   if(recent.length < 2) recent = WAR_HIST.slice();
@@ -7433,7 +7439,7 @@ window.initWarTrendChart = function() {
   var datasets = addresses.map(function(addr, idx){
     var points = [];
     recent.forEach(function(snap){
-      var snapT = new Date(snap.ts.replace(' ','T')).getTime();
+      var snapT = _tsToMs(snap.ts);
       if(isNaN(snapT)) return;
       // snap.top20에서 해당 주소 찾기
       var found = (snap.top20||[]).find(function(t){ return t.address && t.address.toLowerCase() === addr; });
@@ -8199,10 +8205,10 @@ function updateSimulator(){
     if(!ctx||!HIST||HIST.length<2) return;
     // 1주일 이내 Data만
     var oneWeekAgo=Date.now()-7*24*60*60*1000;
-    var filteredHIST=HIST.filter(function(d){return new Date(d.ts.replace(' ','T')).getTime()>=oneWeekAgo;});
+    var filteredHIST=HIST.filter(function(d){return _tsToMs(d.ts)>=oneWeekAgo;});
     window._filteredHIST=filteredHIST;
     if(filteredHIST.length<1) filteredHIST=HIST.slice(-20); // fallback: last 20
-    var labels=filteredHIST.map(function(d){return new Date(d.ts.replace(' ','T')).getTime();});
+    var labels=filteredHIST.map(function(d){return _tsToMs(d.ts);});
     var datasets=[
       {label:'Long %', data:filteredHIST.map(function(d,i){return {x:labels[i],y:d.all?d.all.long_pct:null};}),
        borderColor: wsCss('--long','#3a86ff'),borderWidth:2,tension:0.3,fill:false,pointRadius:2,pointHoverRadius:4},
@@ -9139,7 +9145,7 @@ async def main_async(args):
                 _all_long  = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="LONG") for s in _pos_traders)
                 _all_short = sum(sum(p["notional"] for p in s.get("positions",[]) if p["side"]=="SHORT") for s in _pos_traders)
                 _snap = {
-                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "all": {
                         "long_pct":  round(_all_long/_all_eq*100, 1) if _all_eq>0 else 0,
                         "short_pct": round(_all_short/_all_eq*100, 1) if _all_eq>0 else 0,
@@ -9211,7 +9217,7 @@ async def main_async(args):
             _top100 = _war_sorted[:100]
             if _top100:
                 _war_snap = {
-                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "ts": _dt.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "top20": [
                         {
                             "address": s["address"],
@@ -9264,7 +9270,7 @@ async def main_async(args):
             console.print(f"  [dim]SMM 로드 실패 (스킵): {_smm_e}[/dim]")
 
         html = generate_html(report_stats, tournament, archive, hist_path=Path(HIST_FILE), war_hist_path=Path(WAR_HIST_FILE), btc_prices=_smm_btc, smm_events=_smm_evs)
-        ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        ts_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         out = f"scouting_report_{ts_str}.html"
         with open(out, "w", encoding="utf-8") as f:
             f.write(html)
