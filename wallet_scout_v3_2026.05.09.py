@@ -1989,13 +1989,23 @@ async def smm_refresh_fills_for_cache_hits(
     if not skip_list:
         return 0, False
 
+    # fills_cache 없을 때(GitHub Actions 등) 폴백: 이 지갑의 마지막 SMM 이벤트 시각 사용
+    _addr_last_smm: dict = {}
+    for _ev in smm_merged:
+        _a = _ev.get("addr", "").lower()
+        _t = _ev.get("t", 0)
+        if _t > _addr_last_smm.get(_a, 0):
+            _addr_last_smm[_a] = _t
+
     def _hl_start_ms(addr: str):
         ent = fills_cache.get(addr.lower(), {})
         hl_fills = [f for f in ent.get("fills", []) if not f.get("_cmm")]
-        if not hl_fills:
-            return None
-        last_t = max(int(f.get("time", 0)) for f in hl_fills)
-        return last_t + 1 if last_t > 0 else None
+        if hl_fills:
+            last_t = max(int(f.get("time", 0)) for f in hl_fills)
+            return last_t + 1 if last_t > 0 else None
+        # fills_cache 없으면 마지막 SMM 이벤트 시각 기준 (GitHub Actions 대응)
+        last_smm = _addr_last_smm.get(addr.lower(), 0)
+        return last_smm + 1 if last_smm > 0 else None
 
     new_events = 0
     fills_dirty = False
