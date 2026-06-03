@@ -3933,8 +3933,12 @@ function openModal(addr) {
   const sc = s.sharpe > 1 ? '#cc9166' : s.sharpe > 0 ? '#ffbe0b' : '#f87171';
   const dc = s.durability >= 60 ? '#cc9166' : s.durability >= 35 ? '#ffbe0b' : '#f72585';
 
-  const cumDates = s.cumulative.map(p => p.date);
-  const cumVals  = s.cumulative.map(p => p.cum);
+  // cumulative는 data/wallet/{addr}.json에서 lazy-load
+  var cumDates = [], cumVals = [];
+  if (s.cumulative && s.cumulative.length) {
+    cumDates = s.cumulative.map(function(p){ return p.date; });
+    cumVals  = s.cumulative.map(function(p){ return p.cum; });
+  }
 
   // Positions: notional 내림차순 정렬 후 토글 박스
   let posChangeHTML = buildPosChangeHTML(s);
@@ -4200,36 +4204,51 @@ function openModal(addr) {
     if(listEl) loadWalletComments(addrFull, listEl, cntEl);
   })();
 
-  // 누적 PnL 차트
-  setTimeout(() => {
-    const ctx = document.getElementById('modalPnlChart');
-    if (!ctx) return;
-    if (ctx._chart) ctx._chart.destroy();
-    ctx._chart = new Chart(ctx.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: cumDates,
-        datasets: [{
-          data: cumVals,
-          borderColor: cc,
-          backgroundColor: cc + '18',
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: true,
-          tension: 0.3,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: wsCss('--chart-tick','#5e616e'), maxTicksLimit: 6, font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } },
-          y: { ticks: { color: wsCss('--chart-tick','#5e616e'), callback: v => '$' + v.toLocaleString(), font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } }
+  // 누적 PnL 차트 — data/wallet/{addr}.json에서 lazy-load
+  (function() {
+    function _drawPnlChart(dates, vals) {
+      var ctx = document.getElementById('modalPnlChart');
+      if (!ctx) return;
+      if (ctx._chart) ctx._chart.destroy();
+      ctx._chart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            data: vals,
+            borderColor: cc,
+            backgroundColor: cc + '18',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: true,
+            tension: 0.3,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: wsCss('--chart-tick','#5e616e'), maxTicksLimit: 6, font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } },
+            y: { ticks: { color: wsCss('--chart-tick','#5e616e'), callback: function(v){ return '$' + v.toLocaleString(); }, font: { size: 9 } }, grid: { color: wsCss('--chart-grid','#1c1d22') } }
+          }
         }
-      }
-    });
-  }, 50);
+      });
+    }
+    if (cumDates.length >= 2) {
+      setTimeout(function(){ _drawPnlChart(cumDates, cumVals); }, 50);
+    } else {
+      fetch('data/wallet/' + addrFull.toLowerCase() + '.json')
+        .then(function(r){ return r.ok ? r.json() : {}; })
+        .catch(function(){ return {}; })
+        .then(function(d) {
+          var cum = d.cumulative || [];
+          var dates = cum.map(function(p){ return p.date; });
+          var vals  = cum.map(function(p){ return p.cum; });
+          _drawPnlChart(dates, vals);
+        });
+    }
+  })();
 
   // 레이더(오각형) 차트
   setTimeout(() => {
@@ -4480,9 +4499,14 @@ function buildPosChangeHTML(s){
                 json.dump(_detail, _wf, ensure_ascii=False, separators=(",", ":"), default=str)
         except Exception:
             pass
-        # prev_positions는 24h Hot Wallets에 필요하므로 유지, cumulative도 모달 PnL 차트에 필요하므로 유지
+        # prev_positions는 24h Hot Wallets에 필요하므로 유지
+        # cumulative는 data/wallet/{addr}.json으로 분리 → ALL_STATS에서 제외
     # ─────────────────────────────────────────────────────────────────────────
-    all_stats_js = json.dumps(ranked, ensure_ascii=False, default=str)
+    _ranked_slim = []
+    for _s in ranked:
+        _slim = {k: v for k, v in _s.items() if k != "cumulative"}
+        _ranked_slim.append(_slim)
+    all_stats_js = json.dumps(_ranked_slim, ensure_ascii=False, default=str)
 
     # ══ SIGNAL TAB — Python data computation ════════════════════════════
     def _sig_parse_ts(ts_str):
@@ -4721,8 +4745,9 @@ function buildPosChangeHTML(s){
         "_nk.forEach(function(k){if(typeof s[k]!=='number'||!isFinite(s[k]))s[k]=0;});});"
         "})();\n"
         f"window.WALLET_META={json.dumps(load_wallets_meta(), ensure_ascii=False)};\n"
-        f"window.BTC_PRICES={_btc_prices_js};\n"
-        f"window.SMM_EVENTS={json.dumps([e for e in (smm_events or []) if (e.get('ntl') or 0) >= 100_000], ensure_ascii=False)};\n"
+        "window.BTC_PRICES=[];\n"
+        "window.SMM_EVENTS=[];\n"
+        "window._smmLoaded=false;\n"
         f"const rd={radar_js};\n"
         f"const SENT={sent_js};\n"
         f"const HIST={hist_js};\n"
@@ -4730,7 +4755,7 @@ function buildPosChangeHTML(s){
         + _chart_radar + "\n"
         + f"const weeks={weeks_js},ws={ws_js};\n"
         + _chart_weekly + "\n"
-        "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){renderSignal();renderSMM();}if(n==='sentiment'){renderSentiment();setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
+        "function showTab(n,e){var _e=e||window.event;document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');if(_e&&_e.target){var _tab=_e.target.closest('.tab');if(_tab)_tab.classList.add('active');}if(n==='signal'){if(!window._smmLoaded&&typeof _loadSMMData==='function')_loadSMMData();else renderSMM();renderSignal();}if(n==='sentiment'){renderSentiment();if(!window._smmLoaded&&typeof _loadSMMData==='function')_loadSMMData();else setTimeout(renderSMM,80);}if(n==='radar'){if(window._radarChart)window._radarChart.destroy();initRadarChart();}if(n==='styles'){setTimeout(initPlaystyleMap,100);}var _lw=document.getElementById('tab-lookup');if(_lw&&n!=='lookup')_lw.style.display='none';if(_lw&&n==='lookup')_lw.style.display='';var _lo=document.getElementById('lookup-overlay');if(_lo&&n!=='lookup')_lo.style.display='none';if(n==='lookup')initLookup();if(n==='searched')initSearched();if(n==='named')initNamed();if(n==='guestbook')initGuestbook();if(n==='watchlist')renderWatchlist();if(n==='cards'){renderWarAlertBanner();if(!window._cardsReady){window._cardsReady=true;try{buildTypeFilterBar();}catch(e){}try{applyCardFilters(true);}catch(e){}}}}\n"
     )
     js_block += """
 // ── SMM sheet: 탭 클릭 시 자동 닫기 ─────────────────────────────────────
@@ -4774,9 +4799,35 @@ function _smmInactive(btn) {
   btn.style.color = 'var(--dim)';
   btn.style.borderColor = 'var(--pill-inactive-bd)';
 }
+// ── SMM / BTC 데이터 비동기 fetch ──────────────────────────────────────
+window.BTC_PRICES = [];
+window.SMM_EVENTS = [];
+window._smmLoaded = false;
+(function() {
+  var _base = (function() {
+    var s = document.currentScript || document.scripts[document.scripts.length - 1];
+    return s ? s.src.replace(/[^/]*$/, '') : './';
+  })();
+  function _loadSMM() {
+    if (window._smmLoaded) return;
+    Promise.all([
+      fetch('data/btc.json').then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; }),
+      fetch('data/smm.json').then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; })
+    ]).then(function(results) {
+      window.BTC_PRICES = results[0] || [];
+      window.SMM_EVENTS = results[1] || [];
+      window._smmLoaded = true;
+      try { renderSMM(); } catch(e) {}
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    var activeSec = document.querySelector('.section.active');
+    var isSentiment = activeSec && (activeSec.id === 'tab-signal' || activeSec.id === 'tab-sentiment');
+    if (isSentiment) _loadSMM();
+  });
+  window._loadSMMData = _loadSMM;
+})();
 // ── Smart Money Map ────────────────────────────────────────────────────
-window.BTC_PRICES = window.BTC_PRICES || [];
-window.SMM_EVENTS = window.SMM_EVENTS || [];
 var _smmDirFilter  = 'all';
 var _smmCoinFilter = 'btc';
 var _smmTimeFilter = '7d';
