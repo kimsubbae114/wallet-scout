@@ -1937,7 +1937,8 @@ def _extract_smm_buckets(fills, addr, label, war, equity, cutoff_ms, bucket_ms, 
             bucket_t = int(f_ts * 1000 // bucket_ms) * bucket_ms
             key = f"{addr}|{coin}|{bucket_t}|{dir_}"
             if key not in buckets:
-                buckets[key] = {"addr": addr, "label": label, "war": war,
+                _disp_label = label if (label and not label.startswith("0x")) else short_addr(addr)
+                buckets[key] = {"addr": addr, "label": _disp_label, "war": war,
                                 "coin": coin, "dir": dir_, "t": bucket_t,
                                 "ntl": 0.0, "cnt": 0}
             buckets[key]["ntl"] += ntl
@@ -5010,7 +5011,8 @@ function renderSMM() {
           var ev=ctx.raw._ev; if(!ev) return '';
           var wl=[]; try { if (typeof getWatchlist === 'function') wl=getWatchlist().map(function(a){ return String(a).toLowerCase(); }); } catch(e){}
           var star=(wl.indexOf((ev.addr||'').toLowerCase())>=0) ? '\u2b50 ' : '';
-          return star+ev.label+' ('+ev.coin+') $'+ev.ntl.toLocaleString();
+          var _lbl=ev.label&&!ev.label.startsWith('0x')?ev.label:_shortAddr(ev.addr||'');
+          return star+_lbl+' ('+ev.coin+') $'+ev.ntl.toLocaleString();
         }}}
       },
       scales:{
@@ -5133,7 +5135,7 @@ function showSMMSheet(evs) {
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
       + '<span style="font-weight:700;color:#ffffff;font-size:13px;display:flex;align-items:center;gap:6px">'
       + (wlStar ? '<span title="Watchlist" style="color:#ffbe0b;font-size:14px;line-height:1">\u2b50</span>' : '')
-      + '<span>' + (ev.label || ev.addr.slice(0, 10) + '...') + '</span></span>'
+      + '<span>' + (ev.label && !ev.label.startsWith('0x') ? ev.label : _shortAddr(ev.addr)) + '</span></span>'
       + '<span style="font-size:11px;color:#555">WAR&nbsp;' + ev.war + '&nbsp;·&nbsp;tap to view ↗</span></div>'
       + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
       + '<span style="font-size:12px;color:' + col + '">' + arrow + '&nbsp;' + ev.dir.toUpperCase() + '</span>'
