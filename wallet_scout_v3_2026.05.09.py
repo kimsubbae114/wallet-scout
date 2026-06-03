@@ -5101,6 +5101,11 @@ function _fetchSMMPnl(addr, coin, elId) {
   }).catch(function(){ var el = document.getElementById(elId); if (el) el.innerHTML = 'Realized: ' + _fmtPnl(null) + '&nbsp;&nbsp;uPnL: ' + _fmtPnl(null); });
 }
 
+function closeSMMAndOpen(addr) {
+  var s = document.getElementById('smm-sheet');
+  if (s) s.style.display = 'none';
+  openModal(addr);
+}
 function showSMMSheet(evs) {
   var sheet = document.getElementById('smm-sheet');
   var title = document.getElementById('smm-sheet-title');
@@ -5122,7 +5127,7 @@ function showSMMSheet(evs) {
     var wlStar = _wl.indexOf((ev.addr||'').toLowerCase()) >= 0;
     var pnlId = 'spnl-' + ev.addr.slice(2, 10) + '-' + ev.coin.replace(/[^a-zA-Z0-9]/g, '');
     fetchTasks.push([ev.addr, ev.coin, pnlId]);
-    html += '<div data-addr="' + ev.addr + '" onclick="document.getElementById(\'smm-sheet\').style.display=\'none\';openModal(this.dataset.addr)" '
+    html += '<div data-addr="' + ev.addr + '" onclick="closeSMMAndOpen(this.dataset.addr)" '
       + 'onmouseenter="_smmCardHover(this,true)" onmouseleave="_smmCardHover(this,false)" '
       + 'style="background:#030304;border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:border-color 0.15s">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
