@@ -3886,6 +3886,17 @@ function copyAddr(addr) {
   if(el){el.textContent='✓ Copied';setTimeout(()=>{el.textContent='📋 Copy';},1500);}
 }
 
+function _timeAgo(isoStr) {
+  if (!isoStr) return '';
+  try {
+    var sec = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+    if (sec < 60)    return 'just now';
+    if (sec < 3600)  return Math.floor(sec / 60) + 'm ago';
+    if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+    return Math.floor(sec / 86400) + 'd ago';
+  } catch(e) { return ''; }
+}
+
 function openModal(addr) {
   if(!addr) return;
   // 대소문자 무관 매칭
@@ -3987,7 +3998,7 @@ function openModal(addr) {
             s.confidence==='High Confidence'?'#030304':s.confidence==='Medium Confidence'?'#1c1d22':'#08080a'
           };font-family:Inter,sans-serif">${s.confidence||''}</span>
         </div>
-        <div class="modal-sub" style="margin-top:4px">📅 ${s.first_date} ~ ${s.last_date} &nbsp;|&nbsp; ${s.data_days}d &nbsp;|&nbsp; $${Math.round(s.total_equity).toLocaleString()}${s.days_in_report!=null?' &nbsp;|&nbsp; <span style="color:#ffbe0b;font-weight:600">'+s.days_in_report+'d in report</span>':''}</div>
+        <div class="modal-sub" style="margin-top:4px">📅 ${s.first_date} ~ ${s.last_date} &nbsp;|&nbsp; ${s.data_days}d &nbsp;|&nbsp; $${Math.round(s.total_equity).toLocaleString()}${s.days_in_report!=null?' &nbsp;|&nbsp; <span style="color:#ffbe0b;font-weight:600">'+s.days_in_report+'d in report</span>':''}${s.fetched_at?' &nbsp;|&nbsp; <span title="Last data update" style="color:#777a88">🕐 '+_timeAgo(s.fetched_at)+'</span>':''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${linkHTML}</div>
       </div>
       <div style="flex-shrink:0;margin-left:16px;display:flex;flex-direction:column;align-items:center;gap:8px">
