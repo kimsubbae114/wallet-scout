@@ -4940,6 +4940,8 @@ function renderSMM() {
     return;
   }
   if (emptyEl) emptyEl.style.display = 'none';
+  if (canvas) canvas.style.display = '';
+  if (volCanvas) volCanvas.style.display = '';
 
   var dirF  = _smmDirFilter;
   var coinF = _smmCoinFilter;
@@ -5006,6 +5008,7 @@ function renderSMM() {
     if (b.short > 0) shortBars.push({x: ti, y: -b.short});
   });
 
+  if (!filteredPrices.length) return;
   var xMin = filteredPrices[0].t;
   var xMax = filteredPrices[filteredPrices.length-1].t;
   var priceData = filteredPrices.map(function(c) { return {x: c.t, y: c.c}; });
