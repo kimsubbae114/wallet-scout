@@ -3676,7 +3676,9 @@ button,input,select,textarea{{font-family:var(--font-sans);}}
 .form-row select{{font-size:var(--text-sm);padding:5px 10px;border-radius:var(--hdr-search-radius);border:1px solid var(--glass-edge);background:var(--stat-box);color:var(--text);font-family:var(--font-sans)}}
 .smm-panel{{background:var(--chart-area);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}}
 .smm-head{{font-family:var(--font-sans);font-size:var(--text-subtitle);font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:var(--space-2)}}
-#smm-sheet.smm-sheet{{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--surface2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:16px;max-height:60vh;overflow-y:auto;box-shadow:var(--card-shadow)}}
+#smm-sheet.smm-sheet{{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--surface2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;max-height:60vh;box-shadow:var(--card-shadow);flex-direction:column;overflow:hidden}}
+#smm-sheet-hdr{{padding:14px 16px 12px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:var(--surface2);border-radius:16px 16px 0 0}}
+#smm-sheet-body{{overflow-y:auto;padding:12px 16px 16px;flex:1}}
 .wl-radar-wrap{{display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:8px}}
 
 </style></head><body>
@@ -3847,9 +3849,9 @@ button,input,select,textarea{{font-family:var(--font-sans);}}
 <div id="sent-root" style="padding:1rem 0"></div>
 </div>
 <div id="smm-sheet" class="smm-sheet">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+  <div id="smm-sheet-hdr">
     <div id="smm-sheet-title" style="font-size:13px;font-weight:700;color:var(--text)"></div>
-    <button onclick="document.getElementById('smm-sheet').style.display='none'" style="background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+    <button onclick="document.getElementById('smm-sheet').style.display='none'" style="background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:0 4px;line-height:1">✕</button>
   </div>
   <div id="smm-sheet-body"></div>
 </div>
@@ -5216,7 +5218,7 @@ function showSMMSheet(evs) {
   });
   html += '</div>';
   if (body) body.innerHTML = html;
-  sheet.style.display = 'block';
+  sheet.style.display = 'flex';
   fetchTasks.forEach(function(t){ _fetchSMMPnl(t[0], t[1], t[2]); });
 }
 
