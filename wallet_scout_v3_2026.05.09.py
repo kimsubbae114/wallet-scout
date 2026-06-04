@@ -1921,19 +1921,19 @@ def _extract_smm_buckets(fills, addr, label, war, equity, cutoff_ms, bucket_ms, 
                 continue
             coin = f.get("coin", "")
             dir_raw = f.get("dir", "")
-            # Only show position-opening/adding fills; skip closes/reduces
-            if dir_raw and "Open" not in dir_raw:
+            # Only show position-opening fills; skip closes, reduces, and unknown dir
+            if not dir_raw or "Open" not in dir_raw:
                 continue
             ntl = abs(float(f.get("sz", 0)) * float(f.get("px", 0)))
             if ntl < 100:
                 continue
-            # Derive long/short from dir field if available, else fall back to side
+            # Derive long/short from dir field ("Open Long" / "Open Short")
             if "Long" in dir_raw:
                 dir_ = "long"
             elif "Short" in dir_raw:
                 dir_ = "short"
             else:
-                dir_ = "long" if f.get("side", "") == "B" else "short"
+                continue  # dir 불명확하면 무시
             bucket_t = int(f_ts * 1000 // bucket_ms) * bucket_ms
             key = f"{addr}|{coin}|{bucket_t}|{dir_}"
             if key not in buckets:
